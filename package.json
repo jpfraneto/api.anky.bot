@@ -1,0 +1,33 @@
+{
+  "name": "training-anky-data-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "frog dev",
+    "serve": "tsx src/index.tsx"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1",
+    "@neynar/nodejs-sdk": "^1.33.1",
+    "@prisma/client": "^5.15.0",
+    "axios": "^1.7.2",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.5",
+    "frog": "latest",
+    "hono": "^4",
+    "lodash-es": "^4.17.21",
+    "node-cron": "^3.0.3",
+    "openai": "^4.51.0",
+    "query-string": "^9.0.0",
+    "uuid": "^10.0.0",
+    "valibot": "^0.35.0",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "@types/node-cron": "^3.0.11",
+    "@types/uuid": "^9.0.8",
+    "prisma": "^5.15.0",
+    "tsx": "^3.12.2"
+  }
+}

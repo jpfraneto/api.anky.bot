@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int                    @id
+  username          String                 @unique
+  casts             Cast[]
+  interactions      Interaction[]
+  dailyPerformances DailyUserPerformance[]
+}
+
+model Cast {
+  id          String                 @id @default(uuid())
+  hash        String                 @unique
+  authorFid   Int
+  text        String
+  timestamp   DateTime
+  parentHash  String?
+  replies     ReplyFromAnky[]
+  rootCast    ReplyForTrainingAnky[] @relation("RootCast")
+  goodReply   ReplyForTrainingAnky[] @relation("GoodReply")
+  badReply    ReplyForTrainingAnky[] @relation("BadReply")
+  User        User?                  @relation(fields: [userId], references: [id])
+  userId      Int?
+  Interaction Interaction[]
+}
+
+model Interaction {
+  id        String          @id @default(uuid())
+  user      User            @relation(fields: [userId], references: [id])
+  userId    Int
+  cast      Cast            @relation(fields: [castHash], references: [hash])
+  castHash  String
+  type      InteractionType
+  timestamp DateTime        @default(now())
+}
+
+enum InteractionType {
+  LIKE
+  RECAST
+  REPLY
+  QUOTE
+}
+
+model DailyUserPerformance {
+  id                   Int      @id @default(autoincrement())
+  user                 User     @relation(fields: [userId], references: [id])
+  userId               Int
+  date                 DateTime
+  totalCasts           Int      @default(0)
+  totalReplies         Int      @default(0)
+  totalEngagementScore Float    @default(0)
+  likes                Int      @default(0)
+  recasts              Int      @default(0)
+  replies              Int      @default(0)
+  quotes               Int      @default(0)
+
+  @@unique([userId, date])
+}
+
+model ReplyFromAnky {
+  id                   Int      @id @default(autoincrement())
+  timeOfReply          DateTime @default(now())
+  dayNumber            Int?
+  scheduledAt          DateTime
+  replyingToCast       Cast     @relation(fields: [replyingToCastHash], references: [hash])
+  replyingToCastHash   String
+  replyText            String?
+  replyReasoning       String?
+  replyCastHash        String?  @unique
+  humanTrainerFeedback String?
+  quoteCasts           Int      @default(0)
+  recasts              Int      @default(0)
+  comments             Int      @default(0)
+  likes                Int      @default(0)
+  engagementScore      Float    @default(0.0)
+  quoteCastHashes      String[]
+  recastHashes         String[]
+  commentHashes        String[]
+  likeFids             Int[]
+  deleted              Boolean  @default(false)
+}
+
+model ReplyForTrainingAnky {
+  id              String   @id @default(uuid())
+  addedTimestamp  DateTime @default(now())
+  rootCast        Cast     @relation("RootCast", fields: [rootCastHash], references: [hash])
+  rootCastHash    String
+  rootCastText    String
+  goodReply       Cast     @relation("GoodReply", fields: [goodReplyHash], references: [hash])
+  goodReplyHash   String
+  goodReplyText   String
+  badReply        Cast     @relation("BadReply", fields: [badReplyHash], references: [hash])
+  badReplyHash    String
+  badReplyText    String
+  comments        String?
+  engagementScore Float?
+  collectorId     Int?
+  collectedFrom   String // e.g., "save_reply_action", "manual_entry", etc.
+}
