@@ -8,5 +8,3 @@ export interface Cast {
     timestamp: string;
     parentHash?: string;
   }
-
-  

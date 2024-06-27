@@ -2,12 +2,11 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
     "strict": true,
-    "types": [
-      "node"
-    ],
     "jsx": "react-jsx",
+    "noEmit": true,
     "jsxImportSource": "hono/jsx",
-  }
+    "moduleResolution": "Bundler"
+  },
+  "exclude": ["node_modules"]
 }

@@ -24,7 +24,7 @@ app.frame('/', async (c) => {
     title: 'Warpcast.sh',
     image: (
       <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
-        <div tw="text-5xl">anky</div>
+        <div tw="text-8xl">anky</div>
         <div tw="mt-5 flex text-3xl">
           Made with ❤️ by{' '}
           <span
@@ -48,9 +48,10 @@ app.frame('/', async (c) => {
       <Button.Link href="https://warpcast.com/warpcastbot">
         @warpcastbot
       </Button.Link>,
-      <Button action="/frames">Frames</Button>,
-      <Button action="/actions">Actions</Button>,
-    ],
+      <Button action="//frames">
+        frames
+      </Button>,
+  ],
   });
 });
 
@@ -101,11 +102,12 @@ app.frame('/actions', async (c) => {
 });
 
 app.frame('/frames', async (c) => {
+  console.log("INSIDE THE FRAMES ROUTE FOR THIS ONE")
   return c.res({
-    title: 'Warpcast.sh',
+    title: 'anky',
     image: (
       <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-3xl text-white">
-        <div tw="text-5xl">Frames</div>
+        <div tw="text-5xl">frramess</div>
         <div
           tw="mt-10 flex flex-col"
           style={{
@@ -119,13 +121,12 @@ app.frame('/frames', async (c) => {
                 color: colors.warpcast,
               }}
             >
-              coming soon
+              pronto
             </div>
           </div>
         </div>
       </div>
     ),
-    imageAspectRatio: '1:1',
     intents: [<Button action="/">Back</Button>],
   });
 });

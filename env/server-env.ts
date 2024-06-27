@@ -1,5 +1,7 @@
-import dotenv from 'dotenv'
-import {object, parse, string, number} from 'valibot'
+import dotenv from 'dotenv';
+import { object, parse, string } from 'valibot'
+
+dotenv.config();
 
 const envSchema = object({
     SECRET: string('SECRET is required'),

@@ -4,7 +4,6 @@ import ky from 'ky';
 import {
     neynarClient,
     neynarMiddleware,
-    signerActive,
   } from '../../services/neynar-service';
 
 export const app = new Frog<{
@@ -20,7 +19,6 @@ export const app = new Frog<{
         badReplyHash: ''
     }
 })
-
 
 app.hono.get('/frame', async (c) => {
     const html = (await ky(`${getPublicUrl()}/save-reply-triade`)).text();

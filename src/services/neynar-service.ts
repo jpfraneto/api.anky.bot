@@ -14,10 +14,6 @@ export const neynarMiddleware = neynar({
   features: ['interactor', 'cast'],
 });
 
-export async function signerActive(uuid: string) {
-  const { status, fid } = await neynarClient.lookupSigner(uuid);
-  return { alive: status === 'approved', status, fid };
-}
 
 export async function cast(params: {
   text: string;
@@ -78,30 +74,6 @@ export async function cast(params: {
 
   return castRootHash as `0x${string}`;
 }
-
-async function init() {
-  const oneYearInSeconds = 365 * 24 * 60 * 60;
-  console.log(`One year has ${oneYearInSeconds} seconds.`);
-  const resp = await neynarClient.createSignerAndRegisterSignedKey(
-    FARCASTER_DEVELOPER_MNEMONIC,
-    {
-      deadline: Math.floor(Date.now() / 1000) + oneYearInSeconds * 5,
-    },
-  );
-  console.log(resp);
-}
-async function status() {
-  console.log("INSIDE THE STATUS FUNCTION")
-  const resp = await neynarClient.lookupSigner('58b47e31-7b63-4e74-aba1-f14f61e05498');
-  console.log(resp);
-}
-
-// await status();
-// only need to run this once, to create a signer and register the signed key
-// after you confirm the url given in the console
-// save the signer uuid and public key in .env
-// no need to do it again until you want to create a new signer
-// init();
 
 export async function getLastCastForUser(fid: number) {
   let cursor,

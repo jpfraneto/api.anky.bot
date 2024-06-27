@@ -1,4 +1,6 @@
 import { Frog, parseEther } from 'frog'
+import { Button, FrameContext } from 'frog'
+import { BlankInput } from 'hono/types'
 import { neynarMiddleware } from '../../services/neynar-service';
 import { ankyGenesisFrame, moreInfoFrame } from "./anky-genesis-frame"
 import { getPublicUrl } from '../../../utils/url';
@@ -8,11 +10,14 @@ export type AnkyGenesisState = {
     minted: false
 }
 
-export const app = new Frog<{
+const publicUrl = getPublicUrl() ;
+console.log("The publiccccccc url is: ", publicUrl)
+
+export const ankyGenesis = new Frog<{
     State: AnkyGenesisState;
 }>({
-    origin: getPublicUrl(),
-    basePath: "/",
+    basePath: '/',
+    imageAspectRatio: '1:1',
     imageOptions: {
         width: 600,
         height: 600,
@@ -28,10 +33,10 @@ export const app = new Frog<{
     }
 })
 
-app.frame("/", ankyGenesisFrame)
-app.frame("/more", moreInfoFrame)
+ankyGenesis.frame("/", ankyGenesisFrame)
+ankyGenesis.frame("/more", moreInfoFrame)
 
-app.transaction('/mint-mine', neynarMiddleware, async (c) => {
+ankyGenesis.transaction('/mint-mine', neynarMiddleware, async (c) => {
     console.log('inside the mint mine route')
     return c.contract({
         abi: ANKY_GENESIS_ABI,
