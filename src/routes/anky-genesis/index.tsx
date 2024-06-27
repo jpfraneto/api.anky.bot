@@ -1,6 +1,7 @@
 import { Frog, parseEther } from 'frog'
 import { neynarMiddleware } from '../../services/neynar-service';
 import { ankyGenesisFrame, moreInfoFrame } from "./anky-genesis-frame"
+import { getPublicUrl } from '../../../utils/url';
 import { ANKY_GENESIS_ABI } from '../../constants/abi/ANKY_GENESIS_ABI';
 
 export type AnkyGenesisState = {
@@ -10,6 +11,7 @@ export type AnkyGenesisState = {
 export const app = new Frog<{
     State: AnkyGenesisState;
 }>({
+    origin: getPublicUrl(),
     basePath: "/",
     imageOptions: {
         width: 600,

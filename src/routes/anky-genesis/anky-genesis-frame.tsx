@@ -4,7 +4,7 @@ import { getPublicUrl } from '../../../utils/url'
 
 export const ankyGenesisFrame = async (c: FrameContext<{},'/', BlankInput>) => {
     const { buttonValue } = c;
-
+    console.log("inside the first frame route", c)
     return c.res({
         title: "Anky Genesis",
         image: "https://github.com/jpfraneto/images/blob/main/ankkky.png?raw=true",

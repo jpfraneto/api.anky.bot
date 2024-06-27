@@ -1,4 +1,4 @@
-import "dotenv/config";
+import dotenv from 'dotenv';
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Button, Frog, TextInput } from "frog";
@@ -11,6 +11,8 @@ import { exec } from "child_process";
 import { v4 as uuidv4 } from "uuid";
 import { createHmac } from "crypto";
 import crypto from "crypto";
+import { Logger } from '../utils/Logger';
+import { SECRET } from '../env/server-env';
 import {
   checkAndUpdateRepliesScores,
   downloadAllTrainingDataForToday,
@@ -25,12 +27,31 @@ import {
   getOldRepliesAndProcessThem,
   replyToThisCastFromChatgtp,
 } from "../lib/anky";
-
+import { getPublicUrl } from '../utils/url';
 // **** ROUTE IMPORTS ****
 
+import { app as landing } from './routes/landing'
 import { app as ankyGenesis } from './routes/anky-genesis'
 
 // **** ROUTE IMPORTS ****
+
+dotenv.config();
+
+const origin = getPublicUrl();
+console.log({ origin });
+
+export const app = new Frog({
+  assetsPath: '/',
+  basePath: '/',
+  origin,
+  secret: process.env.NODE_ENV === 'production' ? SECRET : undefined,
+});
+
+app.use(async (c, next) => {
+  Logger.info(`[${c.req.method}] ${c.req.url.split('?')[0]}`);
+  await next();
+});
+
 
 // **** FAST SCRIPTS ****
 
@@ -52,21 +73,8 @@ cron.schedule("*/30 * * * *", () => {
   scrollFeedAndReply();
 });
 
-export const app = new Frog({
-  basePath: "/",
-  imageOptions: {
-    fonts: [
-      {
-        name: "Righteous",
-        source: "google",
-      },
-    ],
-  },
-});
-
+app.route('/', landing);
 app.route('/anky-genesis', ankyGenesis)
-
-app.use("/*", serveStatic({ root: "./public" }));
 
 app.get("/", (c) => {
   return c.json({
@@ -108,49 +116,6 @@ app.post("/jpfraneto-replied", async (c) => {
   } catch (error) {
     console.log("THERE WAS AN ERROR ON THE JPFRANETO REPLIED ROUTE");
   }
-});
-
-// for installing the cast action
-app.frame("/install-save-this-reply", (c) => {
-  return c.res({
-    image: (
-      <div
-        style={{
-          alignItems: "center",
-          background: "linear-gradient(to right, #432889, #17101F)",
-          backgroundSize: "100% 100%",
-          display: "flex",
-          flexDirection: "column",
-          flexWrap: "nowrap",
-          height: "100%",
-          justifyContent: "center",
-          textAlign: "center",
-          width: "100%",
-        }}
-      >
-        <div
-          style={{
-            color: "white",
-            fontSize: 50,
-            fontStyle: "normal",
-            letterSpacing: "-0.025em",
-            lineHeight: 1,
-            display: "flex",
-            marginTop: 30,
-            padding: "0 120px",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          add "save this reply" action
-        </div>
-      </div>
-    ),
-    intents: [
-      <Button.AddCastAction action="/save-this-reply-action">
-        add
-      </Button.AddCastAction>,
-    ],
-  });
 });
 
 // cast action trigger that displays the frame
@@ -656,9 +621,10 @@ app.frame("/replyguy-stats/:fid", (c) => {
   });
 });
 
-const port = process?.env?.PORT || 3000;
-
+app.use("/*", serveStatic({ root: "./public" }));
 devtools(app, { serveStatic });
+
+const port = process?.env?.PORT || 3000;
 
 serve({
   fetch: app.fetch,
