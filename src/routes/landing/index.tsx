@@ -45,8 +45,8 @@ app.frame('/', async (c) => {
     },
     imageAspectRatio: '1:1',
     intents: [
-      <Button.Link href="https://warpcast.com/warpcastbot">
-        @warpcastbot
+      <Button.Link href="https://warpcast.com/anky.eth">
+        @anky.eth
       </Button.Link>,
       <Button action="//frames">
         frames
