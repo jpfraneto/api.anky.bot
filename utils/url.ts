@@ -1,9 +1,10 @@
 import queryString from 'query-string';
+import { PORT, NODE_ENV } from '../env/server-env';
 
 export function getPublicUrl() {
     console.log("inside the get public url function")
-    const returnable = process.env.NODE_ENV !== 'production'
-    ? `http://localhost:${process.env.PORT}`
+    const returnable = NODE_ENV !== 'production'
+    ? `http://localhost:${PORT}`
     : 'https://api.anky.bot';
     console.log("the returnable is", returnable)
   return returnable

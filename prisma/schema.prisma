@@ -65,26 +65,23 @@ model DailyUserPerformance {
 }
 
 model ReplyFromAnky {
-  id                   Int      @id @default(autoincrement())
-  timeOfReply          DateTime @default(now())
-  dayNumber            Int?
-  scheduledAt          DateTime
-  replyingToCast       Cast     @relation(fields: [replyingToCastHash], references: [hash])
-  replyingToCastHash   String
-  replyText            String?
-  replyReasoning       String?
-  replyCastHash        String?  @unique
-  humanTrainerFeedback String?
-  quoteCasts           Int      @default(0)
-  recasts              Int      @default(0)
-  comments             Int      @default(0)
-  likes                Int      @default(0)
-  engagementScore      Float    @default(0.0)
-  quoteCastHashes      String[]
-  recastHashes         String[]
-  commentHashes        String[]
-  likeFids             Int[]
-  deleted              Boolean  @default(false)
+  id                                Int      @id @default(autoincrement())
+  momentOfReply                     DateTime @default(now())
+  chronologicalDayNumber            Int?
+  sojourn                           String?
+  kingdom                           String?
+  replyingToCast                    Cast     @relation(fields: [replyingToCastHash], references: [hash])
+  replyingToCastHash                String
+  replyCastHash                     String?  @unique
+  replyText                         String?
+  replyReasoning                    String?
+  humanTrainerFeedback              String?
+  quoteCasts                        Int      @default(0)
+  recasts                           Int      @default(0)
+  comments                          Int      @default(0)
+  likes                             Int      @default(0)
+  engagementScore                   Float    @default(0.0)
+  deletedFromFarcaster              Boolean  @default(false)
 }
 
 model ReplyForTrainingAnky {

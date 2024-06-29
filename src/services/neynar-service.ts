@@ -1,8 +1,9 @@
 import { NeynarAPIClient } from '@neynar/nodejs-sdk';
 import {
-  FARCASTER_DEVELOPER_MNEMONIC,
-  FARCASTER_UUID,
+  FARCASTER_ANKY_MNEMONIC,
+  ANKY_SIGNER,
   NEYNAR_API_KEY,
+  NODE_ENV
 } from '../../env/server-env';
 import { neynar } from 'frog/middlewares';
 import { Logger } from '../../utils/Logger';
@@ -23,7 +24,7 @@ export async function cast(params: {
 }) {
   const { text, embeds, forceCast = false, parentHash } = params;
   console.log(text, { embeds, replyTo: parentHash });
-  if (process.env.NODE_ENV !== 'production' && !forceCast) {
+  if (NODE_ENV !== 'production' && !forceCast) {
     Logger.info('Not in production, skipping cast');
     return;
   }
@@ -63,7 +64,7 @@ export async function cast(params: {
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
     const isLastChunk = i === chunks.length - 1;
-    const { hash } = await neynarClient.publishCast(FARCASTER_UUID, chunk, {
+    const { hash } = await neynarClient.publishCast(ANKY_SIGNER, chunk, {
       replyTo: lastHash,
       embeds: isLastChunk ? embeds : [],
     });

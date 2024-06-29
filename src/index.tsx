@@ -2,13 +2,13 @@ import dotenv from 'dotenv';
 import { Frog } from "frog";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "frog/serve-static";
-import { SECRET } from '../env/server-env';
+import { SECRET, NODE_ENV } from '../env/server-env';
 import { Logger } from '../utils/Logger';
 import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
 import { cors } from "hono/cors"
 import cron from "node-cron";
-import { scrollFeedAndReply } from '../lib/anky';
+import { scrollFeedAndReply } from '../utils/anky';
 
 // **** ROUTE IMPORTS ****
 import { app as landing } from './routes/landing'
@@ -24,17 +24,8 @@ export const app = new Frog({
   assetsPath: '/',
   basePath: '/',
   origin,
-  secret: process.env.NODE_ENV === 'production' ? SECRET : undefined,
+  secret: NODE_ENV === 'production' ? SECRET : undefined,
 });
-
-if (process.env.PROXY === 'true') {
-  app.use('*', (ctx, next) => {
-    const wrapped = cors({
-      origin,
-    });
-    return wrapped(ctx, next);
-  });
-}
 
 app.use(async (c, next) => {
   Logger.info(`[${c.req.method}] ${c.req.url.split('?')[0]}`);

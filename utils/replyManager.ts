@@ -1,7 +1,7 @@
 import prisma from "./prismaClient";
 import axios from "axios";
-import { getThisCastInformationFromHash } from "../lib/farcaster";
-// import { replyToThisCast, castAnonymouslyWithFrame, getAnkyImage, processThisTextThroughAnky } from "./lib/anky";
+import { fetchCastInformationFromHash } from "../utils/cast";
+import { NEYNAR_API_KEY, ANKY_SIGNER } from "../env/server-env";
 import fs from "fs";
 import path from "path";
 
@@ -79,7 +79,7 @@ export async function checkAndUpdateRepliesScores() {
       continue;
     }
     console.log("the reply is: ", reply);
-    const castData = await getThisCastInformationFromHash(
+    const castData = await fetchCastInformationFromHash(
       reply.replyCastHash ?? ""
     );
     console.log("the cast data is: ", castData);
@@ -96,11 +96,11 @@ export async function checkAndUpdateRepliesScores() {
           url: "https://api.neynar.com/v2/farcaster/cast",
           headers: {
             accept: "application/json",
-            api_key: process.env.NEYNAR_API_KEY,
+            api_key: NEYNAR_API_KEY,
             "content-type": "application/json",
           },
           data: {
-            signer_uuid: process.env.ANKY_SIGNER_UUID,
+            signer_uuid: ANKY_SIGNER,
             target_hash: reply.replyCastHash,
           },
         };

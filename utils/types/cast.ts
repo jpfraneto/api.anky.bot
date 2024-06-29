@@ -1,4 +1,3 @@
-
 export interface Cast {
     object: string;
     hash: string;
@@ -23,6 +22,13 @@ export interface Cast {
       liked: boolean;
       recasted: boolean;
     };
+  }
+
+  export interface CastIntention {
+    text: string;
+    embeds: Embed[];
+    parent: string;
+    signer_uuid: string;
   }
   
   export interface Author {

@@ -5,30 +5,38 @@ dotenv.config();
 
 const envSchema = object({
     SECRET: string('SECRET is required'),
-    ALCHEMY_API_KEY: string('ALCHEMY_API_KEY is required'),
-    FARCASTER_DEVELOPER_FID: string('FARCASTER_DEVELOPER_FID is required'),
-    FARCASTER_UUID: string('FARCASTER_UUID is required'),
-    FARCASTER_PUBLIC_KEY: string('FARCASTER_PUBLIC_KEY is required'),
-    FARCASTER_DEVELOPER_MNEMONIC: string(
-      'FARCASTER_DEVELOPER_MNEMONIC is required',
-    ),
+    DATABASE_URL: string('DATABASE_URL is required'),
+    ANKYSYNC_SIGNER: string('ANKYSYNC_SIGNER is required'),
+    FARCASTER_ANKYSYNC_FID: string('FARCASTER_ANKYSYNC_FID is required'),
+    FARCASTER_ANKYSYNC_MNEMONIC: string('FARCASTER_ANKYSYNC_MNEMONIC is required'),
+    ANKY_SIGNER: string('ANKY_SIGNER is required'),
+    FARCASTER_ANKY_FID: string('FARCASTER_ANKY_FID is required'),
+    FARCASTER_ANKY_MNEMONIC: string('FARCASTER_ANKY_MNEMONIC is required'),
+    ANKY_WARPCAST_API_KEY: string('ANKY_WARPCAST_API_KEY is required'),
     NEYNAR_API_KEY: string('NEYNAR_API_KEY is required'),
+    PINATA_JWT: string('PINATA_JWT is required'),
     OPENAI_API_KEY: string('OPENAI_API_KEY is required'),
+    POIESIS_API_ROUTE: string('POIESIS_API_ROUTE is required'),
     POIESIS_API_KEY: string('POIESIS_API_KEY is required'),
-    MY_SIGNER: string('MY_SIGNER is required'),
-    PORT: string("PORT is required")
+    PORT: string('PORT is required'),
+    NODE_ENV: string('NODE_ENV is required')
   });
   
   export const {
     SECRET,
-    ALCHEMY_API_KEY,
-    FARCASTER_PUBLIC_KEY,
-    FARCASTER_UUID,
-    FARCASTER_DEVELOPER_FID,
-    FARCASTER_DEVELOPER_MNEMONIC,
-    POIESIS_API_KEY,
-    OPENAI_API_KEY,
+    DATABASE_URL,
+    ANKYSYNC_SIGNER,
+    FARCASTER_ANKYSYNC_FID,
+    FARCASTER_ANKYSYNC_MNEMONIC,
+    ANKY_SIGNER,
+    FARCASTER_ANKY_FID,
+    FARCASTER_ANKY_MNEMONIC,
+    ANKY_WARPCAST_API_KEY,
     NEYNAR_API_KEY,
-    MY_SIGNER,
-    PORT
+    PINATA_JWT,
+    OPENAI_API_KEY,
+    POIESIS_API_ROUTE,
+    POIESIS_API_KEY,
+    PORT,
+    NODE_ENV
   } = parse(envSchema, process.env);
