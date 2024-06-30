@@ -21,7 +21,7 @@ export const app = new Frog({
 
 app.frame('/', async (c) => {
   return c.res({
-    title: 'Warpcast.sh',
+    title: 'Anky Genesis',
     image: (
       <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
         <div tw="text-8xl">anky</div>
