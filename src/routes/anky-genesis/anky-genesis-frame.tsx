@@ -57,7 +57,7 @@ export const moreInfoFrame = async (c: FrameContext<{},'/', BlankInput>) => {
             </div>
           ),
         intents: [
-            <Button action={`/anky-genesis`} >
+            <Button action={`/`} >
                 back
             </Button>,
             <Button.Transaction  target={`${getPublicUrl()}/anky-genesis/mint-mine`}>

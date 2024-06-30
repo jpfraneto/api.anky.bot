@@ -48,7 +48,7 @@ app.frame('/', async (c) => {
       <Button.Link href="https://warpcast.com/anky.eth">
         @anky.eth
       </Button.Link>,
-      <Button action="//frames">
+      <Button action="/frames">
         frames
       </Button>,
   ],
@@ -57,7 +57,7 @@ app.frame('/', async (c) => {
 
 app.frame('/actions', async (c) => {
   return c.res({
-    title: 'Warpcast.sh',
+    title: 'Anky Genesis',
     image: (
       <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-3xl text-white">
         <div tw="text-5xl">Actions</div>
