@@ -123,7 +123,9 @@ ankyFrames.frame('/submit-reply-triade/:goodReplyHash', async (c) => {
   const validInputRegex = /^(https:\/\/warpcast\.com\/[a-zA-Z0-9_]+\/0x[a-fA-F0-9]{6}|0x[a-fA-F0-9]{40})$/;
   let isValidText = false;
   if(c.inputText) {
+    console.log("the c.inputText", c.inputText)
      isValidText = validInputRegex.test(c.inputText)
+     console.log(isValidText)
   }
   if(!c.inputText || !isValidText) {
     return c.res({
