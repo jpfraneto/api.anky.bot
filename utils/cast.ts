@@ -181,40 +181,23 @@ export async function castAnonymouslyWithFrame(
 
 
 export async function saveCastTriadeOnDatabase (parentCast: Cast, goodReply: Cast, badReply: Cast, collectorFid: number) {
-  console.log("inside the save cast triade");
-  let thisDay = getStartOfDay(new Date().getTime())
-  const result = await prisma.replyForTrainingAnky.create({
-    data: {
-      dayOfStorage: thisDay,
-      rootcastHash: parentCast.hash,
-      rootCastText: parentCast.text,
-      goodReplyHash: goodReply.hash,
-      goodReplyText: goodReply.text,
-      badReplyHash: badReply.hash,
-      badReplyText: badReply.text,
-      collectorFid: collectorFid,
-      collectedFrom: "save_reply_action"
-    }
-  })
-
   try {
-    
+    console.log("inside the save cast triade");
+    let thisDay = getStartOfDay(new Date().getTime())
+    const result = await prisma.replyForTrainingAnky.create({
+      data: {
+        dayOfStorage: thisDay,
+        rootCastHash: parentCast.hash,
+        rootCastText: parentCast.text,
+        goodReplyHash: goodReply.hash,
+        goodReplyText: goodReply.text,
+        badReplyHash: badReply.hash,
+        badReplyText: badReply.text,
+        collectorFid: collectorFid,
+        collectedFrom: "save_reply_action"
+      }
+    })
   } catch (error) {
     
   }
 }
-
-// model ReplyForTrainingAnky {
-//   id              String   @id @default(uuid())
-//   addedTimestamp  DateTime @default(now())
-//   rootCastHash    String
-//   rootCastText    String
-//   goodReplyHash   String
-//   goodReplyText   String
-//   badReplyHash    String
-//   badReplyText    String
-//   comments        String?
-//   engagementScore Float?
-//   collectorId     Int?
-//   collectedFrom   String // e.g., "save_reply_action", "manual_entry", etc.
-// }
