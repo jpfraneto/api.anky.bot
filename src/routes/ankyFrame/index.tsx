@@ -158,7 +158,7 @@ ankyFrames.frame('/submit-reply-triade/:goodReplyHash', async (c) => {
       const badReplyLink = c.inputText || "";
       const badReplyCast = await fetchCastInformationFromUrl(badReplyLink)
       const userFid = c?.frameData?.fid || 16098;
-      const response = await saveCastTriadeOnDatabase(parentCast, goodReplyCast, badReplyCast, userFid);
+      await saveCastTriadeOnDatabase(parentCast, goodReplyCast, badReplyCast, userFid);
       let thisDay = getStartOfDay(new Date().getTime())
       const repliesThatHaveBeenSavedToday = await prisma.replyForTrainingAnky.count({
         where: {
@@ -174,7 +174,7 @@ ankyFrames.frame('/submit-reply-triade/:goodReplyHash', async (c) => {
                   reply stored
               </div>
               <div tw="mt-10 flex text-4xl text-white">
-                  88 replies have been stored today
+                  {repliesThatHaveBeenSavedToday} replies have been stored today
               </div>
               </div>
           ),
