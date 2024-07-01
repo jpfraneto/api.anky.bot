@@ -158,7 +158,6 @@ ankyFrames.frame('/submit-reply-triade/:goodReplyHash', async (c) => {
 
 ankyFrames.frame('/check-stats/:actionedCastHash', async (c) => {
   const { actionedCastHash } = c.req.param();
-  console.log('the stats are', c)
   return c.res({
     title: "anky",
     image: (
@@ -177,7 +176,6 @@ ankyFrames.frame('/check-stats/:actionedCastHash', async (c) => {
 
 ankyFrames.frame('/check-score/:actionedCastHash', async (c) => {
   const { actionedCastHash } = c.req.param();
-  console.log('the stats score is', c)
   return c.res({
     title: "anky",
     image: (
