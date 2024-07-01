@@ -53,7 +53,10 @@ export const moreInfoFrame = async (c: FrameContext<{},'/', BlankInput>) => {
         title: "Anky Genesis",
         image: (
             <div tw="relative flex h-full w-full flex-col items-center justify-center bg-black text-center text-2xl text-white">
-              <div tw="flex text-5xl">🪙 Minted</div>
+              <div tw="flex text-5xl">Anky Genesis</div>
+              <p tw="w-2/3 mx-auto">by minting one of these, you are opening a window of possibility</p>
+              <p tw="w-2/3 mx-auto text-center">the possibility of the unknown</p>
+              <p tw="w-2/3 mx-auto text-center">being expressed through you</p>
             </div>
           ),
         intents: [

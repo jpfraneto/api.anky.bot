@@ -15,7 +15,7 @@ export async function scrollFeedAndReply() {
     const totalCastsFromAnkyToday = await prisma.replyFromAnky.count({
       where: {
         chronologicalDayNumber: ankyverseDayInformation.chronologicalDay,
-        sojourn: ankyverseDayInformation.sojourn,
+        sojourn: ankyverseDayInformation.sojourn.toString(),
         kingdom: ankyverseDayInformation.kingdom
       },
     });

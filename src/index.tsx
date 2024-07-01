@@ -13,6 +13,7 @@ import { scrollFeedAndReply } from '../utils/anky';
 // **** ROUTE IMPORTS ****
 import { app as landing } from './routes/landing'
 import { ankyGenesis } from './routes/anky-genesis'
+import { ankyFrames } from './routes/ankyFrame'
 // **** ROUTE IMPORTS ****
 
 // **** FAST SCRIPTS ****
@@ -53,29 +54,12 @@ app.use(async (c, next) => {
   const [baseUrl, queryString] = fullUrl.split('?');
   
   Logger.info(`[${c.req.method}] ${baseUrl}`);
-  console.log('Full URL:', fullUrl);
-  console.log('Query String:', queryString);
-  
-  if (queryString) {
-    const params = new URLSearchParams(queryString);
-    console.log('Decoded Query Parameters:');
-    for (const [key, value] of params.entries()) {
-      console.log(`  ${key}: ${decodeURIComponent(value)}`);
-    }
-  }
-
-  console.log('Headers:', c.req.header);
-  
-  // If it's a POST request, log the body
-  if (c.req.method === 'POST') {
-    const body = await c.req.json().catch(() => 'Unable to parse JSON body');
-    console.log('Request Body:', body);
-  }
 
   await next();
 });
 
 app.route('/', landing);
+app.route('/anky', ankyFrames)
 app.route('/anky-genesis', ankyGenesis)
 
 app.get("/aloja", (c) => {
