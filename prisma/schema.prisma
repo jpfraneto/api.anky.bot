@@ -23,9 +23,6 @@ model Cast {
   timestamp   DateTime
   parentHash  String?
   replies     ReplyFromAnky[]
-  rootCast    ReplyForTrainingAnky[] @relation("RootCast")
-  goodReply   ReplyForTrainingAnky[] @relation("GoodReply")
-  badReply    ReplyForTrainingAnky[] @relation("BadReply")
   User        User?                  @relation(fields: [userId], references: [id])
   userId      Int?
   Interaction Interaction[]
@@ -87,17 +84,14 @@ model ReplyFromAnky {
 model ReplyForTrainingAnky {
   id              String   @id @default(uuid())
   addedTimestamp  DateTime @default(now())
-  rootCast        Cast     @relation("RootCast", fields: [rootCastHash], references: [hash])
+  dayOfStorage    Int
   rootCastHash    String
   rootCastText    String
-  goodReply       Cast     @relation("GoodReply", fields: [goodReplyHash], references: [hash])
   goodReplyHash   String
   goodReplyText   String
-  badReply        Cast     @relation("BadReply", fields: [badReplyHash], references: [hash])
   badReplyHash    String
   badReplyText    String
   comments        String?
-  engagementScore Float?
-  collectorId     Int?
+  collectorFid     Int?
   collectedFrom   String // e.g., "save_reply_action", "manual_entry", etc.
 }

@@ -9,6 +9,7 @@ import { getPublicUrl } from '../utils/url';
 import { cors } from "hono/cors"
 import cron from "node-cron";
 import { scrollFeedAndReply } from '../utils/anky';
+import { deleteAllAnkyCasts } from '../utils/cast';
 
 // **** ROUTE IMPORTS ****
 import { app as landing } from './routes/landing'
@@ -17,7 +18,7 @@ import { ankyFrames } from './routes/ankyFrame'
 // **** ROUTE IMPORTS ****
 
 // **** FAST SCRIPTS ****
-// deleteAll();
+deleteAllAnkyCasts();
 // scrollFeedAndReply();
 // checkAndUpdateRepliesScores();
 // downloadAllTrainingDataForToday()

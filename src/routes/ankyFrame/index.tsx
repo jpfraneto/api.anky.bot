@@ -1,12 +1,9 @@
 import { Button, Frog, TextInput } from 'frog'
 import { getPublicUrl } from '../../../utils/url';
-import ky from 'ky';
-import {
-    neynarClient,
-    neynarMiddleware,
-  } from '../../services/neynar-service';
 import { replyToThisCastThroughChatGtp } from '../../../utils/anky';
-import { fetchCastInformationFromHash, fetchCastInformationFromUrl } from '../../../utils/cast';
+import { fetchCastInformationFromHash, fetchCastInformationFromUrl, saveCastTriadeOnDatabase } from '../../../utils/cast';
+import prisma from '../../../utils/prismaClient';
+import { getStartOfDay } from '../../../utils/time';
 
 export type AnkyFrameState = {
   castHash: ""
@@ -86,7 +83,6 @@ ankyFrames.frame('/:actionedCastHash', async (c) => {
 
 ankyFrames.frame('/generic-reply/:castToReplyHash', async (c) => {
   const { castToReplyHash } = c.req.param();
-  console.log("INSIDE THE GENERIC REPLY ROUTE")
   if(!castToReplyHash) {
     return c.res({
       title: "anky",
@@ -123,23 +119,54 @@ ankyFrames.frame('/generic-reply/:castToReplyHash', async (c) => {
 
 ankyFrames.frame('/submit-reply-triade/:goodReplyHash', async (c) => {
   console.log("INSIDE THE SUBMIT REPLY TRIADE")
-    if(!c.inputText) {
-      return c.res({
-      title: "save this reply",
+  const { goodReplyHash } = c.req.param();
+  const validInputRegex = /^(https:\/\/warpcast\.com\/[a-zA-Z0-9_]+\/0x[a-fA-F0-9]{6}|0x[a-fA-F0-9]{40})$/;
+  let isValidText = false;
+  if(c.inputText) {
+     isValidText = validInputRegex.test(c.inputText)
+  }
+  if(!c.inputText || !isValidText) {
+    return c.res({
+      title: "anky",
       image: (
-          <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
+          <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
           <div tw="mt-10 flex text-4xl text-white">
-              no input provided
+            you didnt provide a valid cast hash for storing it on the database
           </div>
+          <div tw="p-8 flex flex-col rounded-xl border-white bg-purple-600">
+            <div tw="mt-10 flex text-xl text-white">
+              cast hash
+            </div>
+            <div tw="mt-10 flex text-xl text-white">
+              {goodReplyHash}
+            </div>
           </div>
+          <div tw="mt-20 flex text-4xl text-gray-500">
+            Made with ❤️ by <span tw="ml-2 text-white">@jpfraneto</span>
+          </div>
+        </div>
       ),
-    })} else {
+      intents: [
+          <TextInput placeholder="bad reply url/hash" />,
+          <Button action={`/submit-reply-triade/${goodReplyHash}`}>add triade</Button>,
+        ],
+    })
+  } else {
       const { goodReplyHash } = c.req.param();
       const goodReplyCast = await fetchCastInformationFromHash(goodReplyHash)
       console.log('the good reply cast is: ', goodReplyCast)
-      const rootCast = await fetchCastInformationFromHash(goodReplyCast?.parent)
+      const parentCast = await fetchCastInformationFromHash(goodReplyCast?.parent_hash)
       const badReplyLink = c.inputText || "";
-      const badCast = await fetchCastInformationFromUrl(badReplyLink)
+      const badReplyCast = await fetchCastInformationFromUrl(badReplyLink)
+      const userFid = c?.frameData?.fid || 16098;
+      const response = await saveCastTriadeOnDatabase(parentCast, goodReplyCast, badReplyCast, userFid);
+      let thisDay = getStartOfDay(new Date().getTime())
+      const repliesThatHaveBeenSavedToday = await prisma.replyForTrainingAnky.count({
+        where: {
+          dayOfStorage: thisDay
+        }
+      })
+      console.log("the response after saving the cast triade is: ", response)
       return c.res({
           title: "save this reply",
           image: (

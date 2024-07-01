@@ -46,3 +46,13 @@ export function getAnkyverseDay(date: number) {
 
 export const sleep = (ms = 0) =>
     new Promise((resolve) => setTimeout(resolve, ms));
+
+export function getStartOfDay(timestamp: number): number {
+    const startTimestamp = 1711861200 * 1000; // Convert to milliseconds
+    const startDate = new Date(startTimestamp);
+  
+    const timeDifference = timestamp - startDate.getTime(); // Difference in milliseconds
+    const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
+  
+    return daysDifference;
+  }
