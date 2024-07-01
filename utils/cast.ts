@@ -15,7 +15,7 @@ export async function fetchCastInformationFromHash(castHash: string) {
           },
         }
       );
-      return neynarResponse.data.cast.text;
+      return neynarResponse.data.cast;
     } catch (error) {
       console.log("there was an error fetching the cast from neynar, trying pinata now", error)
       try {
@@ -28,7 +28,7 @@ export async function fetchCastInformationFromHash(castHash: string) {
             },
           }
         );
-        return pinataResponse.data.cast.content;
+        return pinataResponse.data.cast;
       } catch (error) {
         console.log(
           `this was a really hard to get cast. it didnt want to be replied to: ${castHash}`
