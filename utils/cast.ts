@@ -1,4 +1,4 @@
-import { NEYNAR_API_KEY, PINATA_JWT, ANKY_SIGNER} from "../env/server-env";
+import { NEYNAR_API_KEY, PINATA_JWT, ANKY_SIGNER, NEYNAR_DUMMY_BOT_API_KEY} from "../env/server-env";
 import { sleep } from "./time";
 import axios from "axios";
 import { CastIntention, Cast } from "./types/cast";
@@ -91,6 +91,38 @@ export async function publishCastToTheProtocol(castOptions: CastIntention) {
       }
 }
 
+export async function publishCastToTheProtocolThroughDummyBot(castOptions: CastIntention) {
+  try {
+      const response = await axios.post(
+        "https://api.neynar.com/v2/farcaster/cast",
+        castOptions,
+        {
+          headers: {
+            api_key: NEYNAR_DUMMY_BOT_API_KEY,
+          },
+        }
+      );
+      return response.data.cast.hash;
+    } catch (error) {
+      try {
+        console.log("publishing the cast through neynar failed, now trying with pinata")
+        const response = await axios.post(
+          "https://api.pinata.cloud/v3/farcaster/casts",
+          castOptions,
+          {
+            headers: {
+              api_key: NEYNAR_DUMMY_BOT_API_KEY,
+            },
+          }
+        );
+        return response.data.cast.hash;
+      } catch (error) {
+          console.log("neither neynar or pinata worked. try again", error)
+          await sleep(60000)
+          publishCastToTheProtocol(castOptions)
+      }
+    }
+}
 
 export async function castAnonymouslyWithFrame(
     text: string,

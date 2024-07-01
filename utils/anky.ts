@@ -3,10 +3,10 @@ import axios from "axios";
 import OpenAI from "openai";
 import prisma from "./prismaClient";
 import { Cast } from "./types/cast";
-import { ANKY_SIGNER } from "../env/server-env";
+import { ANKY_SIGNER, DUMMY_BOT_SIGNER } from "../env/server-env";
 import { CompletionElement } from './types/completionMessage'
 import { getAnkyverseDay, sleep } from "./time";
-import { fetchCastInformationFromHash, publishCastToTheProtocol } from './cast'
+import { fetchCastInformationFromHash, publishCastToTheProtocol, publishCastToTheProtocolThroughDummyBot } from './cast'
 import { sendBasicCompletionToOllama, callChatGTPToGetReply } from './ai'
 
 export async function scrollFeedAndReply() {
@@ -95,10 +95,10 @@ export async function replyToThisCastThroughChatGtp(castHash: string) {
       text: replyText,
       embeds: [],
       parent: castHash,
-      signer_uuid: ANKY_SIGNER,
+      signer_uuid: DUMMY_BOT_SIGNER,
     };
 
-    const publishedCastHash = await publishCastToTheProtocol(replyOptions)
+    const publishedCastHash = await publishCastToTheProtocolThroughDummyBot(replyOptions)
     return publishedCastHash
   } catch (error) {
     console.log("there was an error getting the reply from chatgtp", error)
