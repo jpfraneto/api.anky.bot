@@ -62,13 +62,47 @@ zurfFrame.castAction(
         id: id
       }
     })
-    console.log("the prisma response is")
+    console.log("the prisma response is", prismaResponse)
     const user = responseFromNeynar.data.users[0]
     return c.res({
         title: "anky",
-        image: `url("https://api.anky.bot/public/gifs_farcaster/${id}")`,
+        image: (
+          <div
+          tw="relative flex h-full w-full items-center justify-center text-center text-2xl text-white"
+          style={{
+            backgroundImage: 'url("https://zurf.social/assets/cover/zurf-cover.png")',
+            backgroundSize: "cover",
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center'
+          }}
+        >   
+              <div tw="w-3/4 h-full pt-48 pl-48 flex">
+                <div tw="w-full h-1/5 flex text-8xl">
+                  <div tw="w-96 h-96 flex rounded rounded-full overflow-hidden">
+                  <img
+                      src={user.pfp_url}
+                      width="100%"
+                      height="100%"
+                    />
+                  </div>
+                  <div tw="pl-8 w-4/5 h-1/5 flex flex-col">
+                      <p>@{user.username}</p>
+                      <p>entrepreneurship</p>
+                  </div>      
+                </div>
+              </div>
+              <div tw="w-1/4 h-full pt-24 pr-48 flex">
+              <img
+                      src="https://github.com/jpfraneto/images/blob/main/drakula.png?raw=true"
+                      width="100%"
+                      height="100%"
+                    />
+              </div>
+
+          </div>
+        ),
         intents: [
-            <Button action={`/`}>next creator</Button>,
+            <Button action={`/${prismaResponse?.id}`}>next creator</Button>,
           ],
     })
 })
