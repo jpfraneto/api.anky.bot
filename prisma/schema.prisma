@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int                    @id
+  username          String                 @unique
+  casts             Cast[]
+  interactions      Interaction[]
+  dailyPerformances DailyUserPerformance[]
+}
+
+model Cast {
+  id          String                 @id @default(uuid())
+  hash        String                 @unique
+  authorFid   Int
+  text        String
+  timestamp   DateTime
+  parentHash  String?
+  replies     ReplyFromAnky[]
+  User        User?                  @relation(fields: [userId], references: [id])
+  userId      Int?
+  Interaction Interaction[]
+}
+
+model Interaction {
+  id        String          @id @default(uuid())
+  user      User            @relation(fields: [userId], references: [id])
+  userId    Int
+  cast      Cast            @relation(fields: [castHash], references: [hash])
+  castHash  String
+  type      InteractionType
+  timestamp DateTime        @default(now())
+}
+
+enum InteractionType {
+  LIKE
+  RECAST
+  REPLY
+  QUOTE
+}
+
+model DailyUserPerformance {
+  id                   Int      @id @default(autoincrement())
+  user                 User     @relation(fields: [userId], references: [id])
+  userId               Int
+  date                 DateTime
+  totalCasts           Int      @default(0)
+  totalReplies         Int      @default(0)
+  totalEngagementScore Float    @default(0)
+  likes                Int      @default(0)
+  recasts              Int      @default(0)
+  replies              Int      @default(0)
+  quotes               Int      @default(0)
+
+  @@unique([userId, date])
+}
+
+model ReplyFromAnky {
+  id                                Int      @id @default(autoincrement())
+  momentOfReply                     DateTime @default(now())
+  chronologicalDayNumber            Int?
+  sojourn                           String?
+  kingdom                           String?
+  replyingToCast                    Cast     @relation(fields: [replyingToCastHash], references: [hash])
+  replyingToCastHash                String
+  replyCastHash                     String?  @unique
+  replyText                         String?
+  replyReasoning                    String?
+  humanTrainerFeedback              String?
+  quoteCasts                        Int      @default(0)
+  recasts                           Int      @default(0)
+  comments                          Int      @default(0)
+  likes                             Int      @default(0)
+  engagementScore                   Float    @default(0.0)
+  deletedFromFarcaster              Boolean  @default(false)
+}
+
+model ReplyForTrainingAnky {
+  id              String   @id @default(uuid())
+  addedTimestamp  DateTime @default(now())
+  dayOfStorage    Int
+  rootCastHash    String
+  rootCastText    String
+  goodReplyHash   String
+  goodReplyText   String
+  badReplyHash    String
+  badReplyText    String
+  comments        String?
+  collectorFid     Int?
+  collectedFrom   String // e.g., "save_reply_action", "manual_entry", etc.
+}
+
+model Video {
+  id           String   @id @default(uuid())
+  originalName String
+  videoPath    String
+  gifPath      String
+  farcasterGifPath  String?
+  ipfsHash     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

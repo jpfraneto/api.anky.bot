@@ -1,0 +1,6 @@
+node_modules
+.env
+
+public/gifs
+public/videos
+public/gifs_farcaster
