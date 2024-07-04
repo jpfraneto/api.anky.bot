@@ -56,7 +56,7 @@ zurfFrame.frame('/wtf', async (c) => {
       </div>
     ),
       intents: [
-          <Button.Link href={`https://video.anky.bot/${id}`}>video on zurf</Button.Link>,
+          <Button.Link href={`https://video.anky.bot/v/${id}`}>video on zurf</Button.Link>,
       ],
   })
 })
@@ -68,7 +68,7 @@ zurfFrame.frame('/:id', async (c) => {
       image: `https://api.anky.bot/gifs_farcaster/${id}_farcaster.gif`,
       intents: [
           <Button action='/wtf'>wtf is zurf?</Button>,
-          <Button.Link href={`https://video.anky.bot/${id}`}>see on zurf</Button.Link>,
+          <Button.Link href={`https://video.anky.bot/v/${id}`}>see on zurf</Button.Link>,
         ],
   })
 })
