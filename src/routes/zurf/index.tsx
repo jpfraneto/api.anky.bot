@@ -31,63 +31,45 @@ export const zurfFrame = new Frog<{
   }
 })
 
-
-  zurfFrame.frame('/:id', async (c) => {
-    const { id } = c.req.param();
-
-    const randomFid = Math.floor(750000*Math.random())
-    const options = {
-      method: 'GET',
-      url: `https://api.neynar.com/v2/farcaster/user/bulk?fids=${randomFid}&viewer_fid=16098`,
-      headers: {accept: 'application/json', api_key: NEYNAR_API_KEY}
-    };
-    const responseFromNeynar = await axios.request(options)
-    const prismaResponse = await prisma.video.findUnique({
-      where: {
-        id: id
-      }
-    })
-    const user = responseFromNeynar.data.users[0]
-    return c.res({
-        title: "anky",
-        image: (
-          <div
-          tw="relative flex h-full w-full items-center justify-center text-center text-2xl text-white"
-          style={{
-            backgroundImage: 'url("https://zurf.social/assets/cover/zurf-cover.png")',
-            backgroundSize: "cover",
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center'
-          }}
-        >   
-              <div tw="w-3/4 h-full pt-48 pl-48 flex">
-                <div tw="w-full h-1/5 flex text-8xl">
-                  <div tw="w-96 h-96 flex rounded rounded-full overflow-hidden">
-                  <img
-                      src={user.pfp_url}
-                      width="100%"
-                      height="100%"
-                    />
-                  </div>
-                  <div tw="pl-8 w-4/5 h-1/5 flex flex-col">
-                      <p>@{user.username}</p>
-                      <p>entrepreneurship</p>
-                  </div>      
-                </div>
-              </div>
-              <div tw="w-1/4 h-full pt-24 pr-48 flex">
-              <img
-                      src="https://github.com/jpfraneto/images/blob/main/drakula.png?raw=true"
-                      width="100%"
-                      height="100%"
-                    />
-              </div>
-
+zurfFrame.frame('/wtf', async (c) => {
+  return c.res({
+      title: "anky",
+      image: (
+        <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
+        <div tw="mt-10 flex text-4xl text-white">
+          hello ser
+        </div>
+        <div tw="mt-10 flex text-4xl text-white">
+          we all know curiosity is a gift
+        </div>
+        <div tw="p-8 flex flex-col rounded-xl border-white bg-purple-600">
+          <div tw="mt-10 flex text-xl text-white">
+            and trust is earned
           </div>
-        ),
-        intents: [
-            <Button action='/'>wtf is zurf?</Button>,
-            <Button.Link href={`https://video.anky.bot/${id}`}>see on zurf</Button.Link>,
-          ],
-    })
+          <div tw="mt-10 flex text-xl text-white">
+            through the power of consistency
+          </div>
+        </div>
+        <div tw="mt-20 flex text-4xl text-gray-500">
+          Made with ❤️ by <span tw="ml-2 text-white">zurf</span>
+        </div>
+      </div>
+    ),
+      intents: [
+          <Button.Link href={`https://video.anky.bot/${id}`}>video on zurf</Button.Link>,
+      ],
+  })
 })
+
+zurfFrame.frame('/:id', async (c) => {
+  const { id } = c.req.param();
+  return c.res({
+      title: "anky",
+      image: `https://api.anky.bot/gifs_farcaster/${id}_farcaster.gif`,
+      intents: [
+          <Button action='/wtf'>wtf is zurf?</Button>,
+          <Button.Link href={`https://video.anky.bot/${id}`}>see on zurf</Button.Link>,
+        ],
+  })
+})
+
