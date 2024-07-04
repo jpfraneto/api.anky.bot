@@ -30,15 +30,18 @@ async function getGifFrames(gifPath: string): Promise<Buffer[]> {
   });
 
   const files = await fs.readdir(tempDir);
-  const framePaths = files
-    .filter(file => file.startsWith('frame') && file.endsWith('.png'))
-    .sort((a, b) => parseInt(a.match(/\d+/)?.[0] || '0') - parseInt(b.match(/\d+/)?.[0] || '0'));
+  if(files){
+        const framePaths = files
+        .filter(file => file.startsWith('frame') && file.endsWith('.png'))
+        .sort((a, b) => parseInt(a.match(/\d+/)?.[0] || '0') - parseInt(b.match(/\d+/)?.[0] || '0'));
 
-  const frames = await Promise.all(framePaths.map(file => fs.readFile(path.join(tempDir, file))));
+    const frames = await Promise.all(framePaths.map(file => fs.readFile(path.join(tempDir, file))));
 
-  await fs.rm(tempDir, { recursive: true, force: true });
+    await fs.rm(tempDir, { recursive: true, force: true });
 
-  return frames;
+    return frames;
+  }
+
 }
 
 export async function createEnhancedGif(inputGifPath: string, outputGifPath: string, user: { username: string, craft: string, pfp_url: string }) {

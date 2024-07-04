@@ -99,21 +99,30 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 app.post('/video', async (c) => {
-  console.log("Entering /video route");
+  const { readable, writable } = new TransformStream()
+  const writer = writable.getWriter()
+  const encoder = new TextEncoder()
+
+  const sendProgress = async (message: string) => {
+    await writer.write(encoder.encode(JSON.stringify({ type: 'progress', message }) + '\n'))
+  }
+
+  c.header('Content-Type', 'text/plain')
+  c.header('Transfer-Encoding', 'chunked')
 
   try {
-    const formData = await c.req.formData();
-    const file = formData.get('video') as File | null;
+    const formData = await c.req.formData()
+    const file = formData.get('video') as File | null
 
     if (!file) {
-      return c.json({ error: 'No video file uploaded' }, 400);
+      throw new Error('No video file uploaded')
     }
 
-    const uuid = uuidv4();
-    const filename = `${uuid}.mov`;
-    const videoPath = path.join(process.cwd(), 'public', 'videos', filename);
-    const gifPath = path.join(process.cwd(), 'public', 'gifs', `${uuid}.gif`);
-    const farcasterGifPath = path.join(process.cwd(), 'public', 'gifs_farcaster', `${uuid}_farcaster.gif`);
+    const uuid = uuidv4()
+    const filename = `${uuid}.mov`
+    const videoPath = path.join(process.cwd(), 'public', 'videos', filename)
+    const gifPath = path.join(process.cwd(), 'public', 'gifs', `${uuid}.gif`)
+    const farcasterGifPath = path.join(process.cwd(), 'public', 'gifs_farcaster', `${uuid}_farcaster.gif`)
     
     const user = {
       username: "jpfraneto",
@@ -121,29 +130,26 @@ app.post('/video', async (c) => {
       pfp_url: "https://dl.openseauserdata.com/cache/originImage/files/9bb46d16f20ed3d54ae01d1aeac89e23.png"
     }
 
-    console.log("Saving video file to:", videoPath);
-    const arrayBuffer = await file.arrayBuffer();
-    await fs.writeFile(videoPath, Buffer.from(arrayBuffer));
-    console.log("Video file saved");
+    await sendProgress("Saving video file...")
+    const arrayBuffer = await file.arrayBuffer()
+    await fs.writeFile(videoPath, Buffer.from(arrayBuffer))
+    await sendProgress("Video file saved")
 
-    // Process video to GIF
-    console.log('Processing video to GIF...');
-    await processVideo(videoPath, gifPath);
-    console.log("GIF processing completed");
+    await sendProgress("Processing video to GIF...")
+    await processVideo(videoPath, gifPath)
+    await sendProgress("GIF processing completed")
 
-    // Create enhanced Farcaster GIF
-    console.log('Creating enhanced Farcaster GIF...');
-    await createEnhancedGif(gifPath, farcasterGifPath, user);
-    console.log("Enhanced Farcaster GIF created");
+    await sendProgress("Creating enhanced Farcaster GIF...")
+    await createEnhancedGif(gifPath, farcasterGifPath, user)
+    await sendProgress("Enhanced Farcaster GIF created")
 
-    // Upload Farcaster GIF to IPFS
-    console.log('Uploading Farcaster GIF to IPFS...');
-    const farcasterGifBuffer = await fs.readFile(farcasterGifPath);
-    const farcasterGifBlob = new Blob([farcasterGifBuffer], { type: 'image/gif' });
-    const ipfsHash = await mintclub.ipfs.add(FILEBASE_API_TOKEN!, farcasterGifBlob);
+    await sendProgress("Uploading Farcaster GIF to IPFS...")
+    const farcasterGifBuffer = await fs.readFile(farcasterGifPath)
+    const farcasterGifBlob = new Blob([farcasterGifBuffer], { type: 'image/gif' })
+    const ipfsHash = await mintclub.ipfs.add(process.env.FILEBASE_API_TOKEN!, farcasterGifBlob)
+    await sendProgress("Farcaster GIF uploaded to IPFS")
 
-    // Save to database
-    console.log('Saving to database...');
+    await sendProgress("Saving to database...")
     const videoRecord = await prisma.video.create({
       data: {
         id: uuid,
@@ -153,33 +159,45 @@ app.post('/video', async (c) => {
         farcasterGifPath: `/gifs_farcaster/${uuid}_farcaster.gif`,
         ipfsHash: ipfsHash,
       },
-    });
+    })
+    await sendProgress("Saved to database")
 
+    await sendProgress("Sharing cast...")
     let replyOptions = {
       text: "hello world",
       embeds: [{url: `https://api.anky.bot/zurf/${uuid}`}],
       parent: "0xbc7c9fd8a6278ed1f6f09c4990f42d504ebe17e7",
-      signer_uuid: DUMMY_BOT_SIGNER,
-    };
+      signer_uuid: process.env.DUMMY_BOT_SIGNER,
+    }
 
     const response = await axios.post(
       "https://api.neynar.com/v2/farcaster/cast",
       replyOptions,
       {
         headers: {
-          api_key: NEYNAR_DUMMY_BOT_API_KEY,
+          api_key: process.env.NEYNAR_DUMMY_BOT_API_KEY,
         },
       }
-    );
+    )
 
-    console.log('Upload complete! cast shared!', response.data);
-    return c.json({ videoRecord, castHash: response.data.cast.hash });
+    await sendProgress("Cast shared successfully")
+
+    await writer.write(encoder.encode(JSON.stringify({
+      type: 'result',
+      videoRecord,
+      castHash: response.data.cast.hash
+    }) + '\n'))
+
+    await writer.close()
+    return c.body(readable)
 
   } catch (error) {
-    console.error("There was an error processing the video", error);
-    return c.json({ error: error.message }, 500);
+    console.error("There was an error processing the video", error)
+    await sendProgress(`Error: ${error.message}`)
+    await writer.close()
+    return c.body(readable)
   }
-});
+})
 
 app.get('/videos/:uuid', async (c) => {
   const { uuid } = c.req.param();

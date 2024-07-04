@@ -47,9 +47,7 @@ export const zurfFrame = new Frog<{
         id: id
       }
     })
-    console.log("the prisma response is", prismaResponse)
     const user = responseFromNeynar.data.users[0]
-    console.log("the user is: ", user)
     return c.res({
         title: "anky",
         image: (
