@@ -67,7 +67,7 @@ export const app = new Frog({
 });
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173'], // Add any other origins as needed
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://video.anky.bot'], // Add any other origins as needed
   allowMethods: ['POST', 'GET', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   exposeHeaders: ['Content-Length', 'X-Requested-With'],
