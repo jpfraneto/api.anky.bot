@@ -15,6 +15,8 @@ import { mintclub } from 'mint.club-v2-sdk';
 import multer from 'multer';
 import path from 'path';
 import prisma from '../utils/prismaClient';
+import { Readable } from 'stream'
+
 
 interface HonoFile {
   buffer: Buffer;
@@ -99,18 +101,20 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 app.post('/video', async (c) => {
-  const { readable, writable } = new TransformStream()
-  const writer = writable.getWriter()
-  const encoder = new TextEncoder()
+  const stream = new Readable({
+    read() {}
+  });
 
-  const sendProgress = async (message: string) => {
-    await writer.write(encoder.encode(JSON.stringify({ type: 'progress', message }) + '\n'))
+  const sendProgress = (message: string) => {
+    console.log(`Progress: ${message}`); // Console log for server-side monitoring
+    stream.push(JSON.stringify({ type: 'progress', message }) + '\n')
   }
 
   c.header('Content-Type', 'text/plain')
   c.header('Transfer-Encoding', 'chunked')
 
   try {
+    console.log("Entering /video route");
     const formData = await c.req.formData()
     const file = formData.get('video') as File | null
 
@@ -130,26 +134,34 @@ app.post('/video', async (c) => {
       pfp_url: "https://dl.openseauserdata.com/cache/originImage/files/9bb46d16f20ed3d54ae01d1aeac89e23.png"
     }
 
-    await sendProgress("Saving video file...")
+    console.log("Saving video file to:", videoPath);
+    sendProgress("Saving video file...")
     const arrayBuffer = await file.arrayBuffer()
     await fs.writeFile(videoPath, Buffer.from(arrayBuffer))
-    await sendProgress("Video file saved")
+    sendProgress("Video file saved")
 
-    await sendProgress("Processing video to GIF...")
+    console.log("Processing video to GIF...");
+    sendProgress("Processing video to GIF...")
     await processVideo(videoPath, gifPath)
-    await sendProgress("GIF processing completed")
+    console.log("GIF processing completed");
+    sendProgress("GIF processing completed")
 
-    await sendProgress("Creating enhanced Farcaster GIF...")
+    console.log("Creating enhanced Farcaster GIF...");
+    sendProgress("Creating enhanced Farcaster GIF...")
     await createEnhancedGif(gifPath, farcasterGifPath, user)
-    await sendProgress("Enhanced Farcaster GIF created")
+    console.log("Enhanced Farcaster GIF created");
+    sendProgress("Enhanced Farcaster GIF created")
 
-    await sendProgress("Uploading Farcaster GIF to IPFS...")
+    console.log("Uploading Farcaster GIF to IPFS...");
+    sendProgress("Uploading Farcaster GIF to IPFS...")
     const farcasterGifBuffer = await fs.readFile(farcasterGifPath)
     const farcasterGifBlob = new Blob([farcasterGifBuffer], { type: 'image/gif' })
     const ipfsHash = await mintclub.ipfs.add(process.env.FILEBASE_API_TOKEN!, farcasterGifBlob)
-    await sendProgress("Farcaster GIF uploaded to IPFS")
+    console.log("Farcaster GIF uploaded to IPFS");
+    sendProgress("Farcaster GIF uploaded to IPFS")
 
-    await sendProgress("Saving to database...")
+    console.log("Saving to database...");
+    sendProgress("Saving to database...")
     const videoRecord = await prisma.video.create({
       data: {
         id: uuid,
@@ -160,9 +172,11 @@ app.post('/video', async (c) => {
         ipfsHash: ipfsHash,
       },
     })
-    await sendProgress("Saved to database")
+    console.log("Saved to database");
+    sendProgress("Saved to database")
 
-    await sendProgress("Sharing cast...")
+    console.log("Sharing cast...");
+    sendProgress("Sharing cast...")
     let replyOptions = {
       text: "hello world",
       embeds: [{url: `https://api.anky.bot/zurf/${uuid}`}],
@@ -180,22 +194,25 @@ app.post('/video', async (c) => {
       }
     )
 
-    await sendProgress("Cast shared successfully")
+    console.log("Cast shared successfully");
+    sendProgress("Cast shared successfully")
 
-    await writer.write(encoder.encode(JSON.stringify({
+    console.log("Upload complete! Cast shared!", response.data);
+    stream.push(JSON.stringify({
       type: 'result',
       videoRecord,
       castHash: response.data.cast.hash
-    }) + '\n'))
+    }) + '\n')
 
-    await writer.close()
-    return c.body(readable)
+    stream.push(null)  // End the stream
+
+    return c.body(stream)
 
   } catch (error) {
     console.error("There was an error processing the video", error)
-    await sendProgress(`Error: ${error.message}`)
-    await writer.close()
-    return c.body(readable)
+    sendProgress(`Error: ${error.message}`)
+    stream.push(null)  // End the stream
+    return c.body(stream)
   }
 })
 
