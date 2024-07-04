@@ -15,7 +15,6 @@ export type ZurfFrameState = {
 export const zurfFrame = new Frog<{
   State: ZurfFrameState;
 }>({
-  basePath: '/',
   imageOptions: {
       width: 2292,
       height: 1200,
@@ -26,12 +25,10 @@ export const zurfFrame = new Frog<{
           }
       ]
   },
-  initialState : {
-    castHash: ""
-  }
 })
 
-zurfFrame.frame('/wtf', async (c) => {
+zurfFrame.frame('/wtf/:id', async (c) => {
+  const { id } = c.req.param();
   return c.res({
       title: "anky",
       image: (
@@ -56,7 +53,7 @@ zurfFrame.frame('/wtf', async (c) => {
       </div>
     ),
       intents: [
-          <Button.Link href={`https://video.anky.bot/v/${id}`}>video on zurf</Button.Link>,
+          <Button.Link href={`https://api.anky.bot/videos/${id}.mov`}>ver en zurf</Button.Link>,
       ],
   })
 })
@@ -67,8 +64,8 @@ zurfFrame.frame('/video/:id', async (c) => {
       title: "anky",
       image: `https://api.anky.bot/gifs_farcaster/${id}_farcaster.gif`,
       intents: [
-          <Button action='/wtf'>wtf is zurf?</Button>,
-          <Button.Link href={`https://video.anky.bot/v/${id}`}>see on zurf</Button.Link>,
+          <Button action={`/wtf/${id}`}>wtf is zurf?</Button>,
+          <Button.Link href={`https://api.anky.bot/videos/${id}.mov`}>ver en zurf</Button.Link>,
         ],
   })
 })
