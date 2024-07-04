@@ -179,7 +179,7 @@ app.post('/video', async (c) => {
     sendProgress("Sharing cast...")
     let replyOptions = {
       text: "hello world",
-      embeds: [{url: `https://api.anky.bot/zurf/${uuid}`}],
+      embeds: [{url: `https://api.anky.bot/zurf/video/${uuid}`}],
       parent: "0xbc7c9fd8a6278ed1f6f09c4990f42d504ebe17e7",
       signer_uuid: process.env.DUMMY_BOT_SIGNER,
     }

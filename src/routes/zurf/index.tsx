@@ -61,7 +61,7 @@ zurfFrame.frame('/wtf', async (c) => {
   })
 })
 
-zurfFrame.frame('/:id', async (c) => {
+zurfFrame.frame('/video/:id', async (c) => {
   const { id } = c.req.param();
   return c.res({
       title: "anky",
