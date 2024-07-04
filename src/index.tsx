@@ -173,7 +173,7 @@ app.post('/video', async (c) => {
     );
 
     console.log('Upload complete! cast shared!', response.data);
-    return c.json({ videoRecord });
+    return c.json({ videoRecord, castHash: response.data.hash });
 
   } catch (error) {
     console.error("There was an error processing the video", error);
