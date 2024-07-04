@@ -31,21 +31,6 @@ export const zurfFrame = new Frog<{
   }
 })
 
-// cast action trigger that displays the frame
-zurfFrame.castAction(
-    "/anky-cast-action",
-    (c) => {
-      const { actionData } = c;
-      const { castId, fid, messageHash, network, timestamp, url } = actionData;
-      const actionedCastHash = castId.hash;
-      const publicUrl = getPublicUrl()
-      return c.res({
-        type: "frame",
-        path: `${publicUrl}/anky/${actionedCastHash}`,
-      });
-    },
-    { name: "zurf", icon: "log" }
-  );
 
   zurfFrame.frame('/:id', async (c) => {
     const { id } = c.req.param();
