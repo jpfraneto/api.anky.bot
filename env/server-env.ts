@@ -22,7 +22,10 @@ const envSchema = object({
     POIESIS_API_KEY: string('POIESIS_API_KEY is required'),
     PORT: string('PORT is required'),
     NODE_ENV: string('NODE_ENV is required'),
-    FILEBASE_API_TOKEN: string("FILEBASE_API_TOKEN is required")
+    FILEBASE_API_TOKEN: string("FILEBASE_API_TOKEN is required"),
+    CLOUDINARY_CLOUD_NAME: string("CLOUDINARY_API_SECRET is required"),
+    CLOUDINARY_API_KEY: string("CLOUDINARY_API_SECRET is required"),
+    CLOUDINARY_API_SECRET: string("CLOUDINARY_API_SECRET is required")
   });
   
   export const {
@@ -44,5 +47,8 @@ const envSchema = object({
     POIESIS_API_KEY,
     PORT,
     NODE_ENV,
-    FILEBASE_API_TOKEN
+    FILEBASE_API_TOKEN,
+    CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
   } = parse(envSchema, process.env);

@@ -4,17 +4,20 @@ import fs from 'fs/promises';
 import path from 'path';
 
 export async function processVideo(inputPath: string, outputPath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      ffmpeg(inputPath)
-        .inputOptions('-t 5') // Take the first 5 seconds of the video
-        .outputOptions('-vf', 'scale=854:480:force_original_aspect_ratio=decrease,pad=854:480:-1:-1,setsar=1') // Set to 854x480 (16:9 aspect ratio)
-        .toFormat('gif')
-        .output(outputPath)
-        .on('end', resolve)
-        .on('error', reject)
-        .run();
-    });
-  }
+  return new Promise((resolve, reject) => {
+    ffmpeg(inputPath)
+      .inputOptions('-t 5') // Take the first 5 seconds of the video
+      .outputOptions([
+        '-vf', 'fps=10,scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=64:stats_mode=single[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle',
+        '-loop', '0'
+      ])
+      .toFormat('gif')
+      .output(outputPath)
+      .on('end', resolve)
+      .on('error', reject)
+      .run();
+  });
+}
 
 async function getGifFrames(gifPath: string): Promise<Buffer[]> {
   const tempDir = path.join(process.cwd(), 'temp_frames');
@@ -49,9 +52,9 @@ export async function createEnhancedGif(inputGifPath: string, outputGifPath: str
     const background = await sharp(backgroundPath).resize(1920, 1080).toBuffer();
   
     const pfp = await sharp(await fetch(user.pfp_url).then(res => res.arrayBuffer()))
-      .resize(150, 150, { fit: 'cover' })
+      .resize(300, 300, { fit: 'cover' })
       .composite([{
-        input: Buffer.from(`<svg><circle cx="75" cy="75" r="75" /></svg>`),
+        input: Buffer.from(`<svg><circle cx="150" cy="150" r="150" /></svg>`),
         blend: 'dest-in'
       }])
       .toBuffer();
@@ -66,18 +69,18 @@ export async function createEnhancedGif(inputGifPath: string, outputGifPath: str
           {
             input: pfp,
             top: 50,
-            left: 50,
+            left: 200,
           },
           {
-            input: await sharp(frame).resize(854, 480, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).toBuffer(),
-            top: 50,
-            left: 1000,
+            input: await sharp(frame).resize(1820, 1022, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).toBuffer(),
+            top: 25,
+            left: 666,
           },
           {
             input: Buffer.from(`
               <svg width="1920" height="1080">
-                <text x="220" y="100" font-family="Arial" font-size="40" font-weight="bold" fill="white">@${user.username}</text>
-                <text x="220" y="150" font-family="Arial" font-size="30" fill="#00FFFF">${user.craft}</text>
+                <text x="220" y="100" font-family="Arial" font-size="80" font-weight="bold" fill="white">@${user.username}</text>
+                <text x="220" y="230" font-family="Arial" font-size="80" font-weight="bold" fill="#00FFFF">${user.craft}</text>
               </svg>
             `),
             top: 0,

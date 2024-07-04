@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { Frog } from "frog";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "frog/serve-static";
-import { SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY } from '../env/server-env';
+import { SECRET, CLOUDINARY_CLOUD_NAME ,CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY } from '../env/server-env';
 import { Logger } from '../utils/Logger';
 import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
@@ -16,16 +16,7 @@ import multer from 'multer';
 import path from 'path';
 import prisma from '../utils/prismaClient';
 import { Readable } from 'stream'
-
-
-interface HonoFile {
-  buffer: Buffer;
-  originalname: string;
-  mimetype: string;
-  size: string;
-  name: string;
-  lastModified: number;
-}
+import { v2 as cloudinary } from 'cloudinary';
 
 
 // **** ROUTE IMPORTS ****
@@ -33,6 +24,7 @@ import { app as landing } from './routes/landing'
 import { ankyGenesis } from './routes/anky-genesis'
 import { ankyFrames } from './routes/ankyFrame'
 import { zurfFrame } from './routes/zurf'
+import { extractWordBeforeWaveEmoji } from '../utils/zurf';
 // **** ROUTE IMPORTS ****
 
 // **** FAST SCRIPTS ****
@@ -97,8 +89,6 @@ app.get("/aloja", (c) => {
   });
 });
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 app.post('/video', async (c) => {
   const stream = new Readable({
@@ -113,11 +103,16 @@ app.post('/video', async (c) => {
   c.header('Content-Type', 'text/plain')
   c.header('Transfer-Encoding', 'chunked')
 
+  let tempFiles = [] 
+
   try {
-    console.log("Entering /video route");
     const formData = await c.req.formData()
     const file = formData.get('video') as File | null
-
+    const farcasterUserString = formData.get('farcasterUser') as string | null
+    let farcasterUser;
+    if(farcasterUserString){
+      farcasterUser = JSON.parse(farcasterUserString)
+    }
     if (!file) {
       throw new Error('No video file uploaded')
     }
@@ -128,52 +123,41 @@ app.post('/video', async (c) => {
     const gifPath = path.join(process.cwd(), 'public', 'gifs', `${uuid}.gif`)
     const farcasterGifPath = path.join(process.cwd(), 'public', 'gifs_farcaster', `${uuid}_farcaster.gif`)
     
-    const user = {
-      username: "jpfraneto",
-      craft: "self-inquiry",
-      pfp_url: "https://dl.openseauserdata.com/cache/originImage/files/9bb46d16f20ed3d54ae01d1aeac89e23.png"
+    tempFiles.push(videoPath, gifPath, farcasterGifPath)
+
+    let user = {
+      username: farcasterUser?.username || "jpfraneto",
+      craft: extractWordBeforeWaveEmoji(farcasterUser.bio),
+      pfp_url: farcasterUser?.pfp || "https://dl.openseauserdata.com/cache/originImage/files/9bb46d16f20ed3d54ae01d1aeac89e23.png"
     }
 
-    console.log("Saving video file to:", videoPath);
     sendProgress("Saving video file...")
     const arrayBuffer = await file.arrayBuffer()
     await fs.writeFile(videoPath, Buffer.from(arrayBuffer))
-    sendProgress("Video file saved")
 
-    console.log("Processing video to GIF...");
-    sendProgress("Processing video to GIF...")
+    sendProgress("Processing video...")
     await processVideo(videoPath, gifPath)
-    console.log("GIF processing completed");
-    sendProgress("GIF processing completed")
 
-    console.log("Creating enhanced Farcaster GIF...");
-    sendProgress("Creating enhanced Farcaster GIF...")
+    sendProgress("Creating enhanced GIF...")
     await createEnhancedGif(gifPath, farcasterGifPath, user)
-    console.log("Enhanced Farcaster GIF created");
-    sendProgress("Enhanced Farcaster GIF created")
 
-    console.log("Uploading Farcaster GIF to IPFS...");
-    sendProgress("Uploading Farcaster GIF to IPFS...")
-    const farcasterGifBuffer = await fs.readFile(farcasterGifPath)
-    const farcasterGifBlob = new Blob([farcasterGifBuffer], { type: 'image/gif' })
-    const ipfsHash = await mintclub.ipfs.add(process.env.FILEBASE_API_TOKEN!, farcasterGifBlob)
-    console.log("Farcaster GIF uploaded to IPFS");
-    sendProgress("Farcaster GIF uploaded to IPFS")
-
-    console.log("Saving to database...");
-    sendProgress("Saving to database...")
-    const videoRecord = await prisma.video.create({
-      data: {
-        id: uuid,
-        originalName: file.name,
-        videoPath: `/videos/${filename}`,
-        gifPath: `/gifs/${uuid}.gif`,
-        farcasterGifPath: `/gifs_farcaster/${uuid}_farcaster.gif`,
-        ipfsHash: ipfsHash,
-      },
+    sendProgress("Uploading Farcaster GIF to Cloudinary...")
+    cloudinary.config({ 
+      cloud_name: CLOUDINARY_CLOUD_NAME, 
+      api_key: CLOUDINARY_API_KEY, 
+      api_secret: CLOUDINARY_API_SECRET 
     })
-    console.log("Saved to database");
-    sendProgress("Saved to database")
+
+    const cloudinaryUploadResult = await cloudinary.uploader.upload(
+      farcasterGifPath, 
+      { 
+        resource_type: "image",
+        public_id: `farcaster_gifs/${uuid}`,
+        folder: "zurf",
+        overwrite: true
+      }
+    )
+    console.log("THE UPLOADER RESULT IS: ", cloudinaryUploadResult)
 
     console.log("Sharing cast...");
     sendProgress("Sharing cast...")
@@ -200,7 +184,7 @@ app.post('/video', async (c) => {
     console.log("Upload complete! Cast shared!", response.data);
     stream.push(JSON.stringify({
       type: 'result',
-      videoRecord,
+      gifLink: cloudinaryUploadResult.secure_url,
       castHash: response.data.cast.hash
     }) + '\n')
 
@@ -213,6 +197,15 @@ app.post('/video', async (c) => {
     sendProgress(`Error: ${error.message}`)
     stream.push(null)  // End the stream
     return c.body(stream)
+  } finally {
+    for (const file of tempFiles) {
+      try {
+        await fs.unlink(file)
+        console.log(`Deleted temporary file: ${file}`)
+      } catch (err) {
+        console.error(`Failed to delete temporary file ${file}:`, err)
+      }
+    }
   }
 })
 
