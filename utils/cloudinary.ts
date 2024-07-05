@@ -11,20 +11,22 @@ const cloudinaryConfig = {
 
 export async function uploadVideoToTheCloud(filePath: string, publicId: string): Promise<any> {
     cloudinary.config(cloudinaryConfig)
-    return cloudinary.uploader.upload(filePath, {
+    const cloudinaryResponse = await cloudinary.uploader.upload(filePath, {
       resource_type: "video",
       public_id: publicId,
       folder: "zurf",
       overwrite: true
     })
+    return cloudinaryResponse
   }
 
   export async function uploadGifToTheCloud(filePath: string, publicId: string): Promise<any> {
     cloudinary.config(cloudinaryConfig)
-    return cloudinary.uploader.upload(filePath, {
-      resource_type: "image",
-      public_id: publicId,
-      folder: "zurf",
-      overwrite: true
-    })
+    const cloudinaryResponse = await cloudinary.uploader.upload(filePath, {
+        resource_type: "image",
+        public_id: publicId,
+        folder: "zurf",
+        overwrite: true
+      })
+    return cloudinaryResponse
   }

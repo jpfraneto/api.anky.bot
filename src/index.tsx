@@ -145,7 +145,6 @@ app.post('/video', async (c) => {
     await createFrameGifFromVideoGif(gifPath, farcasterGifPath, user)
 
     const cloudinaryGifUploadResult = await uploadGifToTheCloud(farcasterGifPath, `farcaster_gifs/${uuid}`)
-  
     let castOptions = {
       text: "",
       embeds: [{url: `https://api.anky.bot/zurf/video/${uuid}`}],
@@ -155,12 +154,11 @@ app.post('/video', async (c) => {
 
     const castResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY)
 
-    const finalVideoProcessingResponse = {
-      gifLink: cloudinaryGifUploadResult.secure_url,
-      castHash: castResponse.hash
-    }
 
-    return c.json({ response: finalVideoProcessingResponse })
+    return c.json({ 
+      gifLink: cloudinaryGifUploadResult.secure_url,
+      castHash: castResponse.hash 
+    })
 
   } catch (error) {
     console.error("There was an error processing the video", error)
