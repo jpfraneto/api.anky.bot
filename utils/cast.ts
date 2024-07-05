@@ -58,33 +58,32 @@ export async function fetchCastInformationFromHash(castHash: string) {
     }
   }
 
-export async function publishCastToTheProtocol(castOptions: CastIntention) {
+export async function publishCastToTheProtocol(castOptions: CastIntention, apiKey= NEYNAR_API_KEY ) {
     try {
         const response = await axios.post(
           "https://api.neynar.com/v2/farcaster/cast",
           castOptions,
           {
             headers: {
-              api_key: NEYNAR_API_KEY,
+              api_key: apiKey,
             },
           }
         );
         return response.data.cast;
       } catch (error) {
         try {
+          throw new Error("add the pinata info for sending the cast")
           console.log("publishing the cast through neynar failed, now trying with pinata")
           const response = await axios.post(
             "https://api.pinata.cloud/v3/farcaster/casts",
             castOptions,
             {
-              headers: {
-                api_key: NEYNAR_API_KEY,
-              },
+             
             }
           );
           return response.data.cast;
         } catch (error) {
-            console.log("neither neynar or pinata worked. try again", error)
+            console.log("trying to send the cast again", error)
             await sleep(60000)
             publishCastToTheProtocol(castOptions)
         }

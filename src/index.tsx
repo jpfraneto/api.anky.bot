@@ -8,7 +8,7 @@ import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
 import axios from 'axios';
 import { cors } from "hono/cors"
-import { processVideo, createEnhancedGif } from '../utils/video-processing';
+import { createAndSaveLocallyCompressedGifFromVideo, createFrameGifFromVideoGif } from '../utils/video-processing';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises'; 
 import { mintclub } from 'mint.club-v2-sdk';
@@ -17,6 +17,8 @@ import path from 'path';
 import prisma from '../utils/prismaClient';
 import { Readable } from 'stream'
 import { v2 as cloudinary } from 'cloudinary';
+import { uploadVideoToTheCloud, uploadGifToTheCloud } from '../utils/cloudinary';
+import { publishCastToTheProtocol } from '../utils/cast';
 
 
 // **** ROUTE IMPORTS ****
@@ -61,7 +63,7 @@ export const app = new Frog({
 });
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://video.anky.bot'], // Add any other origins as needed
+  origin: ["https://www.guarpcast.com", 'http://localhost:3000', 'http://localhost:5173', 'https://video.anky.bot'], // Add any other origins as needed
   allowMethods: ['POST', 'GET', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   exposeHeaders: ['Content-Length', 'X-Requested-With'],
@@ -109,12 +111,16 @@ app.post('/video', async (c) => {
     const formData = await c.req.formData()
     const file = formData.get('video') as File | null
     const farcasterUserString = formData.get('farcasterUser') as string | null
-    let farcasterUser;
-    if(farcasterUserString){
-      farcasterUser = JSON.parse(farcasterUserString)
-    }
+
     if (!file) {
       throw new Error('No video file uploaded')
+    }
+
+    const farcasterUser = farcasterUserString ? JSON.parse(farcasterUserString) : null
+    const user = {
+      username: farcasterUser?.username || "jpfraneto",
+      craft: farcasterUser ? extractWordBeforeWaveEmoji(farcasterUser.bio) : "",
+      pfp_url: farcasterUser?.pfp || "https://dl.openseauserdata.com/cache/originImage/files/9bb46d16f20ed3d54ae01d1aeac89e23.png"
     }
 
     const uuid = uuidv4()
@@ -125,89 +131,40 @@ app.post('/video', async (c) => {
     
     tempFiles.push(videoPath, gifPath, farcasterGifPath)
 
-    let user = {
-      username: farcasterUser?.username || "jpfraneto",
-      craft: extractWordBeforeWaveEmoji(farcasterUser.bio),
-      pfp_url: farcasterUser?.pfp || "https://dl.openseauserdata.com/cache/originImage/files/9bb46d16f20ed3d54ae01d1aeac89e23.png"
-    }
-
-    sendProgress("Saving video file...")
+    // save video file locally
     const arrayBuffer = await file.arrayBuffer()
     await fs.writeFile(videoPath, Buffer.from(arrayBuffer))
-    cloudinary.config({ 
-      cloud_name: CLOUDINARY_CLOUD_NAME, 
-      api_key: CLOUDINARY_API_KEY, 
-      api_secret: CLOUDINARY_API_SECRET 
-    })
-    const cloudinaryVideoUploadResult = await cloudinary.uploader.upload(
-      videoPath, 
-      { 
-        resource_type: "video",
-        public_id: `uploaded_videos/${uuid}`,
-        folder: "zurf",
-        overwrite: true
-      }
-    )
-    console.log("THE VIDEO UPLOADER RESULT IS: ", cloudinaryVideoUploadResult)
 
-    sendProgress("Processing video...")
-    await processVideo(videoPath, gifPath)
+    // upload video to the cloud 
+    const cloudinaryVideoUploadResult = await uploadVideoToTheCloud(videoPath, `uploaded_videos/${uuid}`)
+    
+    // transform the video into a gif
+    await createAndSaveLocallyCompressedGifFromVideo(videoPath, gifPath)
 
-    sendProgress("Creating enhanced GIF...")
-    await createEnhancedGif(gifPath, farcasterGifPath, user)
+    // append that gif to the static background and create a new gif (with user information also)
+    await createFrameGifFromVideoGif(gifPath, farcasterGifPath, user)
 
-    sendProgress("Uploading Farcaster GIF to Cloudinary...")
-
-
-    const cloudinaryUploadResult = await cloudinary.uploader.upload(
-      farcasterGifPath, 
-      { 
-        resource_type: "image",
-        public_id: `farcaster_gifs/${uuid}`,
-        folder: "zurf",
-        overwrite: true
-      }
-    )
-    console.log("THE UPLOADER RESULT IS: ", cloudinaryUploadResult)
-
-    console.log("Sharing cast...");
-    sendProgress("Sharing cast...")
-    let replyOptions = {
-      text: "hello world",
+    const cloudinaryGifUploadResult = await uploadGifToTheCloud(farcasterGifPath, `farcaster_gifs/${uuid}`)
+  
+    let castOptions = {
+      text: "",
       embeds: [{url: `https://api.anky.bot/zurf/video/${uuid}`}],
       parent: "0xbc7c9fd8a6278ed1f6f09c4990f42d504ebe17e7",
-      signer_uuid: process.env.DUMMY_BOT_SIGNER,
+      signer_uuid: DUMMY_BOT_SIGNER,
     }
 
-    const response = await axios.post(
-      "https://api.neynar.com/v2/farcaster/cast",
-      replyOptions,
-      {
-        headers: {
-          api_key: process.env.NEYNAR_DUMMY_BOT_API_KEY,
-        },
-      }
-    )
+    const castResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY)
 
-    console.log("Cast shared successfully");
-    sendProgress("Cast shared successfully")
+    const finalVideoProcessingResponse = {
+      gifLink: cloudinaryGifUploadResult.secure_url,
+      castHash: castResponse.hash
+    }
 
-    console.log("Upload complete! Cast shared!", response.data);
-    stream.push(JSON.stringify({
-      type: 'result',
-      gifLink: cloudinaryUploadResult.secure_url,
-      castHash: response.data.cast.hash
-    }) + '\n')
-
-    stream.push(null)  // End the stream
-
-    return c.body(stream)
+    return c.json({ response: finalVideoProcessingResponse })
 
   } catch (error) {
     console.error("There was an error processing the video", error)
-    sendProgress(`Error: ${error.message}`)
-    stream.push(null)  // End the stream
-    return c.body(stream)
+    return c.json({ error: error }, 500)
   } finally {
     for (const file of tempFiles) {
       try {
