@@ -4,31 +4,41 @@ import fs from 'fs/promises';
 import path from 'path';
 
 export async function createAndSaveLocallyCompressedGifFromVideo(inputPath: string, outputPath: string): Promise<void> {
+  try {
+    const stats = await fs.stat(inputPath);
+    if (stats.size === 0) {
+      throw new Error('Input video file is empty');
+    }
+  } catch (error) {
+    console.error('Error checking input file:', error);
+    throw error;
+  }
+
   return new Promise((resolve, reject) => {
-    // First, we'll get the duration of the video
-    ffmpeg.ffprobe(inputPath, (err, metadata) => {
-      if (err) {
+    ffmpeg(inputPath)
+      .inputOptions('-t 10') // Limit to first 10 seconds
+      .outputOptions([
+        '-vf', 'fps=10,scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse',
+        '-loop', '0'
+      ])
+      .toFormat('gif')
+      .on('start', (commandLine) => {
+        console.log('FFmpeg process started:', commandLine);
+      })
+      .on('progress', (progress) => {
+        console.log('Processing: ' + progress.percent + '% done');
+      })
+      .on('error', (err, stdout, stderr) => {
+        console.error('Error:', err.message);
+        console.error('FFmpeg stdout:', stdout);
+        console.error('FFmpeg stderr:', stderr);
         reject(err);
-        return;
-      }
-
-      const duration = metadata.format.duration;
-
-      // If duration is undefined or not a number, we'll assume it's longer than 10 seconds
-      const clipDuration = typeof duration === 'number' && duration < 10 ? duration : 10;
-
-      ffmpeg(inputPath)
-        .inputOptions(`-t ${clipDuration}`) // Take the first 10 seconds or the whole video if shorter
-        .outputOptions([
-          '-vf', 'fps=10,scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=64:stats_mode=single[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle',
-          '-loop', '0'
-        ])
-        .toFormat('gif')
-        .output(outputPath)
-        .on('end', resolve)
-        .on('error', reject)
-        .run();
-    });
+      })
+      .on('end', () => {
+        console.log('FFmpeg process completed');
+        resolve();
+      })
+      .save(outputPath);
   });
 }
 
