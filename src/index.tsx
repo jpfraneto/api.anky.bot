@@ -134,6 +134,16 @@ app.post('/video', async (c) => {
     sendProgress("Saving video file...")
     const arrayBuffer = await file.arrayBuffer()
     await fs.writeFile(videoPath, Buffer.from(arrayBuffer))
+    const cloudinaryVideoUploadResult = await cloudinary.uploader.upload(
+      videoPath, 
+      { 
+        resource_type: "video",
+        public_id: `uploaded_videos/${uuid}`,
+        folder: "zurf",
+        overwrite: true
+      }
+    )
+    console.log("THE VIDEO UPLOADER RESULT IS: ", cloudinaryVideoUploadResult)
 
     sendProgress("Processing video...")
     await processVideo(videoPath, gifPath)
