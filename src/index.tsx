@@ -15,7 +15,9 @@ import { mintclub } from 'mint.club-v2-sdk';
 import multer from 'multer';
 import path from 'path';
 import prisma from '../utils/prismaClient';
+import mime from 'mime-types';
 import { Readable } from 'stream'
+import ffmpeg from 'fluent-ffmpeg';
 import { v2 as cloudinary } from 'cloudinary';
 import { uploadVideoToTheCloud, uploadGifToTheCloud } from '../utils/cloudinary';
 import { publishCastToTheProtocol } from '../utils/cast';
@@ -93,87 +95,111 @@ app.get("/aloja", (c) => {
 
 
 app.post('/video', async (c) => {
-  const stream = new Readable({
-    read() {}
-  });
+  const logProgress = (message: string) => {
+    console.log(`Progress: ${message}`);
+  };
 
-  const sendProgress = (message: string) => {
-    console.log(`Progress: ${message}`); // Console log for server-side monitoring
-    stream.push(JSON.stringify({ type: 'progress', message }) + '\n')
-  }
-
-  c.header('Content-Type', 'text/plain')
-  c.header('Transfer-Encoding', 'chunked')
-
-  let tempFiles = [] 
+  let tempFiles: string[] = [];
 
   try {
-    const formData = await c.req.formData()
-    const file = formData.get('video') as File | null
-    const farcasterUserString = formData.get('farcasterUser') as string | null
+    logProgress('Receiving form data...');
+    const formData = await c.req.formData();
+    const file = formData.get('video') as File | null;
+    const farcasterUserString = formData.get('farcasterUser') as string | null;
 
     if (!file) {
-      throw new Error('No video file uploaded')
+      throw new Error('No video file uploaded');
     }
 
-    const farcasterUser = farcasterUserString ? JSON.parse(farcasterUserString) : null
+    const farcasterUser = farcasterUserString ? JSON.parse(farcasterUserString) : null;
     const user = {
       username: farcasterUser?.username || "jpfraneto",
       craft: farcasterUser ? extractWordBeforeWaveEmoji(farcasterUser.bio) : "",
       pfp_url: farcasterUser?.pfp || "https://dl.openseauserdata.com/cache/originImage/files/9bb46d16f20ed3d54ae01d1aeac89e23.png"
+    };
+
+    const uuid = uuidv4();
+    const fileExtension = mime.extension(file.type) || 'mp4';
+    const filename = `${uuid}.${fileExtension}`;
+    const videoPath = path.join(process.cwd(), 'public', 'videos', filename);
+    const gifPath = path.join(process.cwd(), 'public', 'gifs', `${uuid}.gif`);
+    const farcasterGifPath = path.join(process.cwd(), 'public', 'gifs_farcaster', `${uuid}_farcaster.gif`);
+    
+    tempFiles = [videoPath, gifPath, farcasterGifPath];
+
+    // Save video file locally
+    logProgress('Saving video file...');
+    const arrayBuffer = await file.arrayBuffer();
+    await fs.writeFile(videoPath, Buffer.from(arrayBuffer));
+
+    // Check if the file is actually a video
+    logProgress('Verifying video file...');
+    const fileInfo = await getFileInfo(videoPath);
+    if (!fileInfo.isVideo) {
+      throw new Error('Uploaded file is not a valid video');
     }
 
-    const uuid = uuidv4()
-    const filename = `${uuid}.mov`
-    const videoPath = path.join(process.cwd(), 'public', 'videos', filename)
-    const gifPath = path.join(process.cwd(), 'public', 'gifs', `${uuid}.gif`)
-    const farcasterGifPath = path.join(process.cwd(), 'public', 'gifs_farcaster', `${uuid}_farcaster.gif`)
+    // Upload video to the cloud
+    logProgress('Uploading video to cloud...');
+    const cloudinaryVideoUploadResult = await uploadVideoToTheCloud(videoPath, `uploaded_videos/${uuid}`);
     
-    tempFiles.push(videoPath, gifPath, farcasterGifPath)
+    // Transform the video into a gif
+    logProgress('Creating GIF from video...');
+    await createAndSaveLocallyCompressedGifFromVideo(videoPath, gifPath);
 
-    // save video file locally
-    const arrayBuffer = await file.arrayBuffer()
-    await fs.writeFile(videoPath, Buffer.from(arrayBuffer))
+    // Append that gif to the static background and create a new gif (with user information also)
+    logProgress('Creating framed GIF...');
+    await createFrameGifFromVideoGif(gifPath, farcasterGifPath, user);
 
-    // upload video to the cloud 
-    const cloudinaryVideoUploadResult = await uploadVideoToTheCloud(videoPath, `uploaded_videos/${uuid}`)
-    
-    // transform the video into a gif
-    await createAndSaveLocallyCompressedGifFromVideo(videoPath, gifPath)
+    logProgress('Uploading GIF to cloud...');
+    const cloudinaryGifUploadResult = await uploadGifToTheCloud(farcasterGifPath, `farcaster_gifs/${uuid}`);
 
-    // append that gif to the static background and create a new gif (with user information also)
-    await createFrameGifFromVideoGif(gifPath, farcasterGifPath, user)
-
-    const cloudinaryGifUploadResult = await uploadGifToTheCloud(farcasterGifPath, `farcaster_gifs/${uuid}`)
+    logProgress('Publishing cast...');
     let castOptions = {
       text: "",
       embeds: [{url: `https://api.anky.bot/zurf/video/${uuid}`}],
       parent: "0xbc7c9fd8a6278ed1f6f09c4990f42d504ebe17e7",
       signer_uuid: DUMMY_BOT_SIGNER,
-    }
+    };
 
-    const castResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY)
+    const castResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
 
-
+    logProgress('Process complete!');
     return c.json({ 
       gifLink: cloudinaryGifUploadResult.secure_url,
       castHash: castResponse.hash 
-    })
+    });
 
   } catch (error) {
-    console.error("There was an error processing the video", error)
-    return c.json({ error: error }, 500)
+    console.error("There was an error processing the video", error);
+    return c.json({ error: error.message }, 500);
   } finally {
     for (const file of tempFiles) {
       try {
-        await fs.unlink(file)
-        console.log(`Deleted temporary file: ${file}`)
+        await fs.unlink(file);
+        console.log(`Deleted temporary file: ${file}`);
       } catch (err) {
-        console.error(`Failed to delete temporary file ${file}:`, err)
+        console.error(`Failed to delete temporary file ${file}:`, err);
       }
     }
   }
-})
+});
+
+async function getFileInfo(filePath: string): Promise<{ isVideo: boolean, format?: string }> {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err) {
+        reject(new Error('Failed to probe file'));
+      } else {
+        const videoStream = metadata.streams.find(stream => stream.codec_type === 'video');
+        resolve({
+          isVideo: !!videoStream,
+          format: metadata.format.format_name
+        });
+      }
+    });
+  });
+}
 
 app.get('/videos/:uuid', async (c) => {
   const { uuid } = c.req.param();
