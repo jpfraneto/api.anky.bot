@@ -134,6 +134,11 @@ app.post('/video', async (c) => {
     sendProgress("Saving video file...")
     const arrayBuffer = await file.arrayBuffer()
     await fs.writeFile(videoPath, Buffer.from(arrayBuffer))
+    cloudinary.config({ 
+      cloud_name: CLOUDINARY_CLOUD_NAME, 
+      api_key: CLOUDINARY_API_KEY, 
+      api_secret: CLOUDINARY_API_SECRET 
+    })
     const cloudinaryVideoUploadResult = await cloudinary.uploader.upload(
       videoPath, 
       { 
@@ -152,11 +157,7 @@ app.post('/video', async (c) => {
     await createEnhancedGif(gifPath, farcasterGifPath, user)
 
     sendProgress("Uploading Farcaster GIF to Cloudinary...")
-    cloudinary.config({ 
-      cloud_name: CLOUDINARY_CLOUD_NAME, 
-      api_key: CLOUDINARY_API_KEY, 
-      api_secret: CLOUDINARY_API_SECRET 
-    })
+
 
     const cloudinaryUploadResult = await cloudinary.uploader.upload(
       farcasterGifPath, 
