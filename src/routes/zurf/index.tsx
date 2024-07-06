@@ -80,7 +80,7 @@ zurfFrame.get("/v", async (c) => {
   const videos = await prisma.video.findMany({ })
   console.log("the videos are: ", videos)
   
-  return c.json(videos || {123:456})
+  return c.json({videos} || {123:456})
 })
 
 zurfFrame.get("/v/:id", async (c) => {
