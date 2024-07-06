@@ -77,7 +77,7 @@ export function ZurfBackground(user: User) {
 zurfFrame.get("/v", async (c) => {
   console.log("IN HERE")
   const { limit } = c.req.query();
-  const videos = await prisma.video.findMany({ })
+  const videos = await prisma.zurfVideo.findMany({ })
   console.log("the videos are: ", videos)
   
   return c.json({videos} || {123:456})
@@ -86,7 +86,7 @@ zurfFrame.get("/v", async (c) => {
 zurfFrame.get("/v/:id", async (c) => {
   const { id } = c.req.param();
   console.log("the id is", id)
-  const video = await prisma.video.findUnique({
+  const video = await prisma.zurfVideo.findUnique({
     where: {
       id: id
     }

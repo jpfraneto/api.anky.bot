@@ -115,6 +115,7 @@ app.post('/video', async (c) => {
 
     const farcasterUser = farcasterUserString ? JSON.parse(farcasterUserString) : null;
     const user = {
+      fid : farcasterUser.fid || 16098,
       username: farcasterUser?.username || "jpfraneto",
       craft: farcasterUser ? extractWordBeforeWaveEmoji(farcasterUser.bio) : "",
       pfp_url: farcasterUser?.pfp || "https://dl.openseauserdata.com/cache/originImage/files/9bb46d16f20ed3d54ae01d1aeac89e23.png"
@@ -167,6 +168,46 @@ app.post('/video', async (c) => {
     const castResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
 
     logProgress('Process complete!');
+
+    let zurfUser = await prisma.zurfUser.findUnique({
+      where: { fid: user.fid }
+    })
+
+    if (!zurfUser) {
+      zurfUser = await prisma.zurfUser.create({
+        data: {
+          fid: user.fid,
+          username: user.username,
+          craft: user.craft
+        }
+      })
+    }
+
+    const prismaResponse = await prisma.zurfVideo.create({
+      data: {
+        id: uuid,
+        originalName: "hello world",
+        gifLink: cloudinaryGifUploadResult.secure_url,
+        videoLink: cloudinaryVideoUploadResult.secure_url,
+        castHash: castResponse.hash,
+        ZurfUser: {
+          connect: { fid: user.fid }
+        }
+      }
+    })
+
+    // model ZurfVideo {
+    //   id             String   @id @default(uuid())
+    //   originalName   String
+    //   gifLink        String
+    //   videoLink      String?
+    //   castHash       String?
+    //   createdAt      DateTime @default(now())
+    //   updatedAt      DateTime @updatedAt
+    //   ZurfUser       ZurfUser?                  @relation(fields: [zurfUserFid], references: [fid])
+    //   zurfUserFid    Int?
+    // }
+
     return c.json({ 
       gifLink: cloudinaryGifUploadResult.secure_url,
       castHash: castResponse.hash 
