@@ -25,6 +25,7 @@ import { publishCastToTheProtocol } from '../utils/cast';
 
 // **** ROUTE IMPORTS ****
 import { app as landing } from './routes/landing'
+import { app as stream } from './routes/stream'
 import { ankyGenesis } from './routes/anky-genesis'
 import { ankyFrames } from './routes/ankyFrame'
 import { zurfFrame } from './routes/zurf'
@@ -86,6 +87,7 @@ app.route('/', landing);
 app.route('/anky', ankyFrames)
 app.route('/anky-genesis', ankyGenesis)
 app.route('/zurf', zurfFrame)
+app.route('/stream', stream)
 
 app.get("/aloja", (c) => {
   return c.json({
@@ -172,7 +174,7 @@ app.post('/video', async (c) => {
 
   } catch (error) {
     console.error("There was an error processing the video", error);
-    return c.json({ error: error.message }, 500);
+    return c.json({ error: error }, 500);
   } finally {
     for (const file of tempFiles) {
       try {

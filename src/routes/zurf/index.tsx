@@ -74,6 +74,28 @@ export function ZurfBackground(user: User) {
   );
 }
 
+zurfFrame.get("/v", async (c) => {
+  console.log("IN HERE")
+  const { limit } = c.req.query();
+  const videos = await prisma.video.findMany({ })
+  console.log("the videos are: ", videos)
+  
+  return c.json(videos || {123:456})
+})
+
+zurfFrame.get("/v/:id", async (c) => {
+  const { id } = c.req.param();
+  console.log("the id is", id)
+  const video = await prisma.video.findUnique({
+    where: {
+      id: id
+    }
+  })
+  console.log("the video is: ", video)
+  
+  return c.json(video || {123:456})
+})
+
 
 zurfFrame.frame('/leaderboard/:id', async (c) => {
   const { id } = c.req.param();
