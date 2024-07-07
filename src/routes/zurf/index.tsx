@@ -1,5 +1,5 @@
 import { Button, FrameContext, Frog, TextInput } from 'frog';
-import { User } from '../../../utils/types'
+import { Author } from '../../../utils/types/cast'
 import { getPublicUrl } from '../../../utils/url';
 import { replyToThisCastThroughChatGtp } from '../../../utils/anky';
 import { fetchCastInformationFromHash, fetchCastInformationFromUrl, saveCastTriadeOnDatabase } from '../../../utils/cast';
@@ -58,7 +58,7 @@ export const zurfFrame = new Frog<{
 
 export const zurfColor = '#00FFFF';
 
-export function ZurfBackground(user: User) {
+export function ZurfBackground(user: Author) {
   return (
     <div tw="flex flex-col items-center justify-center text-5xl">
        <div
@@ -83,16 +83,16 @@ zurfFrame.get("/v", async (c) => {
   return c.json({videos} || {123:456})
 })
 
+
 zurfFrame.get("/v/:id", async (c) => {
+  console.log("IN HERsadsadE")
   const { id } = c.req.param();
   console.log("the id is", id)
   const video = await prisma.zurfVideo.findUnique({
     where: {
       id: id
     }
-  })
-  console.log("the video is: ", video)
-  
+  })  
   return c.json(video || {123:456})
 })
 

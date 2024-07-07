@@ -99,6 +99,8 @@ model ReplyForTrainingAnky {
 model ZurfUser {
   fid          Int       @id
   username     String
+  pfp          String?
+  bio          String?
   craft        String
   zurfVideos    ZurfVideo[]
 }
