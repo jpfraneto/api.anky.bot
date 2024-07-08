@@ -145,7 +145,7 @@ app.post('/video', async (c) => {
     // Upload video to the cloud
     logProgress('Uploading video to cloud...');
     const cloudinaryVideoUploadResult = await uploadVideoToTheCloud(videoPath, `uploaded_videos/${uuid}`);
-    
+    console.log("the cloudingatasd", cloudinaryVideoUploadResult)
     // Transform the video into a gif
     logProgress('Creating GIF from video...');
     await createAndSaveLocallyCompressedGifFromVideo(videoPath, gifPath);
@@ -195,6 +195,8 @@ app.post('/video', async (c) => {
         }
       }
     })
+
+    console.log("the prisma response is: ", prismaResponse)
 
     // model ZurfVideo {
     //   id             String   @id @default(uuid())
