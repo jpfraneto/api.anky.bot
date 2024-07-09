@@ -29,6 +29,7 @@ import { app as stream } from './routes/stream'
 import { ankyGenesis } from './routes/anky-genesis'
 import { ankyFrames } from './routes/ankyFrame'
 import { zurfFrame } from './routes/zurf'
+import { livestreamFrame } from './routes/livestream';
 import { extractWordBeforeWaveEmoji } from '../utils/zurf';
 // **** ROUTE IMPORTS ****
 
@@ -88,6 +89,7 @@ app.route('/anky', ankyFrames)
 app.route('/anky-genesis', ankyGenesis)
 app.route('/zurf', zurfFrame)
 app.route('/stream', stream)
+app.route('/livestream', livestreamFrame)
 
 app.get("/aloja", (c) => {
   return c.json({

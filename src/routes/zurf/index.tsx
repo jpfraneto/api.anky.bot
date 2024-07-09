@@ -144,8 +144,11 @@ zurfFrame.frame('/leaderboard/:id', async (c) => {
   })
 })
 
+// frames.vibez.social/video/${uuid}
+
 zurfFrame.frame('/video/:id', async (c) => {
   const { id } = c.req.param();
+  console.log("THE ID IS ", id)
   console.log(`https://res.cloudinary.com/dzpugkpuz/image/upload/v1720117102/zurf/farcaster_gifs/${id}.gif`)
   return c.res({
       title: "anky",
