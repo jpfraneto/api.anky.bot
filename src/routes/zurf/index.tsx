@@ -166,7 +166,7 @@ zurfFrame.frame('/aloja', async (c) => {
       title: "anky",
       image: `https://res.cloudinary.com/dzpugkpuz/image/upload/v1720556901/output_y10821.gif`,
       intents: [
-          <Button action={`/leaderboard`}>leaderboard</Button>,
+          <Button action={`/leaderboard/123`}>leaderboard</Button>,
           <Button.Link href={`https://www.guarpcast.com/v`}>🏄🏻‍♂️ zurf</Button.Link>,
         ],
   })
