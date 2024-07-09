@@ -23,8 +23,8 @@ type ZurfState = {
 };
 
 const imageOptions = {
-  width: 764,
-  height: 400,
+  width: 600,
+  height: 600,
   fonts: [
     {
       name: 'Poetsen One',
@@ -50,6 +50,7 @@ export const zurfFrame = new Frog<{
   State: ZurfState;
 }>({
   imageOptions,
+  imageAspectRatio: "1:1",
   initialState: {
     page: 0,
     config: {}
@@ -149,10 +150,10 @@ zurfFrame.frame('/leaderboard/:id', async (c) => {
 zurfFrame.frame('/video/:id', async (c) => {
   const { id } = c.req.param();
   console.log("THE ID IS ", id)
-  console.log(`https://res.cloudinary.com/dzpugkpuz/image/upload/v1720117102/zurf/farcaster_gifs/${id}.gif`)
+  const uuid = "cecc074e-ae72-4f17-a4e6-553b23e04f00"
   return c.res({
       title: "anky",
-      image: `https://res.cloudinary.com/dzpugkpuz/image/upload/v1720117102/zurf/farcaster_gifs/${id}.gif`,
+      image: `https://storage.googleapis.com/zurf-app-lens/${uuid}-gif`,
       intents: [
           <Button action={`/leaderboard/${id}`}>leaderboard</Button>,
           <Button.Link href={`https://www.guarpcast.com/v/${id}`}>🏄🏻‍♂️ zurf</Button.Link>,
