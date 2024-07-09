@@ -161,3 +161,15 @@ zurfFrame.frame('/video/:id', async (c) => {
   })
 })
 
+zurfFrame.frame('/aloja', async (c) => {
+  return c.res({
+      title: "anky",
+      image: `https://github.com/jpfraneto/images/blob/main/output.gif?raw=true`,
+      intents: [
+          <Button action={`/leaderboard`}>leaderboard</Button>,
+          <Button.Link href={`https://www.guarpcast.com/v`}>🏄🏻‍♂️ zurf</Button.Link>,
+        ],
+  })
+})
+
+
