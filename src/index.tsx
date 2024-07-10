@@ -28,8 +28,7 @@ import { app as landing } from './routes/landing'
 import { app as stream } from './routes/stream'
 import { ankyGenesis } from './routes/anky-genesis'
 import { ankyFrames } from './routes/ankyFrame'
-import { zurfFrame } from './routes/zurf'
-import { livestreamFrame } from './routes/livestream';
+import { vibraFrame } from './routes/vibra'
 import { extractWordBeforeWaveEmoji } from '../utils/zurf';
 // **** ROUTE IMPORTS ****
 
@@ -87,9 +86,8 @@ app.use(async (c, next) => {
 app.route('/', landing);
 app.route('/anky', ankyFrames)
 app.route('/anky-genesis', ankyGenesis)
-app.route('/zurf', zurfFrame)
+app.route('/vibra', vibraFrame)
 app.route('/stream', stream)
-app.route('/livestream', livestreamFrame)
 
 app.get("/aloja", (c) => {
   return c.json({

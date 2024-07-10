@@ -1,12 +1,16 @@
 import { Button, FrameContext, Frog, TextInput } from 'frog';
 import { Author } from '../../../utils/types/cast'
 import { getPublicUrl } from '../../../utils/url';
+import { replyToThisCastThroughChatGtp } from '../../../utils/anky';
+import { fetchCastInformationFromHash, fetchCastInformationFromUrl, saveCastTriadeOnDatabase } from '../../../utils/cast';
+import prisma from '../../../utils/prismaClient';
 import { NeynarVariables } from 'frog/middlewares';
+import { getStartOfDay } from '../../../utils/time';
 import { abbreviateAddress } from '../../../utils/strings';
 import { NEYNAR_API_KEY } from '../../../env/server-env';
 import axios from 'axios';
 
-type VibezState = {
+type VibraState = {
   // profiles
   page?: number;
   config: {
@@ -33,29 +37,29 @@ const imageOptions = {
   ] as any,
 };
 
-export type VibezContext<T extends string = '/'> = FrameContext<
+export type VibraContext<T extends string = '/logic/:castHash'> = FrameContext<
   {
     Variables: NeynarVariables;
-    State: VibezState;
+    State: VibraState;
   },
   T,
   {}
 >;
 
-export const livestreamFrame = new Frog<{
-  State: VibezState;
+export const vibraFrame = new Frog<{
+  State: VibraState;
 }>({
-  imageAspectRatio: '1:1',
   imageOptions,
+  imageAspectRatio: "1:1",
   initialState: {
     page: 0,
     config: {}
   }
 })
 
-export const vibezColor = '#00FFFF';
+export const vibraColor = '#00FFFF';
 
-export function VibezBackground(user: Author) {
+export function VibraBackground(user: Author) {
   return (
     <div tw="flex flex-col items-center justify-center text-5xl">
        <div
@@ -66,7 +70,7 @@ export function VibezBackground(user: Author) {
       >
         :)
       </div>
-      <div tw="font-bold">zurf</div>
+      <div tw="font-bold">vibra</div>
     </div>
   );
 }
@@ -136,7 +140,7 @@ const livestreams = [
 
 
 
-livestreamFrame.frame('/', async (c) => {
+vibraFrame.frame('/', async (c) => {
   return c.res({
     title: 'onda.so',
     image: 'https://github.com/jpfraneto/images/blob/main/guty.png?raw=true',
@@ -144,12 +148,12 @@ livestreamFrame.frame('/', async (c) => {
       <Button action="/index">
         more livestreams
       </Button>,
-      <Button.Link href="https://zurf.social/stream/gutybv">go to stream</Button.Link>,
+      <Button.Link href="https://3061541.cargo.site/">go to stream</Button.Link>,
   ],
   });
 });
 
-livestreamFrame.frame('/index', async (c) => {
+vibraFrame.frame('/index', async (c) => {
   return c.res({
       title: "onda.so",
       image: (
@@ -165,34 +169,33 @@ livestreamFrame.frame('/index', async (c) => {
           <TextInput placeholder="enter livestream index (1, 2, 3)" />,
           <Button action={`/`}>back</Button>,
           <Button action={`/more-info/${c?.frameData?.fid}`}>stream info</Button>,
-          <Button action={`/what-is-vibez`}>vibez?</Button>,
+          <Button action={`/what-is-vibra`}>vibra?</Button>,
       ],
   })
 })
 
-livestreamFrame.frame('/what-is-vibez', async (c) => {
+vibraFrame.frame('/what-is-vibra', async (c) => {
   return c.res({
       title: "onda.so",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-          <span tw="text-cyan-500 text-2xl mb-2">NO MORE BRAINZ</span>
-          <span tw="text-purple-500 text-2xl mb-2">BRING ON THE VIBEZ</span>
+          <span tw="text-cyan-500 text-2xl mb-2">RELEASE THE BRAINZ</span>
+          <span tw="text-purple-500 text-2xl mb-2">QUE VENGA LA BUENA VIBRA</span>
           <span tw="text-yellow-500 text-4xl mb-2">stream. be yourself.</span>
       </div>
     ),
       intents: [
           <Button action={`/index`}>livestreams list</Button>,
-          <Button.Link href={`https://www.surf.social`}>create my stream</Button.Link>,
+          <Button.Link href={`https://3061541.cargo.site/`}>create my stream</Button.Link>,
       ],
   })
 })
 
-livestreamFrame.frame('/more-info/:fid', async (c) => {
+vibraFrame.frame('/more-info/:fid', async (c) => {
   const { deriveState, inputText, buttonValue } = c;
   const { fid } = c.req.param();
-  console.log("the input text is: ", inputText)
   const livestreamIndex = Number(inputText)
-  if (livestreamIndex < 13) {
+  if (livestreamIndex > 0 && livestreamIndex < 13) {
     const chosenLivestream = livestreams[livestreamIndex - 1]
     return c.res({
       title: "onda.so",
@@ -205,8 +208,8 @@ livestreamFrame.frame('/more-info/:fid', async (c) => {
       </div>
     ),
       intents: [
-          <Button action={`/video`}>back</Button>,
-          <Button.Link href="https://zurf.social/stream/gutybv">go to stream</Button.Link>,
+          <Button action={`/index`}>back</Button>,
+          <Button.Link href="https://3061541.cargo.site/">go to stream</Button.Link>,
       ],
   })
   } else {
@@ -225,8 +228,125 @@ livestreamFrame.frame('/more-info/:fid', async (c) => {
           <TextInput placeholder="enter livestream index (1, 2, 3)" />,
           <Button action={`/video`}>back</Button>,
           <Button action={`/more-info/${c?.frameData?.fid}`}>get info</Button>,
+          <Button action={`/what-is-vibra`}>vibra?</Button>,
       ],
   })
   }
 
 })
+
+
+vibraFrame.get("/v", async (c) => {
+  console.log("IN HERE")
+  const { limit } = c.req.query();
+  const videos = await prisma.zurfVideo.findMany({ })
+  console.log("the videos are: ", videos)
+  
+  return c.json({videos} || {123:456})
+})
+
+
+vibraFrame.get("/v/:id", async (c) => {
+  console.log("IN HERsadsadE")
+  const { id } = c.req.param();
+  console.log("the id is", id)
+  const video = await prisma.zurfVideo.findUnique({
+    where: {
+      id: id
+    }
+  })  
+  return c.json(video || {123:456})
+})
+
+
+vibraFrame.frame('/leaderboard/:id', async (c) => {
+  const { id } = c.req.param();
+  console.log("inside the leaderboard route", id)
+  const leaderboard = [
+    {
+      username: "undefined",
+      pfp_url: "",
+      points: 888,
+      rank: 1,
+
+    },
+    {
+      username: "natedevxyz",
+      pfp_url: "",
+      points: 777,
+      rank: 2,
+    },
+    {
+      username: "accesmble",
+      pfp_url: "",
+      points: 666,
+      rank: 3,
+    },
+    {
+      username: "jpfraneto",
+      pfp_url: "",
+      points: 33,
+      rank: 4,
+    }
+  ]
+  return c.res({
+      title: "anky",
+      image: (
+        <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
+          <span tw="text-cyan-500 text-7xl mb-2">ZURF</span>
+          {leaderboard.map((user, i) => {
+            return <span tw="mb-2 text-xl">{user.rank}.        @{user.username}...... {user.points} points</span>
+          })}
+      </div>
+    ),
+      intents: [
+          <Button action={`/video/${id}`}>back</Button>,
+          <Button.Link href={`https://www.guarpcast.com/v/${id}`}>🏄🏻‍♂️ zurf</Button.Link>,
+      ],
+  })
+})
+
+
+vibraFrame.frame('/video/:id', async (c) => {
+  const { id } = c.req.param();
+  const uuid = "cecc074e-ae72-4f17-a4e6-553b23e04f00"
+
+  if(id.regex ){
+    return c.res({
+      title: "anky",
+      image: `https://storage.googleapis.com/zurf-app-lens/${uuid}-gif`,
+      intents: [
+          <Button action={`/leaderboard/${id}`}>leaderboard</Button>,
+          <Button.Link href={`https://www.guarpcast.com/v/${id}`}>🏄🏻‍♂️ zurf</Button.Link>,
+        ],
+  })
+  } else {
+    return c.res({
+      title: "anky",
+      image: (
+        <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
+          <span tw="text-cyan-500 text-7xl mb-2">vibra</span>
+          <span tw="text-cyan-500 text-7xl mb-2">this video was not found</span>
+      </div>
+    ),
+      intents: [
+          <Button action={`/video/${id}`}>back</Button>,
+          <Button.Link href={`https://www.guarpcast.com/v/${id}`}>record new</Button.Link>,
+      ],
+  })
+  }
+
+})
+
+vibraFrame.frame('/aloja', async (c) => {
+  return c.res({
+      title: "anky",
+      image: `https://res.cloudinary.com/dzpugkpuz/image/upload/v1720556901/output_y10821.gif`,
+      intents: [
+          <Button action={`/leaderboard/123`}>leaderboard</Button>,
+          <Button.Link href={`https://www.guarpcast.com/v`}>🏄🏻‍♂️ zurf</Button.Link>,
+        ],
+  })
+})
+
+
