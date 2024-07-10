@@ -309,17 +309,17 @@ vibraFrame.frame('/leaderboard/:id', async (c) => {
 
 vibraFrame.frame('/video/:id', async (c) => {
   const { id } = c.req.param();
-  const uuid = "cecc074e-ae72-4f17-a4e6-553b23e04f00"
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-  if(id.regex ){
+  if (uuidRegex.test(id)) {
     return c.res({
       title: "anky",
-      image: `https://storage.googleapis.com/zurf-app-lens/${uuid}-gif`,
+      image: `https://storage.googleapis.com/zurf-app-lens/${id}-gif`,
       intents: [
-          <Button action={`/leaderboard/${id}`}>leaderboard</Button>,
-          <Button.Link href={`https://www.guarpcast.com/v/${id}`}>🏄🏻‍♂️ zurf</Button.Link>,
-        ],
-  })
+        <Button action={`/leaderboard/${id}`}>leaderboard</Button>,
+        <Button.Link href={`https://www.guarpcast.com?v=${id}`}>see video</Button.Link>,
+      ],
+    });
   } else {
     return c.res({
       title: "anky",
@@ -327,16 +327,16 @@ vibraFrame.frame('/video/:id', async (c) => {
         <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-7xl mb-2">vibra</span>
           <span tw="text-cyan-500 text-7xl mb-2">this video was not found</span>
-      </div>
-    ),
+        </div>
+      ),
       intents: [
-          <Button action={`/video/${id}`}>back</Button>,
-          <Button.Link href={`https://www.guarpcast.com/v/${id}`}>record new</Button.Link>,
+        <Button action={`/video/${id}`}>back</Button>,
+        <Button.Link href={`https://www.guarpcast.com/v/${id}`}>record new</Button.Link>,
       ],
-  })
+    });
   }
+});
 
-})
 
 vibraFrame.frame('/aloja', async (c) => {
   return c.res({
