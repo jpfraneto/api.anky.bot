@@ -326,11 +326,11 @@ vibraFrame.frame('/video/:id', async (c) => {
       image: (
         <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-7xl mb-2">vibra</span>
-          <span tw="text-cyan-500 text-7xl mb-2">this video was not found</span>
+          <span tw="text-yellow-500 text-4xl mb-2">this video was not found</span>
         </div>
       ),
       intents: [
-        <Button action={`/video/${id}`}>back</Button>,
+        <Button action={`/`}>back</Button>,
         <Button.Link href={`https://www.guarpcast.com/v/${id}`}>record new</Button.Link>,
       ],
     });
