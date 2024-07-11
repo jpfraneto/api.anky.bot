@@ -21,6 +21,7 @@ export async function getUserFromFid(fid: number, retryCount = 0): Promise<any> 
         Logger.info(`Successfully fetched user data for FID: ${fid}`);
         return response.data.users[0];
     } catch (error) {
+        console.log("The error is: ", error)
         Logger.error(`Error fetching user from FID ${fid} (Attempt ${retryCount + 1}):`, error.message);
 
         if (retryCount < MAX_RETRIES - 1) {
