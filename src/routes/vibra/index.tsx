@@ -4,11 +4,12 @@ import { getPublicUrl } from '../../../utils/url';
 import { replyToThisCastThroughChatGtp } from '../../../utils/anky';
 import { fetchCastInformationFromHash, fetchCastInformationFromUrl, saveCastTriadeOnDatabase } from '../../../utils/cast';
 import prisma from '../../../utils/prismaClient';
-import { NeynarVariables } from 'frog/middlewares';
+import { neynar, NeynarVariables } from 'frog/middlewares';
 import { getStartOfDay } from '../../../utils/time';
 import { abbreviateAddress } from '../../../utils/strings';
 import { NEYNAR_API_KEY } from '../../../env/server-env';
 import axios from 'axios';
+import { neynarClient } from '../../services/neynar-service';
 
 type VibraState = {
   // profiles
@@ -148,7 +149,55 @@ vibraFrame.frame('/', async (c) => {
       <Button action="/index">
         more livestreams
       </Button>,
-      <Button.Link href="https://3061541.cargo.site/">go to stream</Button.Link>,
+      <Button.Link href="https://3061541.cargo.site/">g</Button.Link>,
+  ],
+  });
+});
+
+// frame que comparte el usuario cuando empieza su stream
+vibraFrame.frame('/livestream/:streamer/:tokenAddress', async (c) => {
+  const { streamer, tokenAddress } = c.req.param();
+  return c.res({
+    title: 'onda.so',
+    image: 'https://github.com/jpfraneto/images/blob/main/guty.png?raw=true',
+    intents: [
+      <Button action="/index">
+        more livestreams
+      </Button>,
+      <Button action={`/generate-link/${streamer}/${tokenAddress}`}>
+        generate link
+      </Button>
+  ],
+  });
+});
+
+vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
+  const body = await c.req.json();
+  const { streamer, tokenAddress } = c.req.param();
+  const { frameData } = c
+  const thisUserFid = c.frameData?.fid
+  console.log("in here, generate the link", body, neynarClient)
+  const {
+    valid,
+    action: {
+      cast: {
+        author: { username, custody_address, verified_addresses },
+      },
+    },
+  } = await neynarClient.validateFrameAction(body.trustedData.messageBytes, {
+    castReactionContext: true,
+  });
+  console.log("IN HEREEEEE")
+  return c.res({
+    title: 'onda.so',
+    image: 'https://github.com/jpfraneto/images/blob/main/guty.png?raw=true',
+    intents: [
+      <Button action="/index">
+        more livestreams
+      </Button>,
+      <Button action="/index">
+        generate link
+      </Button>
   ],
   });
 });
