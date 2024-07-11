@@ -79,7 +79,7 @@ export function VibraBackground(user: Author) {
 sadhanaFrame.frame('/', async (c) => {
     return c.res({
       title: 'onda.so',
-      image: 'https://github.com/jpfraneto/images/blob/main/guty.png?raw=true',
+      image: 'https://github.com/jpfraneto/images/blob/main/ankybg.png?raw=true',
       intents: [
         <Button action="/index">
             what is this?

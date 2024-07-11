@@ -30,6 +30,7 @@ import { ankyGenesis } from './routes/anky-genesis'
 import { ankyFrames } from './routes/ankyFrame'
 import { vibraFrame } from './routes/vibra'
 import { extractWordBeforeWaveEmoji } from '../utils/zurf';
+import { sadhanaFrame } from './routes/sadhana';
 // **** ROUTE IMPORTS ****
 
 // **** FAST SCRIPTS ****
@@ -88,6 +89,7 @@ app.route('/anky', ankyFrames)
 app.route('/anky-genesis', ankyGenesis)
 app.route('/vibra', vibraFrame)
 app.route('/stream', stream)
+app.route('/sadhana', sadhanaFrame)
 
 app.get("/aloja", (c) => {
   return c.json({
