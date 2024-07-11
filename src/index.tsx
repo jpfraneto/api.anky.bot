@@ -79,7 +79,6 @@ app.use(async (c, next) => {
   const [baseUrl, queryString] = fullUrl.split('?');
   
   Logger.info(`[${c.req.method}] ${baseUrl}`);
-  console.log(`Received request for ${fullUrl}`);
 
   await next();
 });
