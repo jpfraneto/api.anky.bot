@@ -90,3 +90,27 @@ export async function callChatGTPToGetReply(systemPrompt: string, castText: stri
       throw new Error("there was an error getting the chat completion from chatgtp")
     }
   }
+
+  export async function callChatGTPToGetSadhanaInterpretation(systemPrompt: string, castText: string) {
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        response_format: { "type": "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: castText,
+          },
+        ],
+      });
+      const dataResponse = completion.choices[0].message.content;
+      return dataResponse;
+    } catch (error) {
+      console.log("there was an error calling the chatgtp api");
+      return "";
+    }
+  }

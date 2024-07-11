@@ -58,6 +58,26 @@ export async function fetchCastInformationFromHash(castHash: string) {
     }
   }
 
+  export async function getCastRepliesFromHash(castHash: string, viewer_fid: number) {
+    try {
+      const repliesToCast = await axios.get(
+        `https://api.neynar.com/v2/farcaster/cast/conversation?identifier=${castHash}&type=hash&reply_depth=2&include_chronological_parent_casts=false&viewer_fid=${viewer_fid}1&limit=50`,
+        {
+          headers: {
+            api_key: NEYNAR_API_KEY,
+          },
+        }
+      );
+      console.log("the repies to cast are: ", repliesToCast)
+      return repliesToCast.data.conversation.direct_replies;
+    } catch (error) {
+      console.log("there was an error festing the cast conversation from neynar", castHash);
+      // TODO : FETCH FROM PINATA FROM WARPCAST URL
+    }
+  }
+
+  
+
 export async function publishCastToTheProtocol(castOptions: CastIntention, apiKey= NEYNAR_API_KEY ) {
     try {
         const response = await axios.post(

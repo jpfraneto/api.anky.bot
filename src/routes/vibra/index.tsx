@@ -293,7 +293,7 @@ vibraFrame.frame('/leaderboard/:id', async (c) => {
       title: "anky",
       image: (
         <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
-          <span tw="text-cyan-500 text-7xl mb-2">ZURF</span>
+          <span tw="text-cyan-500 text-7xl mb-2">VIBRA</span>
           {leaderboard.map((user, i) => {
             return <span tw="mb-2 text-xl">{user.rank}.        @{user.username}...... {user.points} points</span>
           })}
@@ -301,16 +301,16 @@ vibraFrame.frame('/leaderboard/:id', async (c) => {
     ),
       intents: [
           <Button action={`/video/${id}`}>back</Button>,
-          <Button.Link href={`https://www.guarpcast.com/v/${id}`}>🏄🏻‍♂️ zurf</Button.Link>,
+          <Button.Link href={`https://vibra-so.vercel.app`}>vibra</Button.Link>,
       ],
   })
 })
 
 
 vibraFrame.frame('/video/:id', async (c) => {
-  const { id } = c.req.param();
+  let { id } = c.req.param();
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-
+  id = "cecc074e-ae72-4f17-a4e6-553b23e04f00"
   if (uuidRegex.test(id)) {
     return c.res({
       title: "anky",

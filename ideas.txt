@@ -1,0 +1,14 @@
+- "Imagine software or services only available to fans." fan tokens for VIBRA, that allow specific users to do something. this generates scarcity, which drives value on the mind of the prospect.
+- offer MOXIE rewards for people through the smart contracts over frames
+- we need to reward users with $moxie for shipping a cast from our client
+- "Several other 3rd party projects are teed up to use Moxie Rewards at launch." -> we need to get into this list
+- "Airstack is providing frames and actions for 3rd parties to easily publish Rewards."
+- "Games, competitions, quests that pit one group of Fans against another. Imagine farcaster games between teams of channels members, with prizes distributed across the channels/members"
+- "Apps like Drakula can enable Members to offer Fans-only videos"
+- "With the Moxie Protocol, Channels are able to sell ownership to their members in the form of Fan Tokens, first via Auction and then continuously on a logarithmic bonding curve that rewards utility over speculation."
+- "MoxieRetro 1 -- more details
+
+Any person or any project who contributes to the growth and usage of the Moxie Protocol is eligible to apply. Applicants should feel free to be creative in their submissions. The following are just some examples of what could be eligible:
+
+Integrating Moxie or MOXIE into a frame, cast action, DC campaign, or app"
+- 

@@ -1,0 +1,49 @@
+MOXIE: Empowering the Farcaster Economy
+
+Moxie is a community-owned and community-governed protocol for efficient markets on Farcaster
+
+What is the Moxie Protocol?
+Moxie is an orchestration of several smart contracts that can be executed via Frames, Actions, and Apps/Clients. It represents foundational technology that anyone can use to add economic incentives to their Farcaster experience. Builders welcomed!
+
+How it works?
+A full loop decentralized economy that anyone can build with and extend
+
+A letter from the core team
+Hi,
+
+If you're reading this we thank you already for taking some of your valuable time to learn about Moxie. In the new internet everyone's time and attention should be compensated in some form or another. We hope you gain substantial value from your time with Moxie.
+
+Moxie is a community-owned and community-governed Farcaster protocol. 
+Our mission is to grow the Farcaster GDP.
+
+The core protocol team, from Airstack, have been building on Farcaster for nearly two years. 
+We believe that Farcaster provides a fantastic tableau for next generation social networks.
+
+However, there is one uniquely onchain ingredient missing from Farcaster that Moxie aims to fill: Economic Incentives at the protocol level. 
+
+Quite simply, Moxie enables efficient onchain economies to be woven throughout Farcaster -- into every cast, frame, action, dc, client, app, promotion, and more.
+
+Before you dive into the protocol, here are a few key principles we would like you to keep in mind:
+
+Moxie is a protocol, not a client. Moxie is intended to enhance everyone's Farcaster experience using their client of choice, especially Warpcast. You can use all of the key functions of Moxie from within Warpcast (or any client) and everyone is free to integrate and extend Moxie as they see best into their experiences. 
+
+Everyone's an owner -- with skin in the game. We're building Moxie for Farcaster; and by that we mean for the Farcaster Community. Every Farcaster member who joined before 10 July, 2024 is eligible for a MOXIE token airdrop. Qualifying builders who have made substantial contributions to the Farcaster protocol prior to 21 June, 2024 are eligible for an additional airdrop. Both airdrops are released at the launch of the protocol but subject to a unique 180-day daily vesting schedule that allows recipients to use their unvested tokens in the Moxie protocol (to purchase Fan Tokens). In tandem there are two retroactive grant programs announced, one for contributions to Moxie within the first 60 days and the second for contributions within 120 days. Furthermore every MOXIE token holder has governance rights.
+
+Turn followers into Paid Fans. Talking about skin in the game: Moxie enables Fan Tokens for any entity on Farcaster. To begin with that includes any Member, Channel, or even the entire Farcaster Network. In the future that could extend to anything, including representations of real world assets. Owning Fan Tokens allows for special features and benefits that can be integrated into any Farcaster experience. Imagine frames or channels where only paid fans can participate. Imagine private groups only for fans. Imagine receiving special offers from brands, only for fans. Imagine artist releases only for fans, with extra rewards for fans who help them go viral. Imagine fans-voting on channel community initiatives. Imagine channels rewarding members for the quality of their streaks. Imagine Farcaster games between teams of channels members, with prizes distributed across the channels/members. Imagine commerce where revenue is shared by fans. Imagine software or services only available to fans. Imagine prediction markets where fans share in the rewards. Imagine tips or bounties or promotions that share payouts across members, their fans, and channels and their fans. All this and so much more is immediately possible with Moxie. 
+
+Rewarding utility over speculation. Moxie Fan Tokens are carefully designed to favor using them vs. trading them. First, only Farcaster Members can purchase Fan Tokens and must have a soulbound Moxie Pass. Second, Fan Tokens are initially sold via batch auctions that ensure that the existing Farcaster community can all buy-in to support their favorites at the same fixed price. Third, following the initial auctions Fan Tokens are only purchasable or sellable via the Moxie Bonding Curves which are logarithmic curves that don't allow for speculation. Fourth, Fan Tokens are all about utility; if you sell it you lose access to features and benefits. Finally, there are no secondary markets possible for Fan Tokens.  
+
+Rewarding attention, community and cooperation. While it's not the only use case, one use case we're particularly excited about, and which you'll see throughout the protocol documentation, is how Moxie enables rewards to flow seamlessly to Farcaster members in a model that emphasizes attention, community, and cooperation. For example, at launch, every time a Member earns a reward it is automatically shared 50% to the Member, 20% to their Fans, 20% to the Fans of the Channel (where applicable), and 10% to Fans of the Farcaster Network, in a method that pays into the respective Fan Token bonding curve. Devs can also program alternative payout splits depending on the use case.
+
+Everyday rewards; growing Farcaster to 1M qDAU and beyond. To kickstart Moxie rewards and to help grow Farcaster, 15% of the MOXIE token supply is specifically earmarked for ongoing Engagement Mining programs that reward Members for high quality contributions to the Farcaster Network. For example, the Not A Token points system from Airstack which rewards high quality Farcaster casts based on Social Capital Value is reborn as an everyday rewards program powered by Moxie. Furthermore an additional 25% of the token supply is dedicated to growing the protocol and for partner programs and grants. 
+
+Eating our own dogfood. Airstack is going all in on Farcaster and Moxie. Our team is 100% focused on growing Moxie and we will be integrating it throughout every aspect of Airstack. As a first step -- and a novel use case for Fan Tokens -- use of Airstack's developer APIs and tools will be free for Airstack Fans.
+
+We're long term committed. Finally, you'll see in the Moxienomics that our core team is locked up for a year and then vests our tokens over 42 months. We are in this for the long haul with a pledge to work our hardest to enable as many people to benefit from Moxie as possible. We're serious about our mission to grow the Farcaster GDP and we plan to be a major contributor. 
+
+With gratitude,
+
+-jason, ignas, deepesh, sarvesh and the Moxie and Airstack teams
+
+----
+
