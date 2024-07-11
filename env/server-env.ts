@@ -4,6 +4,7 @@ import { object, parse, string } from 'valibot'
 dotenv.config();
 
 const envSchema = object({
+    ALCHEMY_API_KEY: string('ALCHEMY_API_KEY is required'),
     SECRET: string('SECRET is required'),
     DATABASE_URL: string('DATABASE_URL is required'),
     ANKYSYNC_SIGNER: string('ANKYSYNC_SIGNER is required'),
@@ -31,6 +32,7 @@ const envSchema = object({
   });
   
   export const {
+    ALCHEMY_API_KEY,
     SECRET,
     DATABASE_URL,
     ANKYSYNC_SIGNER,

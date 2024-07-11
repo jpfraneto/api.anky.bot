@@ -7,9 +7,40 @@ import prisma from '../../../utils/prismaClient';
 import { neynar, NeynarVariables } from 'frog/middlewares';
 import { getStartOfDay } from '../../../utils/time';
 import { abbreviateAddress } from '../../../utils/strings';
-import { NEYNAR_API_KEY } from '../../../env/server-env';
 import axios from 'axios';
+import { Logger } from '../../../utils/Logger';
 import { neynarClient } from '../../services/neynar-service';
+import { NEYNAR_API_KEY } from '../../../env/server-env';
+import { getUserFromFid } from '../../../utils/farcaster';
+import {
+  createPublicClient,
+  erc20Abi,
+  erc721Abi,
+  getAddress,
+  http,
+} from 'viem';
+import * as chains from 'viem/chains';
+import { ALCHEMY_INSTANCES, getTransport } from '../../../utils/web3';
+import { HYPERSUB_ABI } from '../../constants/abi/HYPERSUB_ABI';
+
+
+export function getViemChain(chainId: number) {
+  const found = Object.values(chains).find((chain) => chain.id === chainId);
+  if (!found) {
+    throw new Error(`Chain with id ${chainId} not found`);
+  }
+
+  return found;
+}
+
+
+const chainId = 8453
+const chain = getViemChain(Number(chainId));
+
+const publicClient = createPublicClient({
+chain,
+transport: getTransport(chainId),
+});
 
 type VibraState = {
   // profiles
@@ -173,33 +204,64 @@ vibraFrame.frame('/livestream/:streamer/:tokenAddress', async (c) => {
 
 vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
   const body = await c.req.json();
-  const { streamer, tokenAddress } = c.req.param();
+  let { streamer, tokenAddress } = c.req.param();
   const { frameData } = c
   const thisUserFid = c.frameData?.fid
-  console.log("in here, generate the link", body, neynarClient)
-  const {
-    valid,
-    action: {
-      cast: {
-        author: { username, custody_address, verified_addresses },
-      },
-    },
-  } = await neynarClient.validateFrameAction(body.trustedData.messageBytes, {
-    castReactionContext: true,
+  tokenAddress = "0x9d7d5a2d0985a0206d72a0c1087b1a4fc9614cd3"
+  const user = await getUserFromFid(thisUserFid!)
+  console.log("THE USER IS: ", user)
+  const userVerifiedAddresses = user.verified_addresses.eth_addresses
+  let totalBalance = BigInt(0);
+
+  const balancePromises = userVerifiedAddresses.map(async (userWalletAddress : string) => {
+    Logger.info(`Reading ERC-1155 ${tokenAddress}`);
+    return publicClient.readContract({
+      abi: HYPERSUB_ABI,
+      address: getAddress(tokenAddress) as `0x${string}`,
+      functionName: 'balanceOf',
+      args: [userWalletAddress as `0x${string}`],
+    });
   });
-  console.log("IN HEREEEEE")
-  return c.res({
-    title: 'onda.so',
-    image: 'https://github.com/jpfraneto/images/blob/main/guty.png?raw=true',
-    intents: [
-      <Button action="/index">
-        more livestreams
-      </Button>,
-      <Button action="/index">
-        generate link
-      </Button>
-  ],
-  });
+  const balances = await Promise.all(balancePromises);
+  console.log("THE BALANCES ARE", balances)
+  totalBalance = balances.reduce((acc, balance) => acc + BigInt(balance), BigInt(0));
+  console.log("the total balance is", totalBalance )
+  if(totalBalance > BigInt(0)) {
+    return c.res({
+      title: 'onda.so',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+          <span tw="text-cyan-500 text-2xl mb-2">weeeelcome</span>
+          <p>you own {streamer}'s creator token. you can access their stream with this unique link</p>
+      </div>
+    ),
+      intents: [
+        <Button.Link href="https://vibra.so/stream/aisjaicsa?secretToken=123abc">
+          go to stream
+        </Button.Link>
+    ],
+    });
+  } else {
+    const tokenPrice = 3
+    return c.res({
+      title: 'onda.so',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+          <span tw="text-cyan-500 text-2xl mb-2">oh ohhh</span>
+          <p>you dont own {streamer}'s creator token. you can purchase it down below on this frame for {tokenPrice} $moxie</p>
+      </div>
+    ),
+      intents: [
+        <Button action={`livestream/${streamer}/${tokenAddress}`}>
+          back
+        </Button>,
+        <Button.Transaction target={`/get-creator-token/${streamer}`}>
+          buy
+        </Button.Transaction>
+    ],
+    });
+  }
+
 });
 
 vibraFrame.frame('/index', async (c) => {

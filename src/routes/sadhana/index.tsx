@@ -91,11 +91,37 @@ sadhanaFrame.frame('/', async (c) => {
     });
 });
 
+sadhanaFrame.frame('/index', async (c) => {
+  return c.res({
+    title: 'anky',
+    image: (
+      <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-3xl text-white">
+        <div tw="text-5xl">sadhana</div>
+        <div
+          tw="mt-10 flex flex-col"
+          style={{
+            gap: 20,
+          }}
+        >
+          <div tw="flex flex-col items-center">
+            <div
+              tw="text-3xl"
+            >
+              challenge yourself and commit to something
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
+    intents: [<Button action="/">Back</Button>],
+  });
+});
+
 function filterCastsByAuthorFid(casts: Cast[], targetFid:number) {
     return casts.filter(cast => cast.author.fid === targetFid);
   }
 
-sadhanaFrame.frame('/', async (c) => {
+sadhanaFrame.frame('/commitment', async (c) => {
     const { frameData, verified } = c
     const { fid } = frameData
     const castHash = c?.frameData?.castId.hash
@@ -126,14 +152,14 @@ sadhanaFrame.frame('/', async (c) => {
         <Button action="/explanation">
             what is this?
         </Button>,
-        <Button action="/commitment">
+        <Button action={`/commitment/${1234}`}>
             commit
         </Button>,
     ],
     });
 });
 
-sadhanaFrame.frame('/explanation', async (c) => {
+sadhanaFrame.frame('/explanation/:sadhanaId', async (c) => {
     const { sadhanaId } = c.req.param()
     const sadhana = await prisma.sadhana.findUnique({
         where: {

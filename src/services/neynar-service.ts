@@ -1,4 +1,4 @@
-import { NeynarAPIClient } from '@neynar/nodejs-sdk';
+import { NeynarAPIClient, isApiErrorResponse } from '@neynar/nodejs-sdk';
 import {
   FARCASTER_ANKY_MNEMONIC,
   ANKY_SIGNER,
