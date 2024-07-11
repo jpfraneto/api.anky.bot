@@ -13,7 +13,6 @@ export async function getUserFromFid(fid: number, retryCount = 0): Promise<any> 
             method: 'GET',
             url: `https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}&viewer_fid=18350`,
             headers: { accept: 'application/json', api_key: NEYNAR_API_KEY },
-            timeout: 2000 // 10 seconds timeout
         };
         console.log('the options are: ', options)
         
