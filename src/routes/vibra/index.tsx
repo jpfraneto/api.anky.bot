@@ -96,6 +96,17 @@ vibraFrame.use(async (c, next) => {
   await next();
 });
 
+vibraFrame.frame('/gifs/:username', async (c) => {
+  const { username } = c.req.param();
+  return c.res({
+    title: 'vibra.so',
+    image: `https://github.com/jpfraneto/images/blob/main/${username}.gif?raw=true`,
+    intents: [
+      <Button action={`/what-is-vibra`}>vibra?</Button>
+    ],
+  });
+});
+
 vibraFrame.frame('/', async (c) => {
   const timestamp = new Date().getTime()
   
@@ -223,7 +234,6 @@ vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
   const thisUserFid = c.frameData?.fid
   tokenAddress = "0x9d7d5a2d0985a0206d72a0c1087b1a4fc9614cd3"
   const user = await getUserFromFid(thisUserFid!)
-  console.log("THE USER IS: ", user)
   const userVerifiedAddresses = user.verified_addresses.eth_addresses
   let totalBalance = BigInt(0);
 
@@ -359,19 +369,15 @@ vibraFrame.frame('/more-info/:fid', async (c) => {
 
 
 vibraFrame.get("/v", async (c) => {
-  console.log("IN HERE")
   const { limit } = c.req.query();
   const videos = await prisma.zurfVideo.findMany({ })
-  console.log("the videos are: ", videos)
   
   return c.json({videos} || {123:456})
 })
 
 
 vibraFrame.get("/v/:id", async (c) => {
-  console.log("IN HERsadsadE")
   const { id } = c.req.param();
-  console.log("the id is", id)
   const video = await prisma.zurfVideo.findUnique({
     where: {
       id: id
