@@ -496,7 +496,7 @@ vibraFrame.frame('/video/:id', async (c) => {
       image: gifUrl,
       intents: [
         <Button action={`/what-is-vibra`}>vibra?</Button>,
-        <Button.Link href={`https://www.guarpcast.com/v/${id}`}>generate link</Button.Link>
+        <Button action={`/video/${id}/generate-link`}>generate link</Button>
       ],
     });
   } else {
