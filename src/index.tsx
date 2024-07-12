@@ -68,7 +68,7 @@ export const app = new Frog({
 });
 
 app.use('*', cors({
-  origin: ['https://www.guarpcast.com', 'https://guarpcast.com', 'http://localhost:3000'],
+  origin: ['https://www.guarpcast.com', 'https://guarpcast.com', 'http://localhost:3000', "https://vibra-so.vercel.app/"],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Origin', 'Content-Type', 'Accept', 'Authorization'],
   exposeHeaders: ['Content-Length', 'X-Requested-With'],
