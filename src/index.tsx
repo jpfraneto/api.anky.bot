@@ -240,59 +240,65 @@ const getRandomListeners = (num : number) => {
 };
 
 app.get('/generate-image', async (c) => {
-  const numListeners = Math.floor(Math.random() * dummyLivestreamViewers.length) + 1;
-  const listeners = getRandomListeners(numListeners);
-
-  const canvas = createCanvas(800, 800);
-  const ctx = canvas.getContext('2d');
-
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const host = dummyLivestreamViewers[Math.floor(Math.random() * dummyLivestreamViewers.length)];
-
-  // Draw host image
-  const hostImage = await loadImage(host.pfp_url);
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(400, 150, 100, 0, Math.PI * 2, true);
-  ctx.closePath();
-  ctx.clip();
-  ctx.drawImage(hostImage, 300, 50, 200, 200);
-  ctx.restore();
-
-  // Draw listeners' images
-  const loadImages = listeners.map(listener => loadImage(listener.pfp_url));
-  const images = await Promise.all(loadImages);
-
-  const cols = 3; // number of columns
-  const rowHeight = 150; // height of each row
-  const colWidth = 250; // width of each column
-
-  images.forEach((img, index) => {
-    const col = index % cols;
-    const row = Math.floor(index / cols) + 1;
-    const x = col * colWidth + 100;
-    const y = row * rowHeight + 200;
+  try {
+    console.log("through the generate image route")
+    const numListeners = Math.floor(Math.random() * dummyLivestreamViewers.length) + 1;
+    const listeners = getRandomListeners(numListeners);
+  
+    const canvas = createCanvas(800, 800);
+    const ctx = canvas.getContext('2d');
+  
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+    const host = dummyLivestreamViewers[Math.floor(Math.random() * dummyLivestreamViewers.length)];
+  
+    // Draw host image
+    const hostImage = await loadImage(host.pfp_url);
     ctx.save();
     ctx.beginPath();
-    ctx.arc(x + 50, y + 50, 50, 0, Math.PI * 2, true);
+    ctx.arc(400, 150, 100, 0, Math.PI * 2, true);
     ctx.closePath();
     ctx.clip();
-    ctx.drawImage(img, x, y, 100, 100);
+    ctx.drawImage(hostImage, 300, 50, 200, 200);
     ctx.restore();
-  });
+  
+    // Draw listeners' images
+    const loadImages = listeners.map(listener => loadImage(listener.pfp_url));
+    const images = await Promise.all(loadImages);
+  
+    const cols = 3; // number of columns
+    const rowHeight = 150; // height of each row
+    const colWidth = 250; // width of each column
+  
+    images.forEach((img, index) => {
+      const col = index % cols;
+      const row = Math.floor(index / cols) + 1;
+      const x = col * colWidth + 100;
+      const y = row * rowHeight + 200;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x + 50, y + 50, 50, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img, x, y, 100, 100);
+      ctx.restore();
+    });
+  
+    // Draw text
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 40px Righteous';
+    ctx.fillText(`@${host.username} is streaming`, 150, 300);
+    ctx.fillText(`${numListeners} listeners`, 300, 750);
+  
+    const buffer = canvas.toBuffer('image/png');
+    return c.body(buffer, 200, {
+      'Content-Type': 'image/png'
+    });
+  } catch (error) {
+    console.log("There was an error here")
+  }
 
-  // Draw text
-  ctx.fillStyle = 'white';
-  ctx.font = 'bold 40px Righteous';
-  ctx.fillText(`@${host.username} is streaming`, 150, 300);
-  ctx.fillText(`${numListeners} listeners`, 300, 750);
-
-  const buffer = canvas.toBuffer('image/png');
-  return c.body(buffer, 200, {
-    'Content-Type': 'image/png'
-  });
 });
 
 
