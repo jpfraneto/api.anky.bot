@@ -175,7 +175,7 @@ const livestreams = [
 
 vibraFrame.frame('/', async (c) => {
   return c.res({
-    title: 'onda.so',
+    title: 'vibra.so',
     image: 'https://github.com/jpfraneto/images/blob/main/guty.png?raw=true',
     intents: [
       <Button action="/index">
@@ -190,7 +190,7 @@ vibraFrame.frame('/', async (c) => {
 vibraFrame.frame('/livestream/:streamer/:tokenAddress', async (c) => {
   const { streamer, tokenAddress } = c.req.param();
   return c.res({
-    title: 'onda.so',
+    title: 'vibra.so',
     image: 'https://github.com/jpfraneto/images/blob/main/guty.png?raw=true',
     intents: [
       <Button action="/index">
@@ -229,7 +229,7 @@ vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
   console.log("the total balance is", totalBalance )
   if(totalBalance > BigInt(0)) {
     return c.res({
-      title: 'onda.so',
+      title: 'vibra.so',
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-4xl mb-2">weeeelcome</span>
@@ -248,7 +248,7 @@ vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
   } else {
     const tokenPrice = 3
     return c.res({
-      title: 'onda.so',
+      title: 'vibra.so',
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-4xl mb-2">oh ohhh</span>
@@ -269,7 +269,7 @@ vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
 
 vibraFrame.frame('/index', async (c) => {
   return c.res({
-      title: "onda.so",
+      title: "vibra.so",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-2xl mb-2">active livestreams</span>
@@ -290,7 +290,7 @@ vibraFrame.frame('/index', async (c) => {
 
 vibraFrame.frame('/what-is-vibra', async (c) => {
   return c.res({
-      title: "onda.so",
+      title: "vibra.so",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-2xl mb-2">RELEASE THE BRAINZ</span>
@@ -312,7 +312,7 @@ vibraFrame.frame('/more-info/:fid', async (c) => {
   if (livestreamIndex > 0 && livestreamIndex < 13) {
     const chosenLivestream = livestreams[livestreamIndex - 1]
     return c.res({
-      title: "onda.so",
+      title: "vibra.so",
       image: (
         <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-4xl mb-2">{chosenLivestream.titleOfTheLivestream}</span>
@@ -330,7 +330,7 @@ vibraFrame.frame('/more-info/:fid', async (c) => {
   })
   } else {
     return c.res({
-      title: "onda.so",
+      title: "vibra.so",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-2xl mb-2">active livestreams</span>
@@ -466,7 +466,7 @@ vibraFrame.frame('/video/:id/generate-link', async (c) => {
   } else {
     const tokenPrice = 3
     return c.res({
-      title: 'onda.so',
+      title: 'vibra.so',
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-4xl mb-2">oh ohhh</span>
