@@ -22,6 +22,7 @@ import {
 import * as chains from 'viem/chains';
 import { ALCHEMY_INSTANCES, getTransport } from '../../../utils/web3';
 import { HYPERSUB_ABI } from '../../constants/abi/HYPERSUB_ABI';
+import { MOXIE_PASS_ABI } from '../../constants/abi/MOXIE_PASS_ABI';
 
 
 export function getViemChain(chainId: number) {
@@ -236,6 +237,9 @@ vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
       </div>
     ),
       intents: [
+        <Button action={`/index`}>
+        back
+        </Button>,
         <Button.Link href="https://vibra.so/stream/aisjaicsa?secretToken=123abc">
           go to stream
         </Button.Link>
@@ -261,7 +265,6 @@ vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
     ],
     });
   }
-
 });
 
 vibraFrame.frame('/index', async (c) => {
@@ -297,7 +300,7 @@ vibraFrame.frame('/what-is-vibra', async (c) => {
     ),
       intents: [
           <Button action={`/index`}>livestreams list</Button>,
-          <Button.Link href={`https://3061541.cargo.site/`}>create my stream</Button.Link>,
+          <Button.Link href={`https://vibra-so.vercel.app`}>record video</Button.Link>
       ],
   })
 })
@@ -419,6 +422,67 @@ vibraFrame.frame('/leaderboard/:id', async (c) => {
 })
 
 
+vibraFrame.frame('/video/:id/generate-link', async (c) => {
+  const body = await c.req.json();
+  let { id } = c.req.param();
+  const { frameData } = c
+  const thisUserFid = c.frameData?.fid
+  let tokenAddress = "0x235cad50d8a510bc9081279996f01877827142d8"
+  const user = await getUserFromFid(thisUserFid!)
+  const userVerifiedAddresses = user.verified_addresses.eth_addresses
+  let totalBalance = BigInt(0);
+
+  const balancePromises = userVerifiedAddresses.map(async (userWalletAddress : string) => {
+    Logger.info(`Reading ERC-1155 ${tokenAddress}`);
+    return publicClient.readContract({
+      abi: MOXIE_PASS_ABI,
+      address: getAddress(tokenAddress) as `0x${string}`,
+      functionName: 'balanceOf',
+      args: [userWalletAddress as `0x${string}`],
+    });
+  });
+  const balances = await Promise.all(balancePromises);
+  console.log("THE BALANCES ARE", balances)
+  totalBalance = balances.reduce((acc, balance) => acc + BigInt(balance), BigInt(0));
+  console.log("the total balance is", totalBalance )
+  if(totalBalance > BigInt(0)) {
+    return c.res({
+      title: 'onda.so',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+          <span tw="text-cyan-500 text-3xl mb-2">welcome</span>
+          <p tw="text-cyan-500 text-6xl mb-2">you own a moxie pass. congratulations. we hope you are ready for some fun. follow /vibra to stay tuned.</p>
+      </div>
+    ),
+      intents: [
+        <Button action={`/index`}>
+          back
+        </Button>,
+        <Button.Link href="https://warpcast.com/~/channel/vibra">
+          follow /vibra
+        </Button.Link>
+    ],
+    });
+  } else {
+    const tokenPrice = 3
+    return c.res({
+      title: 'onda.so',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+          <span tw="text-cyan-500 text-4xl mb-2">oh ohhh</span>
+          <p tw="text-cyan-500 text-6xl mb-2">you dont own a moxie pass. in what world do you live? mint it below and get ready for the fun that comes</p>
+      </div>
+    ),
+      intents: [
+        <Button.Link href="https://moxie-frames.airstack.xyz/mpi?k=16098-cc9_D_HfyMSj3vRmLSrUa&u=16098&w=0xc669e04070ce18bf24ffa69fe311b64585f400d6">
+            mint
+        </Button.Link>
+    ],
+    });
+  }
+})
+
+
 vibraFrame.frame('/video/:id', async (c) => {
   let { id } = c.req.param();
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -433,7 +497,7 @@ vibraFrame.frame('/video/:id', async (c) => {
       image: gifUrl,
       intents: [
         <Button action={`/what-is-vibra`}>vibra?</Button>,
-        <Button.Link href={`https://www.guarpcast.com/v/${id}`}>see video</Button.Link>,
+        <Button.Link href={`https://www.guarpcast.com/v/${id}`}>generate link</Button.Link>
       ],
     });
   } else {
@@ -447,7 +511,7 @@ vibraFrame.frame('/video/:id', async (c) => {
       ),
       intents: [
         <Button action={`/`}>back</Button>,
-        <Button.Link href={`https://www.guarpcast.com/v/${id}`}>record new</Button.Link>,
+        <Button.Link href={`https://vibra-so.vercel.app`}>record new</Button.Link>,
       ],
     });
   }

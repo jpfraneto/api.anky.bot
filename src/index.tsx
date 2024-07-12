@@ -8,7 +8,7 @@ import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
 import axios from 'axios';
 import { cors } from "hono/cors"
-import { createAndSaveLocallyCompressedGifFromVideo, createFrameGifFromVideoGif } from '../utils/video-processing';
+import { createAndSaveLocallyCompressedGifFromVideo, createFramedGifFromVideo } from '../utils/video-processing';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises'; 
 import { mintclub } from 'mint.club-v2-sdk';
@@ -67,14 +67,14 @@ export const app = new Frog({
   secret: process.env.NODE_ENV === 'production' ? SECRET : undefined,
 });
 
-// app.use('*', cors({
-//   origin: ['https://www.guarpcast.com', 'https://guarpcast.com', 'http://localhost:3000'],
-//   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//   allowHeaders: ['Origin', 'Content-Type', 'Accept', 'Authorization'],
-//   exposeHeaders: ['Content-Length', 'X-Requested-With'],
-//   credentials: true,
-//   maxAge: 600,
-// }))
+app.use('*', cors({
+  origin: ['https://www.guarpcast.com', 'https://guarpcast.com', 'http://localhost:3000'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Origin', 'Content-Type', 'Accept', 'Authorization'],
+  exposeHeaders: ['Content-Length', 'X-Requested-With'],
+  credentials: true,
+  maxAge: 600,
+}))
 
 app.use(async (c, next) => {
   const fullUrl = c.req.url;
@@ -149,13 +149,10 @@ app.post('/video', async (c) => {
     logProgress('Uploading video to cloud...');
     const cloudinaryVideoUploadResult = await uploadVideoToTheCloud(videoPath, `uploaded_videos/${uuid}`);
     console.log("the cloudingatasd", cloudinaryVideoUploadResult)
-    // Transform the video into a gif
-    logProgress('Creating GIF from video...');
-    await createAndSaveLocallyCompressedGifFromVideo(videoPath, gifPath);
 
     // Append that gif to the static background and create a new gif (with user information also)
     logProgress('Creating framed GIF...');
-    await createFrameGifFromVideoGif(gifPath, farcasterGifPath, user);
+    await createFramedGifFromVideo(videoPath, farcasterGifPath, user);
 
     logProgress('Uploading GIF to cloud...');
     const cloudinaryGifUploadResult = await uploadGifToTheCloud(farcasterGifPath, `farcaster_gifs/${uuid}`);
