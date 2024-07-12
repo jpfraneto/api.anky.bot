@@ -479,7 +479,7 @@ vibraFrame.frame('/video/:id/generate-link', async (c) => {
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-4xl mb-2">oh ohhh</span>
-          <p tw="text-cyan-500 text-6xl mb-2">you dont own a moxie pass. in what world do you live? mint it below and get ready for the fun that comes</p>
+          <p tw="text-cyan-500 text-6xl mb-2">you dont own a moxie pass. you can mint it below</p>
       </div>
     ),
       intents: [
