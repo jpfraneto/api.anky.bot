@@ -95,19 +95,26 @@ sadhanaFrame.frame('/index', async (c) => {
   return c.res({
     title: 'anky',
     image: (
-      <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-3xl text-white">
-        <div tw="text-5xl">sadhana</div>
+      <div tw="flex h-full w-full flex-col p-2 items-center justify-center bg-black text-3xl text-white">
+        <div tw="text-5xl text-purple-500">sadhana</div>
         <div
           tw="mt-10 flex flex-col"
-          style={{
-            gap: 20,
-          }}
         >
           <div tw="flex flex-col items-center">
             <div
               tw="text-3xl"
             >
-              challenge yourself and commit to something
+              commit to do something for X days
+            </div>
+            <div
+              tw="text-3xl"
+            >
+              and bet $degen against your capacity for doing it
+            </div>
+            <div
+              tw="text-3xl"
+            >
+              just comment on the cast below something along the lines of: "i will do 50 pushups the next 8 days 444 $degen", and then click the "commit" button
             </div>
           </div>
         </div>

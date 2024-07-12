@@ -231,8 +231,8 @@ vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
       title: 'onda.so',
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-          <span tw="text-cyan-500 text-2xl mb-2">weeeelcome</span>
-          <p>you own {streamer}'s creator token. you can access their stream with this unique link</p>
+          <span tw="text-cyan-500 text-4xl mb-2">weeeelcome</span>
+          <p tw="text-cyan-500 text-6xl mb-2">you own {streamer}'s creator token. you can access their stream with this unique link</p>
       </div>
     ),
       intents: [
@@ -247,12 +247,12 @@ vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
       title: 'onda.so',
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-          <span tw="text-cyan-500 text-2xl mb-2">oh ohhh</span>
-          <p>you dont own {streamer}'s creator token. you can purchase it down below on this frame for {tokenPrice} $moxie</p>
+          <span tw="text-cyan-500 text-4xl mb-2">oh ohhh</span>
+          <p tw="text-cyan-500 text-6xl mb-2">you dont own {streamer}'s creator token. you can purchase it down below on this frame for {tokenPrice} $moxie</p>
       </div>
     ),
       intents: [
-        <Button action={`livestream/${streamer}/${tokenAddress}`}>
+        <Button action={`/livestream/${streamer}/${tokenAddress}`}>
           back
         </Button>,
         <Button.Transaction target={`/get-creator-token/${streamer}`}>
