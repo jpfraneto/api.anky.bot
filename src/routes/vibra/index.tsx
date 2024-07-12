@@ -557,7 +557,7 @@ vibraFrame.frame('/aloja', async (c) => {
 vibraFrame.frame('/landing', async (c) => {
   return c.res({
       title: "anky",
-      image: `https://res.cloudinary.com/dzpugkpuz/image/upload/v1720556901/output_y10821.gif`,
+      image: `https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/fba9568e-5644-43f4-14f6-fd2de153a100/original`,
       intents: [
           <Button.Link href={`https://vibra-so.vercel.app/`}>vibra</Button.Link>,
         ],
