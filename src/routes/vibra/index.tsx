@@ -240,7 +240,7 @@ vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
         <Button action={`/index`}>
         back
         </Button>,
-        <Button.Link href="https://vibra.so/stream/aisjaicsa?secretToken=123abc">
+        <Button.Link href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
           go to stream
         </Button.Link>
     ],
