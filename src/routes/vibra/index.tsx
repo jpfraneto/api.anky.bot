@@ -174,14 +174,17 @@ const livestreams = [
 
 
 vibraFrame.frame('/', async (c) => {
+  const timestamp = new Date().getTime()
+  
   return c.res({
+    headers: { "Cache-Control": "max-age=0" }, 
     title: 'vibra.so',
     image: 'https://github.com/jpfraneto/images/blob/main/guty.png?raw=true',
     intents: [
       <Button action="/index">
         more livestreams
       </Button>,
-      <Button.Link href="https://3061541.cargo.site/">g</Button.Link>,
+      <Button.Link href="https://3061541.cargo.site/">{timestamp.toString()}</Button.Link>,
   ],
   });
 });
