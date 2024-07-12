@@ -11,6 +11,7 @@ import { cors } from "hono/cors"
 import { createAndSaveLocallyCompressedGifFromVideo, createFramedGifFromVideo } from '../utils/video-processing';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises'; 
+import { createCanvas, loadImage } from 'canvas';
 import { mintclub } from 'mint.club-v2-sdk';
 import multer from 'multer';
 import path from 'path';
@@ -97,6 +98,204 @@ app.get("/aloja", (c) => {
     134: 124,
   });
 });
+
+const dummyLivestreamViewers = [
+  {
+    username: "saynode",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/f80bcc9b-7cb4-4758-7e9b-4b23fd0e6f00/original",
+    display_name: "SayNode",
+    fid: 486976
+  },
+  {
+    username: "pleb",
+    pfp_url: "https://i.imgur.com/u5JyUsu.png",
+    display_name: "DRV🎩",
+    fid: 16975
+  },
+  {
+    username: "cartoonistsatish",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/7a33cd87-c317-4a64-1392-f65f5137be00/original",
+    display_name: "Satish Acharya",
+    fid: 406881
+  },
+  {
+    username: "uyo66",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/ddaecdf6-5e75-4611-4ad2-0630735b9900/original",
+    display_name: "uyo66 🔥💎🎩",
+    fid: 523746
+  },
+  {
+    username: "db3045",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/49a59d05-ac7c-4a6b-f4d3-0b52f78f9b00/original",
+    display_name: "DavidBeiner",
+    fid: 238853
+  },
+  {
+    username: "leehu23",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/99081801-c661-44ac-ec0a-dff6229f7500/rectcrop3",
+    display_name: "Unieeeee 🎭",
+    fid: 501701
+  },
+  {
+    username: "lorenipsum",
+    pfp_url: "https://i.imgur.com/8xBVkUd.jpg",
+    display_name: "lorenipsum 🎩🎭",
+    fid: 343039
+  },
+  {
+    username: "dwn2erth.eth",
+    pfp_url: "https://ipfs.decentralized-content.com/ipfs/bafybeih6a65qekiszxifbelt2jm46nbwuvgyxscmmlzar7lhmztidjechi",
+    display_name: "dwn2erth🎩",
+    fid: 288204
+  },
+  {
+    username: "zahedtabnak.eth",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/2bda4ca2-c50b-403e-432c-85901f91b700/rectcrop3",
+    display_name: "Zahed🎩🎭",
+    fid: 478670
+  },
+  {
+    username: "maie",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/908aca26-ab9b-4cff-200b-f10764734600/original",
+    display_name: "Maie 🎩🎭",
+    fid: 349816
+  },
+  {
+    username: "degentipbot.eth",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/36ca6aea-b003-4aae-6f26-f2a5165b2000/rectcrop3",
+    display_name: "$DEGEN Tip Bot",
+    fid: 403507
+  },
+  {
+    username: "archilles",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/ad90fec1-b6d0-4095-62c0-6fc781239e00/rectcrop3",
+    display_name: "Archilles 🎩🐹🎭",
+    fid: 441632
+  },
+  {
+    username: "marydeer",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/c346e71b-54b5-4eb1-30b2-cfb8b83de200/rectcrop3",
+    display_name: "marydeer🌼🎩",
+    fid: 380287
+  },
+  {
+    username: "omegas24",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/f8073751-6f7e-4fb4-caac-9e8814814400/rectcrop3",
+    display_name: "Imtheone 🎭",
+    fid: 684582
+  },
+  {
+    username: "shuk007.eth",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/bc66883b-970a-4c5c-05fe-2cd0767a4e00/original",
+    display_name: "Shuk007.eth🎩Ⓜ️🐹🎭",
+    fid: 285604
+  },
+  {
+    username: "bella007",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/0714f955-45cf-41f1-8f66-984cbea1af00/rectcrop3",
+    display_name: "Itz Bella 🌈⚡🎩🔵",
+    fid: 647182
+  },
+  {
+    username: "guillaumecornet",
+    pfp_url: "https://i.imgur.com/vHdOEFq.gif",
+    display_name: "Guil 🐘 🎩 ✨",
+    fid: 364017
+  },
+  {
+    username: "abidur40",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/4b287a10-a161-42d4-534b-008ae8487c00/rectcrop3",
+    display_name: "Certified Gorilla 🍖🦖👾",
+    fid: 330428
+  },
+  {
+    username: "metadavid",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/fde10191-9f94-426b-730e-4cf31710a400/original",
+    display_name: "meta-david🎩 | Building Scoop3",
+    fid: 243818
+  },
+  {
+    username: "freymon",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/9840b67b-6667-4b97-0b06-10c98507d300/rectcrop3",
+    display_name: "Freymon🎩",
+    fid: 665530
+  },
+  {
+    username: "bryhmo",
+    pfp_url: "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/eec2e29b-6d90-4fb7-d271-6f7258811100/rectcrop3",
+    display_name: "Bryhmo 🐭🎩🍖",
+    fid: 511655
+  },
+  {
+    username: "niloofarmd",
+    pfp_url: "https://i.imgur.com/qaeXxZ5.jpg",
+    display_name: "Niloofar 🪷🎭",
+    fid: 482872
+  }
+];
+
+const getRandomListeners = (num : number) => {
+  const shuffled = dummyLivestreamViewers.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, num);
+};
+
+app.get('/generate-image', async (c) => {
+  const numListeners = Math.floor(Math.random() * dummyLivestreamViewers.length) + 1;
+  const listeners = getRandomListeners(numListeners);
+
+  const canvas = createCanvas(800, 800);
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const host = dummyLivestreamViewers[Math.floor(Math.random() * dummyLivestreamViewers.length)];
+
+  // Draw host image
+  const hostImage = await loadImage(host.pfp_url);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(400, 150, 100, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(hostImage, 300, 50, 200, 200);
+  ctx.restore();
+
+  // Draw listeners' images
+  const loadImages = listeners.map(listener => loadImage(listener.pfp_url));
+  const images = await Promise.all(loadImages);
+
+  const cols = 3; // number of columns
+  const rowHeight = 150; // height of each row
+  const colWidth = 250; // width of each column
+
+  images.forEach((img, index) => {
+    const col = index % cols;
+    const row = Math.floor(index / cols) + 1;
+    const x = col * colWidth + 100;
+    const y = row * rowHeight + 200;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x + 50, y + 50, 50, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(img, x, y, 100, 100);
+    ctx.restore();
+  });
+
+  // Draw text
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 40px Righteous';
+  ctx.fillText(`@${host.username} is streaming`, 150, 300);
+  ctx.fillText(`${numListeners} listeners`, 300, 750);
+
+  const buffer = canvas.toBuffer('image/png');
+  return c.body(buffer, 200, {
+    'Content-Type': 'image/png'
+  });
+});
+
+
 
 
 app.post('/video', async (c) => {

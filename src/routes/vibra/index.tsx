@@ -134,6 +134,8 @@ export function VibraBackground(user: Author) {
   );
 }
 
+
+
 const livestreams = [
   {
       username: "undefined",
@@ -318,47 +320,42 @@ vibraFrame.frame('/what-is-vibra', async (c) => {
 vibraFrame.frame('/more-info/:fid', async (c) => {
   const { deriveState, inputText, buttonValue } = c;
   const { fid } = c.req.param();
-  const livestreamIndex = Number(inputText)
+  const livestreamIndex = Number(inputText);
+
   if (livestreamIndex > 0 && livestreamIndex < 13) {
-    const chosenLivestream = livestreams[livestreamIndex - 1]
+    const chosenLivestream = livestreams[livestreamIndex - 1];
+
     return c.res({
       title: "vibra.so",
-      image: (
-        <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
-          <span tw="text-cyan-500 text-4xl mb-2">{chosenLivestream.titleOfTheLivestream}</span>
-          <span tw="text-purple-200 text-3xl mb-2">@{chosenLivestream.username}</span>
-          <span tw="text-purple-200 text-2xl mb-2">duration so far: {chosenLivestream.durationSoFar}</span>
-          <span tw="text-purple-200 text-2xl mb-2">viewers: 69</span>
-      </div>
-    ),
+      image: "https://www.api.anky.bot/generate-image",
       intents: [
-          <Button action={`/index`}>back</Button>,
-          <Button action={`/generate-link/${chosenLivestream.username}/0x1234`}>
+        <Button action={`/index`}>back</Button>,
+        <Button action={`/generate-link/${chosenLivestream.username}/0x1234`}>
           generate link
-          </Button>
+        </Button>
       ],
-  })
+    });
   } else {
     return c.res({
       title: "vibra.so",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-2xl mb-2">active livestreams</span>
-          {livestreams.map((x,i) => {
-            return <p tw="text-left text-xl text-purple-300 mb-1">{i + 1}. {x.titleOfTheLivestream.toLowerCase()} - {x.username}</p>
+          {livestreams.map((x, i) => {
+            return <p tw="text-left text-xl text-purple-300 mb-1">{i + 1}. {x.titleOfTheLivestream.toLowerCase()} - {x.username}</p>;
           })}
           <span tw="text-cyan-500 text-2xl">enter livestream index below to get more information</span>
-      </div>
-    ),
+        </div>
+      ),
       intents: [
-          <TextInput placeholder="enter livestream index (1, 2, 3)" />,
-          <Button action={`/video`}>back</Button>,
-          <Button action={`/more-info/${c?.frameData?.fid}`}>get info</Button>,
-          <Button action={`/what-is-vibra`}>vibra?</Button>,
+        <TextInput placeholder="enter livestream index (1, 2, 3)" />,
+        <Button action={`/video`}>back</Button>,
+        <Button action={`/more-info/${c?.frameData?.fid}`}>get info</Button>,
+        <Button action={`/what-is-vibra`}>vibra?</Button>,
       ],
-  })
+    });
   }
-})
+});
 
 
 vibraFrame.get("/v", async (c) => {
