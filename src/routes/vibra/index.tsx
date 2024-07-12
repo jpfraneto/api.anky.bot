@@ -455,7 +455,7 @@ vibraFrame.frame('/video/:id/generate-link', async (c) => {
   console.log("THE BALANCES ARE", balances)
   totalBalance = balances.reduce((acc, balance) => acc + BigInt(balance), BigInt(0));
   console.log("the total balance is", totalBalance )
-  if(totalBalance > BigInt(0)) {
+  if(totalBalance == BigInt(0)) {
     return c.res({
       title: 'onda.so',
       image: (
@@ -474,7 +474,6 @@ vibraFrame.frame('/video/:id/generate-link', async (c) => {
     ],
     });
   } else {
-    const tokenPrice = 3
     return c.res({
       title: 'vibra.so',
       image: (
