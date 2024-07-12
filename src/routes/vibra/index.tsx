@@ -110,63 +110,63 @@ export function VibraBackground(user: Author) {
 
 const livestreams = [
   {
-      username: "guty",
-      titleOfTheLivestream: "Semifinal Eurocopa",
+      username: "undefined",
+      titleOfTheLivestream: "programming like a ninja",
       durationSoFar: 45
   },
   {
-      username: "ChefAlexDelicious",
-      titleOfTheLivestream: "Cooking with Chef Alex",
+      username: "ruthveda.eth",
+      titleOfTheLivestream: "compassionate self inquiry",
       durationSoFar: 30
   },
   {
-      username: "CodeMaster42",
-      titleOfTheLivestream: "Live Coding Session",
+      username: "dwp",
+      titleOfTheLivestream: "worpcasting",
       durationSoFar: 60
   },
   {
-      username: "YogaWithLuna",
-      titleOfTheLivestream: "Daily Yoga Routine",
+      username: "downshift.eth",
+      titleOfTheLivestream: "learning how to architecture complex systems",
       durationSoFar: 50
   },
   {
-      username: "GuitarGuruSam",
-      titleOfTheLivestream: "Guitar Lessons for Beginners",
+      username: "maretus",
+      titleOfTheLivestream: "daily $degen raffle",
       durationSoFar: 20
   },
   {
-      username: "ArtLoverEmily",
-      titleOfTheLivestream: "Virtual Art Gallery Tour",
+      username: "wake",
+      titleOfTheLivestream: "you are it",
       durationSoFar: 75
   },
   {
-      username: "GamerPro77",
-      titleOfTheLivestream: "Gaming Marathon",
+      username: "burrrrrberry",
+      titleOfTheLivestream: "friday poker night",
       durationSoFar: 90
   },
   {
-      username: "PhotoWizardMike",
-      titleOfTheLivestream: "Photography Tips & Tricks",
+      username: "deployer",
+      titleOfTheLivestream: "cook that HAM",
       durationSoFar: 25
   },
   {
-      username: "FitLifeAnna",
-      titleOfTheLivestream: "Fitness Bootcamp",
+      username: "pichi",
+      titleOfTheLivestream: "walking the streets of tokyo",
       durationSoFar: 40
   },
   {
-      username: "DIYKingJohn",
-      titleOfTheLivestream: "DIY Home Projects",
+      username: "mazmhussain",
+      titleOfTheLivestream: "the power of farcaster",
       durationSoFar: 35
   },
   {
-      username: "ZenMasterKai",
-      titleOfTheLivestream: "Meditation and Mindfulness",
+      username: "tayzonday",
+      titleOfTheLivestream: "let the chocolate rain",
       durationSoFar: 55
   },
   {
-      username: "TravelQueenEmma",
-      titleOfTheLivestream: "Travel Vlog: Paris",
+      username: "dwr",
+      titleOfTheLivestream: "how to turn fans into evangelizers",
       durationSoFar: 80
   }
 ];
