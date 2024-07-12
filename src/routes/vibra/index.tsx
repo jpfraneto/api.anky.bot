@@ -299,8 +299,7 @@ vibraFrame.frame('/what-is-vibra', async (c) => {
       </div>
     ),
       intents: [
-          <Button action={`/index`}>livestreams list</Button>,
-          <Button.Link href={`https://vibra-so.vercel.app`}>record video</Button.Link>
+          <Button.Link href={`https://vibra-so.vercel.app`}>learn more</Button.Link>
       ],
   })
 })
