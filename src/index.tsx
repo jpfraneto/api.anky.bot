@@ -21,6 +21,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import { v2 as cloudinary } from 'cloudinary';
 import { uploadVideoToTheCloud, uploadGifToTheCloud } from '../utils/cloudinary';
 import { publishCastToTheProtocol } from '../utils/cast';
+import { scrollFeedAndReply } from '../utils/anky';
 
 
 // **** ROUTE IMPORTS ****
@@ -67,10 +68,12 @@ export const app = new Frog({
 });
 
 app.use(cors({
-  origin: ["https://www.guarpcast.com", 'http://localhost:3000', 'http://localhost:5173', 'https://video.anky.bot'], // Add any other origins as needed
-  allowMethods: ['POST', 'GET', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
+  origin: ["https://www.guarpcast.com", "https://guarpcast.com", 'http://localhost:3000', 'http://localhost:5173', 'https://video.anky.bot'],
+  allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposeHeaders: ['Content-Length', 'X-Requested-With'],
+  credentials: true,
+  maxAge: 600,
 }));
 
 
