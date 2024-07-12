@@ -555,12 +555,10 @@ vibraFrame.frame('/aloja', async (c) => {
 })
 
 vibraFrame.frame('/landing', async (c) => {
-  console.log("inside the landing", c?.buttonValue)
   return c.res({
       title: "anky",
       image: `https://res.cloudinary.com/dzpugkpuz/image/upload/v1720556901/output_y10821.gif`,
       intents: [
-          <Button action={`/leaderboard/123`}>leaderboard</Button>,
           <Button.Link href={`https://vibra-so.vercel.app/`}>vibra</Button.Link>,
         ],
   })
