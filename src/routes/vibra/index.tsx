@@ -98,9 +98,13 @@ vibraFrame.use(async (c, next) => {
 
 vibraFrame.frame('/gifs/:username', async (c) => {
   const { username } = c.req.param();
+  let imageUrl = "https://res.cloudinary.com/dzpugkpuz/image/upload/v1720814025/agprlpuqgvpblbgfsljy.gif"
+  if(username == "brad"){
+    imageUrl = "https://res.cloudinary.com/dzpugkpuz/image/upload/v1720814025/brad.gif"
+  }
   return c.res({
     title: 'vibra.so',
-    image: `https://github.com/jpfraneto/images/blob/main/${username}.gif?raw=true`,
+    image: imageUrl,
     intents: [
       <Button action={`/what-is-vibra`}>vibra?</Button>
     ],
