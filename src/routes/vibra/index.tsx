@@ -179,7 +179,14 @@ vibraFrame.frame('/', async (c) => {
   return c.res({
     headers: { "Cache-Control": "max-age=0" }, 
     title: 'vibra.so',
-    image: 'https://github.com/jpfraneto/images/blob/main/guty.png?raw=true',
+    image: (
+      <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+        <span tw="text-cyan-500 text-2xl mb-2">RELEASE THE BRAINZ</span>
+        <span tw="text-purple-500 text-2xl mb-2">QUE VENGA LA BUENA VIBRA</span>
+        <span tw="text-yellow-500 text-4xl mb-2">stream. be yourself.</span>
+        <span tw="text-yellow-500 text-4xl mb-2">{timestamp}</span>
+    </div>
+   ),
     intents: [
       <Button action="/index">
         more livestreams
