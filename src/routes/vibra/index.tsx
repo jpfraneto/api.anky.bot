@@ -422,12 +422,15 @@ vibraFrame.frame('/leaderboard/:id', async (c) => {
 vibraFrame.frame('/video/:id', async (c) => {
   let { id } = c.req.param();
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-  id = "cecc074e-ae72-4f17-a4e6-553b23e04f00"
+  
+  console.log("the id of this video is: ", id)
+  const gifUrl =`https://res.cloudinary.com/dzpugkpuz/image/upload/v1720779500/zurf/farcaster_gifs/${id}.gif`
+  console.log("the gif url is ", gifUrl)
 
   if (uuidRegex.test(id)) {
     return c.res({
       title: "anky",
-      image: `https://res.cloudinary.com/dzpugkpuz/image/upload/v1720779500/zurf/farcaster_gifs/${id}.gif`,
+      image: gifUrl,
       intents: [
         <Button action={`/what-is-vibra`}>vibra?</Button>,
         <Button.Link href={`https://www.guarpcast.com?v=${id}`}>see video</Button.Link>,
