@@ -1,6 +1,5 @@
 import { NeynarAPIClient, isApiErrorResponse } from '@neynar/nodejs-sdk';
 import {
-  FARCASTER_ANKY_MNEMONIC,
   ANKY_SIGNER,
   NEYNAR_API_KEY,
   NODE_ENV
@@ -80,21 +79,21 @@ export async function cast(params: {
   return castRootHash as `0x${string}`;
 }
 
-async function init() {
-  const oneYearInSeconds = 365 * 24 * 60 * 60;
-  console.log(`One year has ${oneYearInSeconds} seconds.`);
-  const resp = await neynarClient.createSignerAndRegisterSignedKey(
-    FARCASTER_ANKY_MNEMONIC,
-    {
-      deadline: Math.floor(Date.now() / 1000) + oneYearInSeconds * 5,
-    },
-  );
-  console.log(resp);
-}
-async function status() {
-  const resp = await neynarClient.lookupSigner('SIGNER KEY');
-  console.log(resp);
-}
+// async function init() {
+//   const oneYearInSeconds = 365 * 24 * 60 * 60;
+//   console.log(`One year has ${oneYearInSeconds} seconds.`);
+//   const resp = await neynarClient.createSignerAndRegisterSignedKey(
+//     FARCASTER_ANKY_MNEMONIC,
+//     {
+//       deadline: Math.floor(Date.now() / 1000) + oneYearInSeconds * 5,
+//     },
+//   );
+//   console.log(resp);
+// }
+// async function status() {
+//   const resp = await neynarClient.lookupSigner('SIGNER KEY');
+//   console.log(resp);
+// }
 
 // await status();
 // only need to run this once, to create a signer and register the signed key

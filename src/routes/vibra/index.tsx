@@ -320,7 +320,9 @@ vibraFrame.frame('/more-info/:fid', async (c) => {
     ),
       intents: [
           <Button action={`/index`}>back</Button>,
-          <Button.Link href="https://3061541.cargo.site/">go to stream</Button.Link>,
+          <Button action={`/generate-link/${chosenLivestream.username}/0x1234`}>
+          generate link
+          </Button>
       ],
   })
   } else {
@@ -343,7 +345,6 @@ vibraFrame.frame('/more-info/:fid', async (c) => {
       ],
   })
   }
-
 })
 
 
@@ -455,7 +456,7 @@ vibraFrame.frame('/aloja', async (c) => {
       image: `https://res.cloudinary.com/dzpugkpuz/image/upload/v1720556901/output_y10821.gif`,
       intents: [
           <Button action={`/leaderboard/123`}>leaderboard</Button>,
-          <Button.Link href={`https://www.guarpcast.com/v`}>🏄🏻‍♂️ zurf</Button.Link>,
+          <Button.Link href={`https://www.guarpcast.com/v`}>vibra</Button.Link>,
         ],
   })
 })

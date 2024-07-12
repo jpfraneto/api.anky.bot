@@ -67,15 +67,14 @@ export const app = new Frog({
   secret: process.env.NODE_ENV === 'production' ? SECRET : undefined,
 });
 
-app.use(cors({
-  origin: ["https://www.guarpcast.com", "https://guarpcast.com", 'http://localhost:3000', 'http://localhost:5173', 'https://video.anky.bot'],
-  allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
-  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+app.use('*', cors({
+  origin: ['https://www.guarpcast.com', 'https://guarpcast.com'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Origin', 'Content-Type', 'Accept', 'Authorization'],
   exposeHeaders: ['Content-Length', 'X-Requested-With'],
   credentials: true,
   maxAge: 600,
-}));
-
+}))
 
 app.use(async (c, next) => {
   const fullUrl = c.req.url;
