@@ -96,6 +96,26 @@ vibraFrame.use(async (c, next) => {
   await next();
 });
 
+vibraFrame.frame('/', async (c) => {
+  const timestamp = new Date().getTime()
+  
+  return c.res({
+    title: 'vibra.so',
+    image: (
+      <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+        <span tw="text-purple-500 text-2xl mb-2">QUE VENGA LA BUENA VIBRA</span>
+        <span tw="text-yellow-500 text-4xl mb-2">{timestamp}</span>
+    </div>
+   ),
+    intents: [
+      <Button action="/index">
+        more livestreams
+      </Button>,
+      <Button.Link href="https://3061541.cargo.site/">{timestamp.toString()}</Button.Link>,
+  ],
+  });
+});
+
 export const vibraColor = '#00FFFF';
 
 export function VibraBackground(user: Author) {
@@ -176,31 +196,6 @@ const livestreams = [
       durationSoFar: 80
   }
 ];
-
-
-
-vibraFrame.frame('/', async (c) => {
-  const timestamp = new Date().getTime()
-  
-  return c.res({
-    headers: { "Cache-Control": "max-age=0" }, 
-    title: 'vibra.so',
-    image: (
-      <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-        <span tw="text-cyan-500 text-2xl mb-2">RELEASE THE BRAINZ</span>
-        <span tw="text-purple-500 text-2xl mb-2">QUE VENGA LA BUENA VIBRA</span>
-        <span tw="text-yellow-500 text-4xl mb-2">stream. be yourself.</span>
-        <span tw="text-yellow-500 text-4xl mb-2">{timestamp}</span>
-    </div>
-   ),
-    intents: [
-      <Button action="/index">
-        more livestreams
-      </Button>,
-      <Button.Link href="https://3061541.cargo.site/">{timestamp.toString()}</Button.Link>,
-  ],
-  });
-});
 
 // frame que comparte el usuario cuando empieza su stream
 vibraFrame.frame('/livestream/:streamer/:tokenAddress', async (c) => {
