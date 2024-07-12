@@ -90,6 +90,12 @@ export const vibraFrame = new Frog<{
   }
 })
 
+vibraFrame.use(async (c, next) => {
+  Logger.info(`[${c.req.method}] : : :  ${c.req.url}`);
+  c.res.headers.set('Cache-Control', 'max-age=0');
+  await next();
+});
+
 export const vibraColor = '#00FFFF';
 
 export function VibraBackground(user: Author) {
