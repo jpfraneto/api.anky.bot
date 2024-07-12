@@ -68,7 +68,7 @@ export const app = new Frog({
 });
 
 app.use('*', cors({
-  origin: ['https://www.guarpcast.com', 'https://guarpcast.com'],
+  origin: ['https://www.guarpcast.com', 'https://guarpcast.com', 'http://localhost:3000'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Origin', 'Content-Type', 'Accept', 'Authorization'],
   exposeHeaders: ['Content-Length', 'X-Requested-With'],
@@ -163,7 +163,7 @@ app.post('/video', async (c) => {
     logProgress('Publishing cast...');
     let castOptions = {
       text: "",
-      embeds: [{url: `https://api.anky.bot/zurf/video/${uuid}`}],
+      embeds: [{url: `https://api.anky.bot/vibra/video/${uuid}`}],
       parent: "0xbc7c9fd8a6278ed1f6f09c4990f42d504ebe17e7",
       signer_uuid: DUMMY_BOT_SIGNER,
     };
