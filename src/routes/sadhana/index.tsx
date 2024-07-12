@@ -85,7 +85,7 @@ sadhanaFrame.frame('/', async (c) => {
             what is this?
         </Button>,
         <Button action="/commitment">
-            commit
+            i pledge
         </Button>,
     ],
     });
@@ -114,7 +114,7 @@ sadhanaFrame.frame('/index', async (c) => {
             <div
               tw="text-3xl"
             >
-              just comment on the cast below something along the lines of: "i will do 50 pushups the next 8 days 444 $degen", and then click the "commit" button
+              just comment on the cast below something along the lines of: "i will do 50 pushups the next 8 days 444 $degen", and then click the "pledge" button
             </div>
           </div>
         </div>
@@ -160,7 +160,7 @@ sadhanaFrame.frame('/commitment', async (c) => {
             what is this?
         </Button>,
         <Button action={`/commitment/${1234}`}>
-            commit
+            pledge
         </Button>,
     ],
     });
@@ -192,7 +192,7 @@ sadhanaFrame.frame('/explanation/:sadhanaId', async (c) => {
         ),
         intents: [
         <Button action="/commitment">
-            commit
+            pledge
         </Button>,
       ],
       });
