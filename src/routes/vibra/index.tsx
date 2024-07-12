@@ -326,7 +326,7 @@ vibraFrame.frame('/what-is-vibra', async (c) => {
       </div>
     ),
       intents: [
-          <Button.Link href={`https://vibra-so.vercel.app`}>learn more</Button.Link>
+          <Button.Link href={`https://www.vibra.so/`}>learn more</Button.Link>
       ],
   })
 })
@@ -433,7 +433,7 @@ vibraFrame.frame('/leaderboard/:id', async (c) => {
     ),
       intents: [
           <Button action={`/video/${id}`}>back</Button>,
-          <Button.Link href={`https://vibra-so.vercel.app`}>vibra</Button.Link>,
+          <Button.Link href={`https://www.vibra.so/`}>vibra</Button.Link>,
       ],
   })
 })
@@ -527,7 +527,7 @@ vibraFrame.frame('/video/:id', async (c) => {
       ),
       intents: [
         <Button action={`/`}>back</Button>,
-        <Button.Link href={`https://vibra-so.vercel.app`}>record new</Button.Link>,
+        <Button.Link href={`https://www.vibra.so/`}>record new</Button.Link>,
       ],
     });
   }
@@ -575,7 +575,7 @@ vibraFrame.frame('/landing', async (c) => {
       title: "anky",
       image: `https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/fba9568e-5644-43f4-14f6-fd2de153a100/original`,
       intents: [
-          <Button.Link href={`https://vibra-so.vercel.app/`}>vibra</Button.Link>,
+          <Button.Link href={`https://www.vibra.so/`}>vibra</Button.Link>,
         ],
   })
 })
