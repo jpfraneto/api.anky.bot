@@ -2,7 +2,7 @@ import { Button, FrameContext, Frog, TextInput } from 'frog';
 import { Author } from '../../../utils/types/cast'
 import { getPublicUrl } from '../../../utils/url';
 import { replyToThisCastThroughChatGtp } from '../../../utils/anky';
-import { fetchCastInformationFromHash, fetchCastInformationFromUrl, saveCastTriadeOnDatabase } from '../../../utils/cast';
+import { fetchCastInformationFromHash, fetchCastInformationFromUrl, publishCastToTheProtocolThroughDummyBot, saveCastTriadeOnDatabase } from '../../../utils/cast';
 import prisma from '../../../utils/prismaClient';
 import { neynar, NeynarVariables } from 'frog/middlewares';
 import { getStartOfDay } from '../../../utils/time';
@@ -10,7 +10,7 @@ import { abbreviateAddress } from '../../../utils/strings';
 import axios from 'axios';
 import { Logger } from '../../../utils/Logger';
 import { neynarClient } from '../../services/neynar-service';
-import { NEYNAR_API_KEY } from '../../../env/server-env';
+import { DUMMY_BOT_SIGNER, NEYNAR_API_KEY } from '../../../env/server-env';
 import { getUserFromFid } from '../../../utils/farcaster';
 import queryString from 'query-string';
 import {
@@ -61,10 +61,6 @@ const imageOptions = {
   height: 600,
   fonts: [
     {
-      name: 'Poetsen One',
-      source: 'google',
-    },
-    {
       name: 'Roboto',
       source: 'google',
     },
@@ -98,13 +94,14 @@ tvFrame.use(async (c, next) => {
 });
 
 tvFrame.frame('/', async (c) => {
-  let imageUrl = "https://res.cloudinary.com/dzpugkpuz/image/upload/v1720814025/agprlpuqgvpblbgfsljy.gif"
+  let imageUrl = "https://res.cloudinary.com/dzpugkpuz/image/upload/v1720929883/psychedelic_mandala_dx4bvb.gif"
   return c.res({
     title: 'vibra.so',
     image: imageUrl,
     intents: [
       <Button action={`/maretus.eth/1`}>@maretus.eth</Button>,
-      <Button action={`/kevinmfer/1`}>@kevinmfer</Button>
+      <Button action={`/kevinmfer/1`}>@kevinmfer</Button>,
+      <Button action={`/other`}>other</Button>,
     ],
   });
 });
@@ -510,7 +507,6 @@ const channels = {
 
 tvFrame.frame('/:username/:index', async (c) => {
   const { username, index } = c.req.param()
-  
   if(username == "kevinmfer" || username == "maretus.eth") {
     const userCasts = channels[username]
     const currentIndex = Number(index)
@@ -529,27 +525,56 @@ tvFrame.frame('/:username/:index', async (c) => {
       title: 'vibra.so',
       image: thisCast.upload_url,
       intents: [
-        <Button.Link href={warpcastRedirectLink}>share episode</Button.Link>,
+        <Button.Link href={warpcastRedirectLink}>share 📺</Button.Link>,
         <Button.Link href={`https://www.warpcast.com/${username}/${thisCast.hash.slice(0,10)}`}>OG cast</Button.Link>,
         <Button action={`/kevinmfer/${nextIndex}`}>next ▶️</Button>,
-        <Button action="/">back</Button>
+        <Button action="/">tv list</Button>
       ],
     });
   } else {
     return c.res({
       title: 'vibra.so',
-      image: (
-        <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-          <span tw="text-cyan-500 text-2xl mb-2">this user's tv channel is not available yet</span>
-          <span tw="text-cyan-500 text-2xl">tell them to cast more videos</span>
-          <span tw="text-cyan-500 text-2xl">maybe it is time for some /vibra</span>
-        </div>
-      ),
+      image: "https://github.com/jpfraneto/images/blob/main/channel-not-ready.png?raw=true",
       intents: [
         <Button.Link href={`https://www.vibra.so/`}>more info</Button.Link>,
       ],
     });
   }
+})
+
+tvFrame.frame('/other', async (c) => {
+  return c.res({
+      title: "anky",
+      image: "https://github.com/jpfraneto/images/blob/main/awesome-videos.png?raw=true",
+      intents: [
+          <TextInput placeholder="@randomero | @dwp" />,
+          <Button action={`/recommend-channel`}>recommend</Button>,
+          <Button action={`/`}>back</Button>
+        ],
+  })
+})
+
+tvFrame.frame('/recommend-channel', async (c) => {
+  const inputText = c.inputText
+  const thisUserFid = c.frameData?.fid
+  const user = await getUserFromFid(thisUserFid!)
+  console.log('the userrrr s', user)
+  const ogFrameHash = "0x"
+  let replyOptions = {
+    text: `@${user.username} nominated ${inputText} to be part of this TV experiment with their fabulous videos.\n\nwould you like to see them here?`,
+    embeds: [],
+    parent: ogFrameHash,
+    signer_uuid: DUMMY_BOT_SIGNER,
+  };
+  const castedRecommendationHash  = await publishCastToTheProtocolThroughDummyBot(replyOptions)
+  return c.res({
+      title: "anky",
+      image: "https://github.com/jpfraneto/images/blob/main/thank-you.png?raw=true",
+      intents: [
+          <Button.Link href={`https://www.warpcast.com/~/conversations/${castedRecommendationHash}`}>recommendation</Button.Link>,
+          <Button.Link href={`https://www.vibra.so/`}>vibra?</Button.Link>
+        ],
+  })
 })
 
 

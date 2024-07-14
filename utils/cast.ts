@@ -124,7 +124,7 @@ export async function publishCastToTheProtocolThroughDummyBot(castOptions: CastI
       return response.data.cast;
     } catch (error) {
       try {
-        console.log("publishing the cast through neynar failed, now trying with pinata")
+        console.log("publishing the cast through neynar failed, now trying with pinata", error)
         // const response = await axios.post(
         //   "https://api.pinata.cloud/v3/farcaster/casts",
         //   castOptions,
