@@ -292,7 +292,7 @@ gamesFrame.frame('/recommend-game', async (c) => {
   const inputText = c.inputText
   const thisUserFid = c.frameData?.fid
   const user = await getUserFromFid(thisUserFid!)
-  const ogFrameHash = "0xc297f08e016851c9a5ea26f25fa8a9a0af47636f"
+  const ogFrameHash = "0x8068bc4e21fa0d59e5465e4a7b85d1f0083ebf13"
   let replyOptions = {
     text: `@${user.username} nominated ${inputText}\n\nfor the list of memorable games.\n\nwould you like to see it here?`,
     embeds: [],
