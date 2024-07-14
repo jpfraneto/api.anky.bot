@@ -34,6 +34,7 @@ import { vibraFrame } from './routes/vibra'
 import { extractWordBeforeWaveEmoji } from '../utils/zurf';
 import { sadhanaFrame } from './routes/sadhana';
 import { tvFrame } from './routes/tv';
+import { gamesFrame } from './routes/games';
 // **** ROUTE IMPORTS ****
 
 // **** FAST SCRIPTS ****
@@ -94,6 +95,7 @@ app.route('/vibra', vibraFrame)
 app.route('/stream', stream)
 app.route('/sadhana', sadhanaFrame)
 app.route('/tv', tvFrame)
+app.route('/gamecaster', gamesFrame)
 
 app.get("/aloja", (c) => {
   return c.json({
