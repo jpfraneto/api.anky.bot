@@ -225,7 +225,7 @@ gamesFrame.use(async (c, next) => {
 });
 
 gamesFrame.frame('/', async (c) => {
-  let imageUrl = "https://gifdb.com/images/high/nes-video-game-console-hzu9w5k6dpdf1p6k.gif"
+  let imageUrl = "https://media1.giphy.com/media/26BRvIUi6zWRqRCFy/200w.gif?cid=6c09b9524wt29x6j4a4zoc9dvfvbmi6kth9jbmvt7ze6sjre&ep=v1_gifs_search&rid=200w.gif&ct=g"
   return c.res({
     title: 'gamecaster',
     image: imageUrl,
