@@ -558,8 +558,7 @@ tvFrame.frame('/recommend-channel', async (c) => {
   const inputText = c.inputText
   const thisUserFid = c.frameData?.fid
   const user = await getUserFromFid(thisUserFid!)
-  console.log('the userrrr s', user)
-  const ogFrameHash = "0x"
+  const ogFrameHash = "0xc297f08e016851c9a5ea26f25fa8a9a0af47636f"
   let replyOptions = {
     text: `@${user.username} nominated ${inputText} to be part of this TV experiment with their fabulous videos.\n\nwould you like to see them here?`,
     embeds: [],
