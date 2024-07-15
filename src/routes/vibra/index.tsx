@@ -96,21 +96,6 @@ vibraFrame.use(async (c, next) => {
   await next();
 });
 
-vibraFrame.frame('/gifs/:username', async (c) => {
-  const { username } = c.req.param();
-  let imageUrl = "https://res.cloudinary.com/dzpugkpuz/image/upload/v1720814025/agprlpuqgvpblbgfsljy.gif"
-  if(username == "brad"){
-    imageUrl = "https://res.cloudinary.com/dzpugkpuz/image/upload/v1720814025/brad.gif"
-  }
-  return c.res({
-    title: 'vibra.so',
-    image: imageUrl,
-    intents: [
-      <Button action={`/what-is-vibra`}>vibra?</Button>
-    ],
-  });
-});
-
 vibraFrame.frame('/', async (c) => {
   const timestamp = new Date().getTime()
   
@@ -130,6 +115,23 @@ vibraFrame.frame('/', async (c) => {
   ],
   });
 });
+
+vibraFrame.frame('/gifs/:username', async (c) => {
+  const { username } = c.req.param();
+  let imageUrl = "https://res.cloudinary.com/dzpugkpuz/image/upload/v1720814025/agprlpuqgvpblbgfsljy.gif"
+  if(username == "brad"){
+    imageUrl = "https://res.cloudinary.com/dzpugkpuz/image/upload/v1720814025/brad.gif"
+  }
+  return c.res({
+    title: 'vibra.so',
+    image: imageUrl,
+    intents: [
+      <Button action={`/what-is-vibra`}>vibra?</Button>
+    ],
+  });
+});
+
+
 
 export const vibraColor = '#00FFFF';
 
@@ -221,6 +223,7 @@ vibraFrame.frame('/livestream/:streamer/:tokenAddress', async (c) => {
     title: 'vibra.so',
     image: 'https://github.com/jpfraneto/images/blob/main/guty.png?raw=true',
     intents: [
+      <TextInput placeholder='wena manu' />,
       <Button action="/index">
         more livestreams
       </Button>,
@@ -235,7 +238,9 @@ vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
   const body = await c.req.json();
   let { streamer, tokenAddress } = c.req.param();
   const { frameData } = c
+  console.log("111", frameData)
   const thisUserFid = c.frameData?.fid
+  console.log("aloja", thisUserFid)
   tokenAddress = "0x9d7d5a2d0985a0206d72a0c1087b1a4fc9614cd3"
   const user = await getUserFromFid(thisUserFid!)
   const userVerifiedAddresses = user.verified_addresses.eth_addresses

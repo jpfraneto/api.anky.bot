@@ -127,6 +127,9 @@ app.frame('/frames', async (c) => {
         </div>
       </div>
     ),
-    intents: [<Button action="/">Back</Button>],
+    intents: [<Button action="/">Back</Button>, 
+    <Button action="/">1</Button>, 
+    <Button action="/">2</Button>,
+    <Button action="/">3</Button>],
   });
 });

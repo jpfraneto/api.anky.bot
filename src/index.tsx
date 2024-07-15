@@ -24,7 +24,6 @@ import { uploadVideoToTheCloud, uploadGifToTheCloud } from '../utils/cloudinary'
 import { publishCastToTheProtocol } from '../utils/cast';
 import { scrollFeedAndReply } from '../utils/anky';
 
-
 // **** ROUTE IMPORTS ****
 import { app as landing } from './routes/landing'
 import { app as stream } from './routes/stream'
@@ -35,6 +34,7 @@ import { extractWordBeforeWaveEmoji } from '../utils/zurf';
 import { sadhanaFrame } from './routes/sadhana';
 import { tvFrame } from './routes/tv';
 import { gamesFrame } from './routes/games';
+import { enterFrame } from './routes/enter';
 // **** ROUTE IMPORTS ****
 
 // **** FAST SCRIPTS ****
@@ -96,10 +96,44 @@ app.route('/stream', stream)
 app.route('/sadhana', sadhanaFrame)
 app.route('/tv', tvFrame)
 app.route('/gamecaster', gamesFrame)
+app.route('/enter', enterFrame)
 
 app.get("/aloja", (c) => {
   return c.json({
     134: 124,
+  });
+});
+
+app.get("/moxie-airdrop/:fid", (c) => {
+  let { fid } = c.req.param();
+
+  if (!fid || isNaN(Number(fid))) {
+    return c.json({ error: "Invalid or missing FID parameter" }, 400);
+  }
+
+  const numericFid = Number(fid);
+  
+  // Deterministic calculation
+  const base = 500000; // 500,000 as base
+  const prime1 = 31; // A prime number
+  const prime2 = 47; // Another prime number
+  const maxAirdrop = 2000000; // Cap at 2 million
+  
+  // Complex calculation to make it non-linear
+  let result = base;
+  result += (numericFid * prime1) % 10000; // Add some variability based on FID
+  result *= Math.floor(Math.sqrt(numericFid) * prime2); // Multiply by a factor based on square root of FID
+  result = result % 1999999 + 1; // Ensure result is between 1 and 2 million
+  
+  // Final adjustment to make it look more random
+  result = (result * 1337) % 2000000; // 1237 is another prime
+
+  // Ensure the result doesn't exceed the maximum airdrop amount
+  result = Math.min(result, maxAirdrop);
+
+  return c.json({
+    fid: numericFid,
+    moxieAirdropAmount: result
   });
 });
 
