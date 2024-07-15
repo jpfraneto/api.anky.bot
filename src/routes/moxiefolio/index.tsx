@@ -297,8 +297,20 @@ async function getUsersAidropAllocation(fid: string): Promise<{fid: number, moxi
 moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
   const { fid } = c.req.param();
   const usersFid = c.frameData?.fid
+  let returnButtons;
   if(usersFid?.toString() == fid) {
-    console.log("give the user the opportunity to edit her moxiefolio")
+    // this means the user is watching her moxiefolio
+    returnButtons = [
+      <TextInput placeholder='@lambchop 13 update'/>,
+      <Button action={`/generic-reply`}>edit mxflio</Button>,
+      <Button.Link href={`https://www.vibra.so`}>share</Button.Link>,
+    ]
+  } else {
+    // this means that the user is watching another users moxiefolio
+    returnButtons = [
+      <Button action={`/moxiefolio/${usersFid}`}>my mxflio</Button>,
+      <Button.Link href={`https://www.vibra.so`}>share mxflio</Button.Link>,
+    ]
   }
   try {
     const usersMoxiefolio = await getUsersMoxiefolio(fid)
@@ -332,11 +344,7 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
           </div>
         </div>
       ),
-      intents: [
-          <TextInput placeholder='edit moxiefolio...'/>,
-          <Button action={`/generic-reply`}>edit</Button>,
-          <Button.Link href={`https://www.vibra.so`}>share</Button.Link>,
-        ],
+      intents: returnButtons,
     })
   } catch (error) {
     return c.res({
