@@ -151,7 +151,7 @@ moxiefolioFrame.frame('/', async (c) => {
       <Button.Link
       href={addActionLink({
         name: 'moxie fantokens',
-        postUrl: '/fantokendistribution/moxiedistribution',
+        postUrl: '/moxiefolio/moxiedistribution',
       })}
     >
       moxiefolio action
