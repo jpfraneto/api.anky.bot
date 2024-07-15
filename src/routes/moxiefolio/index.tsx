@@ -305,7 +305,7 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
     console.log("The users airdrop is: ", usersAirdrop)
     const percentage = Number((totalWeight/100).toFixed(2))
     console.log("the percentage is: ", percentage)
-    const stringsss = `${percentage}% of airdrop allocated - ${usersAirdrop.moxieAirdropAmount * percentage}/${usersAirdrop} $moxie`
+    const stringsss = `${percentage}% of airdrop allocated - ${usersAirdrop.moxieAirdropAmount * percentage}/${usersAirdrop.moxieAirdropAmount} $moxie`
     console.log("tjhe strngggg s: ", stringsss)
     return c.res({
       title: "moxiefolio",
@@ -333,6 +333,7 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
           <TextInput placeholder='edit moxiefolio...'/>,
           <Button action={`/generic-reply`}>edit</Button>,
           <Button action={`/generic-reply`}>edit 2</Button>,
+          <Button.Link href={`https://www.vibra.so`}>share</Button.Link>,
         ],
     })
   } catch (error) {
