@@ -266,9 +266,9 @@ moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c
         </div>
       ),
       intents: [
-          <Button action={`/moxiefolio/${actionedCastFid}`}>users moxiefolio</Button>,
-          <Button action={`/moxiefolio/${userFid}`}>my moxiefolio</Button>,
-          <Button action={`/check-stats/${actionedCastHash}`}>add to moxiefolio</Button>,
+          <Button action={`/moxiefolio/${actionedCastFid}`}>spy user</Button>,
+          <Button action={`/moxiefolio/${usersFid}`}>my mxflo</Button>,
+          <Button action={`/check-stats/${actionedCastHash}`}>add ftken</Button>,
           <Button action={`/how-it-works`}>wtf?</Button>,
         ],
   })
