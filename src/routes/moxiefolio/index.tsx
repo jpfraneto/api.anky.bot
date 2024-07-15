@@ -333,11 +333,11 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
         </div>
       ),
       intents: [
-          <TextInput placeholder="bad reply url/hash" />,
-          <Button action={`/generic-reply/${actionedCastHash}`}>users moxiefolio</Button>,
-          <Button action={`/submit-reply-triade/${actionedCastHash}`}>my moxiefolio</Button>,
-          <Button action={`/check-stats/${actionedCastHash}`}>check stats</Button>,
-          <Button action={`/check-score/${actionedCastHash}`}>check my score</Button>,
+          // <TextInput placeholder="bad reply url/hash" />,
+          <Button action={`/generic-reply`}>users moxiefolio</Button>,
+          // <Button action={`/submit-reply-triade/${actionedCastHash}`}>my moxiefolio</Button>,
+          // <Button action={`/check-stats/${actionedCastHash}`}>check stats</Button>,
+          // <Button action={`/check-score/${actionedCastHash}`}>check my score</Button>,
         ],
   })
   }
