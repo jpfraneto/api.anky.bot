@@ -305,27 +305,26 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
     console.log("The users airdrop is: ", usersAirdrop)
     const percentage = Number((totalWeight/100).toFixed(2))
     console.log("the percentage is: ", percentage)
-    const stringsss = `${percentage}% of airdrop allocated - ${usersAirdrop.moxieAirdropAmount * percentage}/${usersAirdrop.moxieAirdropAmount} $moxie`
-    console.log("tjhe strngggg s: ", stringsss)
     return c.res({
       title: "moxiefolio",
       image: (
-          <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
-          <div tw="mt-10 flex text-4xl text-white">
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
             {fid}'s moxiefolio
           </div>
-          <div tw="mt-2 flex text-4xl text-white">
+          <div tw="mt-2 flex text-xl text-purple-200">
             airdrop: {usersAirdrop.moxieAirdropAmount} $moxie
           </div>
-          <div tw="mt-2 flex text-4xl text-white">
-            total fan tokens owned: {usersMoxiefolio.length}
+          <div tw="mt-2 flex text-xl text-white">
+            total fan tokens in moxiefolio: {usersMoxiefolio.length}
           </div>
-          {usersMoxiefolio.map((x,i) => (<div tw="flex flex-col flex-wrap items-center justify-center text-center">
-              <div tw="flex">{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>
+          {usersMoxiefolio.map((x,i) => (<div tw="flex flex-col flex-wrap items-center text-2xl justify-start">
+              <div tw="flex w-full">{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>
             </div>)
           )}
-          <div tw="mt-3 flex text-xl text-white">
-            {stringsss}
+          <div tw="mt-3 flex flex-col text-xl text-white">
+            <div tw="flex w-full">{percentage}% of airdrop allocated</div>
+            <div tw="flex w-full text-purple-300">{usersAirdrop.moxieAirdropAmount * percentage}/{usersAirdrop.moxieAirdropAmount} $moxie</div>
           </div>
         </div>
       ),
