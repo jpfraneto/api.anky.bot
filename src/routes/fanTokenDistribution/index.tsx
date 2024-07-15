@@ -167,7 +167,7 @@ fanTokenDistribution.frame('/', async (c) => {
       <Button.Link
       href={addActionLink({
         name: 'moxie fantokens',
-        postUrl: '/fanTokenDistribution/moxie-distribution',
+        postUrl: '/moxie-distribution',
       })}
     >
       Add Moxie Action
