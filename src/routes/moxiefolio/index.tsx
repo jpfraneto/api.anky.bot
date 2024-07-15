@@ -314,13 +314,9 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
   }
   try {
     const usersMoxiefolio = await getUsersMoxiefolio(fid)
-    console.log("the users moxiefolio is", usersMoxiefolio)
     const totalWeight = usersMoxiefolio.reduce((acc, user) => acc + user.moxiefolioWeight, 0);
-    console.log("the total weight is", totalWeight)
     const usersAirdrop = await getUsersAidropAllocation(fid)
-    console.log("The users airdrop is: ", usersAirdrop)
     const percentage = Number((totalWeight/100).toFixed(2))
-    console.log("the percentage is: ", percentage)
     return c.res({
       title: "moxiefolio",
       image: (
@@ -334,11 +330,11 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
           <div tw="mt-2 flex text-xl text-white">
             total fan tokens in moxiefolio: {usersMoxiefolio.length}
           </div>
-          {usersMoxiefolio.map((x,i) => (<div tw="flex flex-col items-center text-2xl justify-start">
-              <div tw="flex w-full text-left">{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>
-            </div>)
-          )}
-          <div tw="mt-3 flex flex-col text-xl text-white">
+          <div tw="flex flex-col items-start justify-center p-2 rounded-xl bg-purple-200">
+            {usersMoxiefolio.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>)
+            )}
+          </div>
+          <div tw="mt-3 flex flex-col justify-center text-xl text-white">
             <div tw="flex w-full">{percentage}% of airdrop allocated</div>
             <div tw="flex w-full text-purple-300">{Math.floor(usersAirdrop.moxieAirdropAmount * percentage)}/{usersAirdrop.moxieAirdropAmount} $moxie</div>
           </div>
