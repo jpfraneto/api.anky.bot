@@ -117,10 +117,10 @@ moxiefolioFrame.castAction(
     });
   },
   { 
-    name: "moxie fantokens", 
-    icon: "eye", 
+    name: "moxiefolio", 
+    icon: "diamond", 
     aboutUrl: "https://action.vibra.so", 
-    description: "start thinking on how you will distribute your $moxie airdrop now"
+    description: "start organizing on how you will distribute your $moxie airdrop now"
   }
 );
 
@@ -236,25 +236,25 @@ moxiefolioFrame.frame('/how-it-works', async (c) => {
 moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => {
   const { actionedCastHash, actionedCastFid } = c.req.param();
   const { frameData } = c
-  const userFid = frameData?.fid!
+  const usersFid = c.frameData?.fid
   const socialScoreOfUser = 3.03
   const thisCastScore = 12300
   return c.res({
       title: "anky",
       image: (
-          <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
-          <div tw="mt-10 flex text-4xl text-white">
-            hello ser
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-6xl text-purple-400">
+            m o x i e f o l i o
           </div>
-          <div tw="mt-10 flex text-4xl text-white">
-            what do you want to do?
-          </div>
-          <div tw="p-2 flex flex-col rounded-xl border-white bg-purple-600">
+          <div tw="w-full p-4 flex flex-col rounded-xl border-white bg-purple-600">
             <div tw="mt-3 flex text-xl text-white">
               cast hash - {actionedCastHash}
             </div>
             <div tw="mt-3 flex text-xl text-white">
-              cast hash - {actionedCastFid}
+              users fid - {usersFid}
+            </div>
+            <div tw="mt-3 flex text-xl text-white">
+              actioned cast's fid - {actionedCastFid}
             </div>
             <div tw="mt-3 flex text-xl text-white">
               (farscore) user social score - {socialScoreOfUser}
@@ -266,11 +266,10 @@ moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c
         </div>
       ),
       intents: [
-          <TextInput placeholder="bad reply url/hash" />,
           <Button action={`/moxiefolio/${actionedCastFid}`}>users moxiefolio</Button>,
           <Button action={`/moxiefolio/${userFid}`}>my moxiefolio</Button>,
           <Button action={`/check-stats/${actionedCastHash}`}>add to moxiefolio</Button>,
-          <Button action={`/what-is-this`}>wtf?</Button>,
+          <Button action={`/how-it-works`}>wtf?</Button>,
         ],
   })
 })
