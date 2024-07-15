@@ -296,6 +296,10 @@ async function getUsersAidropAllocation(fid: string): Promise<{fid: number, moxi
 
 moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
   const { fid } = c.req.param();
+  const usersFid = c.frameData?.fid
+  if(usersFid?.toString() == fid) {
+    console.log("give the user the opportunity to edit her moxiefolio")
+  }
   try {
     const usersMoxiefolio = await getUsersMoxiefolio(fid)
     console.log("the users moxiefolio is", usersMoxiefolio)
@@ -318,20 +322,19 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
           <div tw="mt-2 flex text-xl text-white">
             total fan tokens in moxiefolio: {usersMoxiefolio.length}
           </div>
-          {usersMoxiefolio.map((x,i) => (<div tw="flex flex-col flex-wrap items-center text-2xl justify-start">
-              <div tw="flex w-full">{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>
+          {usersMoxiefolio.map((x,i) => (<div tw="flex flex-col items-center text-2xl justify-start">
+              <div tw="flex w-full text-left">{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>
             </div>)
           )}
           <div tw="mt-3 flex flex-col text-xl text-white">
             <div tw="flex w-full">{percentage}% of airdrop allocated</div>
-            <div tw="flex w-full text-purple-300">{usersAirdrop.moxieAirdropAmount * percentage}/{usersAirdrop.moxieAirdropAmount} $moxie</div>
+            <div tw="flex w-full text-purple-300">{Math.floor(usersAirdrop.moxieAirdropAmount * percentage)}/{usersAirdrop.moxieAirdropAmount} $moxie</div>
           </div>
         </div>
       ),
       intents: [
           <TextInput placeholder='edit moxiefolio...'/>,
           <Button action={`/generic-reply`}>edit</Button>,
-          <Button action={`/generic-reply`}>edit 2</Button>,
           <Button.Link href={`https://www.vibra.so`}>share</Button.Link>,
         ],
     })
