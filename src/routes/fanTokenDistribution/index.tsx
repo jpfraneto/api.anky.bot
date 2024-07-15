@@ -100,6 +100,7 @@ fanTokenDistribution.use(async (c, next) => {
 fanTokenDistribution.castAction(
   "/moxie-distribution",
   (c) => {
+    console.log("IN HEREEEEEEE")
     const { actionData } = c;
     const { castId, fid, messageHash, network, timestamp, url } = actionData;
     const actionedCastHash = castId.hash;
