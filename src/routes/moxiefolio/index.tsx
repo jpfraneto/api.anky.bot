@@ -305,6 +305,8 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
     console.log("The users airdrop is: ", usersAirdrop)
     const percentage = Number((totalWeight/100).toFixed(2))
     console.log("the percentage is: ", percentage)
+    const stringsss = `${percentage}% of airdrop allocated - ${usersAirdrop.moxieAirdropAmount * percentage}/${usersAirdrop} $moxie`
+    console.log("tjhe strngggg s: ", stringsss)
     return c.res({
       title: "moxiefolio",
       image: (
@@ -322,13 +324,15 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
               <div>{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>
             </div>)
           )}
-          {/* <div tw="mt-3 flex text-xl text-white">
-            {percentage}% of airdrop allocated - {usersAirdrop.moxieAirdropAmount * percentage}/ {usersAirdrop} $moxie
-          </div> */}
+          <div tw="mt-3 flex text-xl text-white">
+            {stringsss}
+          </div>
         </div>
       ),
       intents: [
-          <Button action={`/generic-reply`}>edit</Button>
+          <TextInput placeholder='edit moxiefolio...'/>,
+          <Button action={`/generic-reply`}>edit</Button>,
+          <Button action={`/generic-reply`}>edit 2</Button>,
         ],
     })
   } catch (error) {
@@ -346,6 +350,16 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
         ],
   })
   }
+})
+
+moxiefolioFrame.frame(`/edit/:fid`, async (c) => {
+  return c.res({
+    title: 'vibra.so',
+    image: '',
+    intents: [
+      <Button action={`/what-is-vibra`}>vibra?</Button>
+    ],
+  });
 })
 
 moxiefolioFrame.frame('/gifs/:username', async (c) => {
