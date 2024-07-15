@@ -297,8 +297,11 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
   const { fid } = c.req.param();
   try {
     const usersMoxiefolio = await getUsersMoxiefolio(fid)
+    console.log("the users moxiefolio is", usersMoxiefolio)
     const totalWeight = usersMoxiefolio.reduce((acc, user) => acc + user.moxiefolioWeight, 0);
+    console.log("the total weight is", totalWeight)
     const usersAirdrop = await getUsersAidropAllocation(fid)
+    console.log("The users airdrop is: ", usersAirdrop)
     return c.res({
       title: "moxiefolio",
       image: (
@@ -313,8 +316,9 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
             total fan tokens owned: {usersMoxiefolio.length}
           </div>
           {usersMoxiefolio.map((x,i) => {
-            return <div tw="mt-3 flex flex-col text-xl text-white border-white border-2 p-1">
-              <span tw="">{i}. @{x.username} - {x.moxiefolioWeight}%</span>
+            console.log("in hereeeeee", x)
+            return <div tw="mt-2 flex text-xl text-white border-white border-2 p-1">
+              <span tw="text-purple-200">{i}. @{x.username} - {x.moxiefolioWeight}%</span>
             </div>
           })}
           <div tw="mt-3 flex text-xl text-white">
