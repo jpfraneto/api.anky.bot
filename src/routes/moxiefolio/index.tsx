@@ -318,22 +318,17 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
           <div tw="mt-2 flex text-4xl text-white">
             total fan tokens owned: {usersMoxiefolio.length}
           </div>
-          {/* {usersMoxiefolio.map((x,i) => (<div tw="flex flex-col flex-wrap items-center justify-center text-center">
+          {usersMoxiefolio.map((x,i) => (<div tw="flex flex-col flex-wrap items-center justify-center text-center">
               <div>{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>
             </div>)
-          )} */}
-          <div tw="mt-3 flex text-xl text-white">
+          )}
+          {/* <div tw="mt-3 flex text-xl text-white">
             {percentage}% of airdrop allocated - {usersAirdrop.moxieAirdropAmount * percentage}/ {usersAirdrop} $moxie
-          </div>
+          </div> */}
         </div>
       ),
       intents: [
-          <Button action={`/generic-reply`}>edit</Button>,
-          // <TextInput placeholder="bad reply url/hash" />,
-          // <Button action={`/generic-reply/${actionedCastHash}`}>users moxiefolio</Button>,
-          // <Button action={`/submit-reply-triade/${actionedCastHash}`}>my moxiefolio</Button>,
-          // <Button action={`/check-stats/${actionedCastHash}`}>check stats</Button>,
-          // <Button action={`/check-score/${actionedCastHash}`}>check my score</Button>,
+          <Button action={`/generic-reply`}>edit</Button>
         ],
     })
   } catch (error) {
