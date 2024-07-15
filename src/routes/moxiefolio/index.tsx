@@ -290,6 +290,7 @@ async function getUsersMoxiefolio(fid: string): Promise<UserFantoken[]> {
 
 async function getUsersAidropAllocation(fid: string): Promise<{fid: number, moxieAirdropAmount: number}> {
   const response = await axios.get(`https://api.anky.bot/moxie-airdrop/${fid}`)
+  console.log("THE RESPONSE IS: ", response)
   return response.data
 }
 
@@ -339,18 +340,14 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
     return c.res({
       title: "moxiefolio",
       image: (
-          <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
-          <div tw="mt-10 flex text-4xl text-white">
-            there was an error
-          </div>
+          <div tw="flex h-full w-full px-16 items-center justify-center bg-black text-white">
+            <div tw="mt-10 flex text-4xl text-white">
+              there was an error
+            </div>
         </div>
       ),
       intents: [
-          // <TextInput placeholder="bad reply url/hash" />,
           <Button action={`/generic-reply`}>users moxiefolio</Button>,
-          // <Button action={`/submit-reply-triade/${actionedCastHash}`}>my moxiefolio</Button>,
-          // <Button action={`/check-stats/${actionedCastHash}`}>check stats</Button>,
-          // <Button action={`/check-score/${actionedCastHash}`}>check my score</Button>,
         ],
   })
   }
