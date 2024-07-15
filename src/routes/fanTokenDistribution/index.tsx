@@ -180,19 +180,20 @@ fanTokenDistribution.frame('/', async (c) => {
 
 fanTokenDistribution.frame('/how-it-works', async (c) => {
   try {
+    const userAirdrop = 12345
     return c.res({
       title: 'Anky Genesis',
       image: (
-        <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
-          <div tw="text-8xl">moxie airdrop</div>
-          <div tw="mt-5 flex text-3xl">
-            Made with ❤️ by{' '}
-            <span
-              tw="ml-1"
-
-            >
-              @jpfraneto
-            </span>
+        <div tw="flex h-full w-full flex-col items-center justify-center p-2 bg-black text-white">
+          <div tw="text-4xl">moxie airdrop</div>
+          <div tw="mt-2 flex text-2xl">
+            your $moxie airdrop is {userAirdrop}.
+          </div>
+          <div tw="mt-2 flex text-2xl">
+            you can buy farcaster's members with it
+          </div>
+          <div tw="mt-2 flex text-2xl">
+            the system that you will install with this frame will help you do that
           </div>
         </div>
       ),
