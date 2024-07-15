@@ -321,7 +321,7 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
             total fan tokens owned: {usersMoxiefolio.length}
           </div>
           {usersMoxiefolio.map((x,i) => (<div tw="flex flex-col flex-wrap items-center justify-center text-center">
-              <div>{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>
+              <div tw="flex">{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>
             </div>)
           )}
           <div tw="mt-3 flex text-xl text-white">
