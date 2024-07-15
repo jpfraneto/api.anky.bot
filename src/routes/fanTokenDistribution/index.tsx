@@ -168,7 +168,7 @@ fanTokenDistribution.frame('/', async (c) => {
       <Button.Link
       href={addActionLink({
         name: 'moxie fantokens',
-        postUrl: '/moxie-distribution',
+        postUrl: '/fantokendistribution/moxie-distribution',
       })}
     >
       Add Moxie Action
@@ -181,16 +181,20 @@ fanTokenDistribution.frame('/', async (c) => {
 fanTokenDistribution.frame('/how-it-works', async (c) => {
   try {
     const userAirdrop = 12345
+    const username = "jpfraneto"
     return c.res({
       title: 'Anky Genesis',
       image: (
         <div tw="flex h-full w-full flex-col items-center justify-center p-2 bg-black text-white">
           <div tw="text-4xl">moxie airdrop</div>
           <div tw="mt-2 flex text-2xl">
+            you are {username}
+          </div>
+          <div tw="mt-2 flex text-2xl">
             your $moxie airdrop is {userAirdrop}.
           </div>
           <div tw="mt-2 flex text-2xl">
-            you can buy farcaster's members with it
+            you can buy farcaster's members FAN TOKENS with it
           </div>
           <div tw="mt-2 flex text-2xl">
             the system that you will install with this frame will help you do that
@@ -199,7 +203,13 @@ fanTokenDistribution.frame('/how-it-works', async (c) => {
       ),
       intents: [
         <Button.Link href="https://www.moxie.xyz">
-          moxie
+          moxie?
+        </Button.Link>,
+         <Button.Link href="https://warpcast.com/burrrrrberry/0xbb396912">
+         FAN TOKENS?
+        </Button.Link>,
+        <Button.Link href="https://www.vibra.so">
+          vibra?
         </Button.Link>,
         <Button action="/">
           back
