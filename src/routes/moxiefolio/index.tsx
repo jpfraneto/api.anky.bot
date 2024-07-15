@@ -124,6 +124,115 @@ moxiefolioFrame.castAction(
   }
 );
 
+
+moxiefolioFrame.frame('/', async (c) => {
+  const targetTimestamp = 1721919600;
+  const currentTime = Math.floor(Date.now() / 1000);
+  const timeLeft = Math.max(0, targetTimestamp - currentTime);
+
+  const days = Math.floor(timeLeft / (60 * 60 * 24));
+  const hours = Math.floor((timeLeft % (60 * 60 * 24)) / (60 * 60));
+  const minutes = Math.floor((timeLeft % (60 * 60)) / 60);
+  const seconds = timeLeft % 60;
+
+  const formattedTime = `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} left`;
+
+  return c.res({
+    title: 'moxie aidrop',
+    image: (
+      <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+        <span tw="text-purple-500 text-2xl mb-2">understand how to plan for the upcoming moxie airdrop</span>
+        <div tw="flex text-4xl text-purple-200 mt-4">
+          {formattedTime}
+        </div>
+    </div>
+   ),
+    intents: [
+      <Button.Link
+      href={addActionLink({
+        name: 'moxie fantokens',
+        postUrl: '/fantokendistribution/moxiedistribution',
+      })}
+    >
+      moxiefolio action
+    </Button.Link>,
+    <Button action="/how-it-works">how this works?</Button>,
+  ],
+  });
+});
+
+moxiefolioFrame.frame('/how-it-works', async (c) => {
+  try {
+    const userAirdrop = 12345
+    const username = "jpfraneto"
+    return c.res({
+      title: 'Anky Genesis',
+      image: (
+        <div tw="flex h-full w-full flex-col items-center justify-center py-2 px-8 bg-black text-white">
+          <div tw="text-4xl">moxie airdrop</div>
+          <div tw="mt-2 flex text-2xl">
+            you are {username}
+          </div>
+          <div tw="mt-2 flex text-2xl">
+            your $moxie airdrop is {userAirdrop}.
+          </div>
+          <div tw="mt-2 flex text-2xl">
+            you can buy farcaster's members FAN TOKENS with it
+          </div>
+          <div tw="mt-2 text-2xl flex flex-col w-full">
+            <span>the system that you will install with this frame will help you do that. you can call the cast action on any cast and add that member of farcaster to your... </span><span tw="mx-auto text-7xl text-purple-400">moxiefolio</span>
+          </div>
+          <div tw="mt-2 flex text-2xl">
+            by /vibra
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button.Link href="https://www.moxie.xyz">
+          moxie?
+        </Button.Link>,
+         <Button.Link href="https://warpcast.com/burrrrrberry/0xbb396912">
+         fan tokens?
+        </Button.Link>,
+        <Button.Link href="https://www.vibra.so">
+          vibra?
+        </Button.Link>,
+        <Button action="/">
+          back
+        </Button>,
+    ],
+    });
+  } catch (error) {
+    console.log("there was an error")
+    return c.res({
+      title: 'Anky Genesis',
+      image: (
+        <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
+          <div tw="text-8xl">THERE WAS AN ERROR!</div>
+          <div tw="mt-5 flex text-3xl">
+            Made with ❤️ by{' '}
+            <span
+              tw="ml-1"
+
+            >
+              @jpfraneto
+            </span>
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button.Link href="https://www.moxie.xyz">
+          moxie
+        </Button.Link>,
+        <Button action="/">
+          back
+        </Button>,
+    ],
+    });
+  }
+})
+
+
 moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => {
   const { actionedCastHash, actionedCastFid } = c.req.param();
   const { frameData } = c
@@ -231,113 +340,6 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
           <Button action={`/check-score/${actionedCastHash}`}>check my score</Button>,
         ],
   })
-  }
-})
-
-moxiefolioFrame.frame('/', async (c) => {
-  const targetTimestamp = 1721919600;
-  const currentTime = Math.floor(Date.now() / 1000);
-  const timeLeft = Math.max(0, targetTimestamp - currentTime);
-
-  const days = Math.floor(timeLeft / (60 * 60 * 24));
-  const hours = Math.floor((timeLeft % (60 * 60 * 24)) / (60 * 60));
-  const minutes = Math.floor((timeLeft % (60 * 60)) / 60);
-  const seconds = timeLeft % 60;
-
-  const formattedTime = `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} left`;
-
-  return c.res({
-    title: 'moxie aidrop',
-    image: (
-      <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-        <span tw="text-purple-500 text-2xl mb-2">understand how to plan for the upcoming moxie airdrop</span>
-        <div tw="flex text-4xl text-purple-200 mt-4">
-          {formattedTime}
-        </div>
-    </div>
-   ),
-    intents: [
-      <Button.Link
-      href={addActionLink({
-        name: 'moxie fantokens',
-        postUrl: '/fantokendistribution/moxiedistribution',
-      })}
-    >
-      moxiefolio action
-    </Button.Link>,
-    <Button action="/how-it-works">how this works?</Button>,
-  ],
-  });
-});
-
-moxiefolioFrame.frame('/how-it-works', async (c) => {
-  try {
-    const userAirdrop = 12345
-    const username = "jpfraneto"
-    return c.res({
-      title: 'Anky Genesis',
-      image: (
-        <div tw="flex h-full w-full flex-col items-center justify-center py-2 px-8 bg-black text-white">
-          <div tw="text-4xl">moxie airdrop</div>
-          <div tw="mt-2 flex text-2xl">
-            you are {username}
-          </div>
-          <div tw="mt-2 flex text-2xl">
-            your $moxie airdrop is {userAirdrop}.
-          </div>
-          <div tw="mt-2 flex text-2xl">
-            you can buy farcaster's members FAN TOKENS with it
-          </div>
-          <div tw="mt-2 text-2xl flex flex-col w-full">
-            <span>the system that you will install with this frame will help you do that. you can call the cast action on any cast and add that member of farcaster to your... </span><span tw="mx-auto text-7xl text-purple-400">moxiefolio</span>
-          </div>
-          <div tw="mt-2 flex text-2xl">
-            by /vibra
-          </div>
-        </div>
-      ),
-      intents: [
-        <Button.Link href="https://www.moxie.xyz">
-          moxie?
-        </Button.Link>,
-         <Button.Link href="https://warpcast.com/burrrrrberry/0xbb396912">
-         fan tokens?
-        </Button.Link>,
-        <Button.Link href="https://www.vibra.so">
-          vibra?
-        </Button.Link>,
-        <Button action="/">
-          back
-        </Button>,
-    ],
-    });
-  } catch (error) {
-    console.log("there was an error")
-    return c.res({
-      title: 'Anky Genesis',
-      image: (
-        <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
-          <div tw="text-8xl">THERE WAS AN ERROR!</div>
-          <div tw="mt-5 flex text-3xl">
-            Made with ❤️ by{' '}
-            <span
-              tw="ml-1"
-
-            >
-              @jpfraneto
-            </span>
-          </div>
-        </div>
-      ),
-      intents: [
-        <Button.Link href="https://www.moxie.xyz">
-          moxie
-        </Button.Link>,
-        <Button action="/">
-          back
-        </Button>,
-    ],
-    });
   }
 })
 
