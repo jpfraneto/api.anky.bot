@@ -98,7 +98,7 @@ fanTokenDistribution.use(async (c, next) => {
 });
 
 fanTokenDistribution.castAction(
-  "/moxie-distribution",
+  "/moxiedistribution",
   (c) => {
     console.log("IN HEREEEEEEE")
     const { actionData } = c;
@@ -168,7 +168,7 @@ fanTokenDistribution.frame('/', async (c) => {
       <Button.Link
       href={addActionLink({
         name: 'moxie fantokens',
-        postUrl: '/fantokendistribution/moxie-distribution',
+        postUrl: '/fantokendistribution/moxiedistribution',
       })}
     >
       Add Moxie Action
