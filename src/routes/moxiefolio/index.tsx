@@ -304,6 +304,7 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
     const usersAirdrop = await getUsersAidropAllocation(fid)
     console.log("The users airdrop is: ", usersAirdrop)
     const percentage = Number((totalWeight/100).toFixed(2))
+    console.log("the percentage is: ", percentage)
     return c.res({
       title: "moxiefolio",
       image: (
@@ -317,12 +318,10 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
           <div tw="mt-2 flex text-4xl text-white">
             total fan tokens owned: {usersMoxiefolio.length}
           </div>
-          {usersMoxiefolio.map((x,i) => {
-            console.log("in hereeeeee", x, i)
-            return (<div tw="mt-2 flex text-xl text-white border-white border-2 p-1">
-              <span tw="text-purple-200 flex">{i + 1}. @{x.username} - {x.moxiefolioWeight}%</span>
-             </div>)
-          })}
+          {usersMoxiefolio.map((x,i) => (<div tw="flex flex-col flex-wrap items-center justify-center text-center">
+              <div>{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>
+            </div>)
+          )}
           <div tw="mt-3 flex text-xl text-white">
             {percentage}% of airdrop allocated - {usersAirdrop.moxieAirdropAmount * percentage}/ {usersAirdrop} $moxie
           </div>
