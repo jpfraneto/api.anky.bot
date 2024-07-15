@@ -297,7 +297,6 @@ async function updateUsersMoxiefolio(fid: string, newMoxieFolio: UserMoxiefolioI
 
 async function getUsersAidropAllocation(fid: string): Promise<{fid: number, moxieAirdropAmount: number}> {
   const response = await axios.get(`https://api.anky.bot/moxie-airdrop/${fid}`)
-  console.log("THE RESPONSE IS: ", response)
   return response.data
 }
 
@@ -342,8 +341,15 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
             )}
           </div>
           <div tw="mt-3 flex flex-col justify-center text-xl text-white">
-            <div tw="flex w-full">{percentage}% of airdrop allocated</div>
-            <div tw="flex w-full text-purple-300">{Math.floor(usersAirdrop.moxieAirdropAmount * percentage)}/{usersAirdrop.moxieAirdropAmount} $moxie</div>
+            <div tw="flex flex-col bg-purple-300 rounded-xl">
+              <div tw="flex w-full">{percentage}% of airdrop allocated</div>
+              <div tw="flex w-full text-purple-300">{Math.floor(usersAirdrop.moxieAirdropAmount * percentage)} $moxie</div>
+            </div>
+            <div tw="flex flex-col bg-green-300 rounded-xl">
+              <div tw="flex w-full">{1- percentage}% of airdrop available</div>
+              <div tw="flex w-full text-purple-300">{Math.floor(usersAirdrop.moxieAirdropAmount * (1 - percentage))} $moxie</div>
+            </div>
+
           </div>
         </div>
       ),
@@ -383,9 +389,9 @@ moxiefolioFrame.frame(`/edit-moxiefolio/:fid`, async (c) => {
     image: (
           <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
           <div tw="mt-10 flex text-xl text-white">
-            you are trying to update your allocation towards {username}
+            you are trying to update your allocation of $moxie to {username}
           </div>
-          <div tw="mt-2 flex text-xl text-white">
+          <div tw="p-2 border border-white bg-purple-200 text-black mt-2 flex text-2xl text-white">
             from 4% of your airdrop to {newAllocation}% of it
           </div>
           <div tw="mt-2 flex text-xl text-white">
@@ -420,6 +426,7 @@ moxiefolioFrame.frame('/update-moxiefolio/:fid', async (c) => {
   const percentage = Number((totalWeight/100).toFixed(2))
   const usersAirdrop = await getUsersAidropAllocation(fid)
   const newMoxiefolioLinkForUser = "i just updated my moxiefolio, preparing for the upcoming $moxie airdrop. did you? you can install the moxiefolio cast action on this frame. 👇🏽 https://www.vibra.so"
+  console.log("JUST BEFORE UPDATING THE MOXIEFOLIO")
   return c.res({
     title: 'vibra.so',
     image: (
