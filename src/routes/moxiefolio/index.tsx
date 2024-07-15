@@ -318,9 +318,9 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
           </div>
           {usersMoxiefolio.map((x,i) => {
             console.log("in hereeeeee", x)
-            return <div tw="mt-2 flex text-xl text-white border-white border-2 p-1">
-              <span tw="text-purple-200">{i}. @{x.username} - {x.moxiefolioWeight}%</span>
-            </div>
+            return (<div tw="mt-2 flex text-xl text-white border-white border-2 p-1">
+              <span tw="text-purple-200 flex">{i}. @{x.username} - {x.moxiefolioWeight}%</span>
+             </div>)
           })}
           <div tw="mt-3 flex text-xl text-white">
           {(totalWeight/100).toFixed(2)}% of airdrop allocated - {usersAirdrop.moxieAirdropAmount * totalWeight}/ {usersAirdrop} $moxie
