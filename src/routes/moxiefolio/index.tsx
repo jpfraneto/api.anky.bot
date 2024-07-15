@@ -56,7 +56,7 @@ type VibraState = {
   };
 };
 
-type UserFantoken = {
+type UserMoxiefolioItem = {
   username: string;
   fid: number;
   moxiefolioWeight: number;
@@ -274,7 +274,7 @@ moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c
   })
 })
 
-const usersFantokens: UserFantoken[] = [
+const usersFantokens: UserMoxiefolioItem[] = [
   { username: 'hcot', fid: 123, moxiefolioWeight: 10 },
   { username: 'lambchop', fid: 2222, moxiefolioWeight: 12 },
   { username: 'danicaswanson', fid: 2, moxiefolioWeight: 10 },
@@ -282,11 +282,18 @@ const usersFantokens: UserFantoken[] = [
   { username: 'jpfraneto', fid: 16098, moxiefolioWeight: 4 }
 ];
 
-async function getUsersMoxiefolio(fid: string): Promise<UserFantoken[]> {
+async function getUsersMoxiefolio(fid: string): Promise<UserMoxiefolioItem[]> {
   // In a real application, you'd fetch this data based on the fid
   // For now, we're just returning all users
   return usersFantokens;
 }
+
+async function updateUsersMoxiefolio(fid: string, newMoxieFolio: UserMoxiefolioItem[]): Promise<UserMoxiefolioItem[]> {
+  // In a real application, you'd fetch this data based on the fid
+  // For now, we're just returning all users
+  return usersFantokens;
+}
+
 
 async function getUsersAidropAllocation(fid: string): Promise<{fid: number, moxieAirdropAmount: number}> {
   const response = await axios.get(`https://api.anky.bot/moxie-airdrop/${fid}`)
@@ -301,8 +308,8 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
   if(usersFid?.toString() == fid) {
     // this means the user is watching her moxiefolio
     returnButtons = [
-      <TextInput placeholder='@lambchop 13 update'/>,
-      <Button action={`/generic-reply`}>edit mxflio</Button>,
+      <TextInput placeholder='lambchop 13'/>,
+      <Button action={`/edit-moxiefolio/${usersFid}`}>edit mxflio</Button>,
       <Button.Link href={`https://www.vibra.so`}>share</Button.Link>,
     ]
   } else {
@@ -330,8 +337,8 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
           <div tw="mt-2 flex text-xl text-white">
             total fan tokens in moxiefolio: {usersMoxiefolio.length}
           </div>
-          <div tw="flex flex-col items-start justify-center p-2 rounded-xl bg-purple-200">
-            {usersMoxiefolio.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. @{x.username} - {x.moxiefolioWeight}%</div>)
+          <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
+            {usersMoxiefolio.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.username} - {x.moxiefolioWeight}%</div>)
             )}
           </div>
           <div tw="mt-3 flex flex-col justify-center text-xl text-white">
@@ -359,27 +366,83 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
   }
 })
 
-moxiefolioFrame.frame(`/edit/:fid`, async (c) => {
+moxiefolioFrame.frame(`/edit-moxiefolio/:fid`, async (c) => {
+  const { fid } = c.req.param();
+  const usersFid = c.frameData?.fid
+  if(usersFid?.toString() == fid){
+    console.log("THIS IS INVALID BECAUSE THE FIDS DON'T CORRESPOND TO EACH OTHER")
+  }
+  const textInput = c.frameData?.inputText!
+  console.log('the text input is: ', textInput)
+  // sanitize data and check if everything exists
+  const username = textInput.split(" ")[0]
+  const newAllocation = textInput.split(" ")[1]
+  const usersMoxiefolio = await getUsersMoxiefolio(fid)
   return c.res({
     title: 'vibra.so',
-    image: '',
+    image: (
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            you are trying to update your allocation towards {username}
+          </div>
+          <div tw="mt-2 flex text-xl text-white">
+            from 4% of your airdrop to {newAllocation}% of it
+          </div>
+          <div tw="mt-2 flex text-xl text-white">
+            if you accept, this will be your new moxiefolio distribution
+          </div>
+          <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
+            {usersMoxiefolio.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.username} - {x.moxiefolioWeight}%</div>)
+            )}
+          </div>
+          <div tw="mt-3 flex flex-col justify-center text-xl text-white">
+            <div tw="flex w-full">after this, 80% of your airdrop will be allocated</div>
+          </div>
+        </div>
+      ),
     intents: [
-      <Button action={`/what-is-vibra`}>vibra?</Button>
+      <Button action={`/update-moxiefolio/${fid}`}>accept</Button>,
+      <Button action={`/moxiefolio/${fid}`}>cancel</Button>
     ],
   });
 })
 
-moxiefolioFrame.frame('/gifs/:username', async (c) => {
-  const { username } = c.req.param();
-  let imageUrl = "https://res.cloudinary.com/dzpugkpuz/image/upload/v1720814025/agprlpuqgvpblbgfsljy.gif"
-  if(username == "brad"){
-    imageUrl = "https://res.cloudinary.com/dzpugkpuz/image/upload/v1720814025/brad.gif"
+
+moxiefolioFrame.frame('/update-moxiefolio/:fid', async (c) => {
+  const { fid } = c.req.param();
+  const usersFid = c.frameData?.fid
+  if(usersFid?.toString() == fid){
+    console.log("THIS IS INVALID BECAUSE THE FIDS DON'T CORRESPOND TO EACH OTHER")
   }
+  // process the moxiefolio update for the user, call the database, update everything, and render the new moxiefolio for the user here
+  const updatedUsersMoxiefolio = await updateUsersMoxiefolio(fid, [])
+  const totalWeight = updatedUsersMoxiefolio.reduce((acc, user) => acc + user.moxiefolioWeight, 0);
+  const percentage = Number((totalWeight/100).toFixed(2))
+  const usersAirdrop = await getUsersAidropAllocation(fid)
+  const newMoxiefolioLinkForUser = "i just updated my moxiefolio, preparing for the upcoming $moxie airdrop. did you? you can install the moxiefolio cast action on this frame. 👇🏽 https://www.vibra.so"
   return c.res({
     title: 'vibra.so',
-    image: imageUrl,
+    image: (
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            your moxiefolio was updated
+          </div>
+          <div tw="mt-2 flex text-xl text-white">
+            this is the new one
+          </div>
+          <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
+            {updatedUsersMoxiefolio.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.username} - {x.moxiefolioWeight}%</div>)
+            )}
+          </div>
+          <div tw="mt-3 flex flex-col justify-center text-xl text-white">
+            <div tw="flex w-full">{percentage}% of airdrop allocated</div>
+            <div tw="flex w-full text-purple-300">{Math.floor(usersAirdrop.moxieAirdropAmount * percentage)}/{usersAirdrop.moxieAirdropAmount} $moxie</div>
+          </div>
+        </div>
+      ),
     intents: [
-      <Button action={`/what-is-vibra`}>vibra?</Button>
+      <Button action={`/edit-moxiefolio/${fid}`}>edit again</Button>,
+      <Button.Link href={newMoxiefolioLinkForUser}>share</Button.Link>
     ],
   });
-});
+})
