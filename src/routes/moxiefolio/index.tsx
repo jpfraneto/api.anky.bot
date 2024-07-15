@@ -56,6 +56,12 @@ type VibraState = {
   };
 };
 
+type UserFantoken = {
+  username: string;
+  fid: number;
+  moxiefolioWeight: number;
+}
+
 const imageOptions = {
   width: 600,
   height: 600,
@@ -80,7 +86,7 @@ export type VibraContext<T extends string = '/logic/:castHash'> = FrameContext<
   {}
 >;
 
-export const fanTokenDistribution = new Frog<{
+export const moxiefolioFrame = new Frog<{
   State: VibraState;
 }>({
   imageOptions,
@@ -91,13 +97,13 @@ export const fanTokenDistribution = new Frog<{
   }
 })
 
-fanTokenDistribution.use(async (c, next) => {
+moxiefolioFrame.use(async (c, next) => {
   Logger.info(`[${c.req.method}] : : :  ${c.req.url}`);
   c.res.headers.set('Cache-Control', 'max-age=0');
   await next();
 });
 
-fanTokenDistribution.castAction(
+moxiefolioFrame.castAction(
   "/moxiedistribution",
   (c) => {
     const { actionData } = c;
@@ -107,7 +113,7 @@ fanTokenDistribution.castAction(
     const publicUrl = getPublicUrl()
     return c.res({
       type: "frame",
-      path: `${publicUrl}/fantokendistribution/castAction/${actionedCastHash}/${actionedFid}`,
+      path: `${publicUrl}/moxiefolio/castAction/${actionedCastHash}/${actionedFid}`,
     });
   },
   { 
@@ -118,9 +124,12 @@ fanTokenDistribution.castAction(
   }
 );
 
-fanTokenDistribution.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => {
+moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => {
   const { actionedCastHash, actionedCastFid } = c.req.param();
-  console.log("ALOJA ALOJA", actionedCastHash, actionedCastFid)
+  const { frameData } = c
+  const userFid = frameData?.fid!
+  const socialScoreOfUser = 3.03
+  const thisCastScore = 12300
   return c.res({
       title: "anky",
       image: (
@@ -131,35 +140,120 @@ fanTokenDistribution.frame('/castAction/:actionedCastHash/:actionedCastFid', asy
           <div tw="mt-10 flex text-4xl text-white">
             what do you want to do?
           </div>
-          <div tw="p-8 flex flex-col rounded-xl border-white bg-purple-600">
-            <div tw="mt-10 flex text-xl text-white">
-              cast hash
+          <div tw="p-2 flex flex-col rounded-xl border-white bg-purple-600">
+            <div tw="mt-3 flex text-xl text-white">
+              cast hash - {actionedCastHash}
             </div>
-            <div tw="mt-10 flex text-xl text-white">
-              {actionedCastHash}
+            <div tw="mt-3 flex text-xl text-white">
+              cast hash - {actionedCastFid}
             </div>
-          </div>
-          <div tw="mt-20 flex text-4xl text-gray-500">
-            Made with ❤️ by <span tw="ml-2 text-white">@jpfraneto</span>
+            <div tw="mt-3 flex text-xl text-white">
+              (farscore) user social score - {socialScoreOfUser}
+            </div>
+            <div tw="mt-3 flex text-xl text-white">
+              cast score  - {thisCastScore}
+            </div>
           </div>
         </div>
       ),
       intents: [
           <TextInput placeholder="bad reply url/hash" />,
-          <Button action={`/generic-reply/${actionedCastHash}`}>generic reply</Button>,
-          <Button action={`/submit-reply-triade/${actionedCastHash}`}>add triade</Button>,
-          <Button action={`/check-stats/${actionedCastHash}`}>check stats</Button>,
-          <Button action={`/check-score/${actionedCastHash}`}>check my score</Button>,
+          <Button action={`/moxiefolio/${actionedCastFid}`}>users moxiefolio</Button>,
+          <Button action={`/moxiefolio/${userFid}`}>my moxiefolio</Button>,
+          <Button action={`/check-stats/${actionedCastHash}`}>add to moxiefolio</Button>,
+          <Button action={`/what-is-this`}>wtf?</Button>,
         ],
   })
 })
 
-fanTokenDistribution.frame('/', async (c) => {
+const usersFantokens: UserFantoken[] = [
+  { username: 'hcot', fid: 123, moxiefolioWeight: 10 },
+  { username: 'lambchop', fid: 2222, moxiefolioWeight: 12 },
+  { username: 'danicaswanson', fid: 2, moxiefolioWeight: 10 },
+  { username: 'pentacle.eth', fid: 888, moxiefolioWeight: 23 },
+  { username: 'jpfraneto', fid: 16098, moxiefolioWeight: 4 }
+];
+
+async function getUsersMoxiefolio(fid: string): Promise<UserFantoken[]> {
+  // In a real application, you'd fetch this data based on the fid
+  // For now, we're just returning all users
+  return usersFantokens;
+}
+
+moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
+  const { fid } = c.req.param();
+  try {
+    const usersMoxiefolio = await getUsersMoxiefolio(fid)
+    console.log("the users moxiefolio is: ", usersMoxiefolio)
+    const totalWeight = usersMoxiefolio.reduce((acc, user) => acc + user.moxiefolioWeight, 0);
+
+    return c.res({
+      title: "moxiefolio",
+      image: (
+          <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-4xl text-white">
+            {fid}'s moxiefolio
+          </div>
+          <div tw="mt-10 flex text-4xl text-white">
+            total fan tokens owned: {usersMoxiefolio.length}
+          </div>
+          <div tw="p-2 flex flex-col rounded-xl border-white bg-purple-600">
+            <div tw="mt-3 flex text-xl text-white">
+              % of airdrop allocated - {totalWeight}
+            </div>
+          </div>
+        </div>
+      ),
+      intents: [
+          <Button action={`/generic-reply`}>edit</Button>,
+          // <TextInput placeholder="bad reply url/hash" />,
+          // <Button action={`/generic-reply/${actionedCastHash}`}>users moxiefolio</Button>,
+          // <Button action={`/submit-reply-triade/${actionedCastHash}`}>my moxiefolio</Button>,
+          // <Button action={`/check-stats/${actionedCastHash}`}>check stats</Button>,
+          // <Button action={`/check-score/${actionedCastHash}`}>check my score</Button>,
+        ],
+    })
+  } catch (error) {
+    return c.res({
+      title: "moxiefolio",
+      image: (
+          <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-4xl text-white">
+            there was an error
+          </div>
+        </div>
+      ),
+      intents: [
+          <TextInput placeholder="bad reply url/hash" />,
+          <Button action={`/generic-reply/${actionedCastHash}`}>users moxiefolio</Button>,
+          <Button action={`/submit-reply-triade/${actionedCastHash}`}>my moxiefolio</Button>,
+          <Button action={`/check-stats/${actionedCastHash}`}>check stats</Button>,
+          <Button action={`/check-score/${actionedCastHash}`}>check my score</Button>,
+        ],
+  })
+  }
+})
+
+moxiefolioFrame.frame('/', async (c) => {
+  const targetTimestamp = 1721919600;
+  const currentTime = Math.floor(Date.now() / 1000);
+  const timeLeft = Math.max(0, targetTimestamp - currentTime);
+
+  const days = Math.floor(timeLeft / (60 * 60 * 24));
+  const hours = Math.floor((timeLeft % (60 * 60 * 24)) / (60 * 60));
+  const minutes = Math.floor((timeLeft % (60 * 60)) / 60);
+  const seconds = timeLeft % 60;
+
+  const formattedTime = `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} left`;
+
   return c.res({
     title: 'moxie aidrop',
     image: (
       <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-        <span tw="text-purple-500 text-2xl mb-2">understand how to distribute your moxie airdrop</span>
+        <span tw="text-purple-500 text-2xl mb-2">understand how to plan for the upcoming moxie airdrop</span>
+        <div tw="flex text-4xl text-purple-200 mt-4">
+          {formattedTime}
+        </div>
     </div>
    ),
     intents: [
@@ -169,21 +263,21 @@ fanTokenDistribution.frame('/', async (c) => {
         postUrl: '/fantokendistribution/moxiedistribution',
       })}
     >
-      Add Moxie Action
+      moxiefolio action
     </Button.Link>,
     <Button action="/how-it-works">how this works?</Button>,
   ],
   });
 });
 
-fanTokenDistribution.frame('/how-it-works', async (c) => {
+moxiefolioFrame.frame('/how-it-works', async (c) => {
   try {
     const userAirdrop = 12345
     const username = "jpfraneto"
     return c.res({
       title: 'Anky Genesis',
       image: (
-        <div tw="flex h-full w-full flex-col items-center justify-center p-2 bg-black text-white">
+        <div tw="flex h-full w-full flex-col items-center justify-center py-2 px-8 bg-black text-white">
           <div tw="text-4xl">moxie airdrop</div>
           <div tw="mt-2 flex text-2xl">
             you are {username}
@@ -194,8 +288,11 @@ fanTokenDistribution.frame('/how-it-works', async (c) => {
           <div tw="mt-2 flex text-2xl">
             you can buy farcaster's members FAN TOKENS with it
           </div>
+          <div tw="mt-2 text-2xl flex flex-col w-full">
+            <span>the system that you will install with this frame will help you do that. you can call the cast action on any cast and add that member of farcaster to your... </span><span tw="mx-auto text-7xl text-purple-400">moxiefolio</span>
+          </div>
           <div tw="mt-2 flex text-2xl">
-            the system that you will install with this frame will help you do that
+            by /vibra
           </div>
         </div>
       ),
@@ -204,7 +301,7 @@ fanTokenDistribution.frame('/how-it-works', async (c) => {
           moxie?
         </Button.Link>,
          <Button.Link href="https://warpcast.com/burrrrrberry/0xbb396912">
-         FAN TOKENS?
+         fan tokens?
         </Button.Link>,
         <Button.Link href="https://www.vibra.so">
           vibra?
@@ -244,7 +341,7 @@ fanTokenDistribution.frame('/how-it-works', async (c) => {
   }
 })
 
-fanTokenDistribution.frame('/gifs/:username', async (c) => {
+moxiefolioFrame.frame('/gifs/:username', async (c) => {
   const { username } = c.req.param();
   let imageUrl = "https://res.cloudinary.com/dzpugkpuz/image/upload/v1720814025/agprlpuqgvpblbgfsljy.gif"
   if(username == "brad"){

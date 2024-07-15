@@ -35,7 +35,7 @@ import { sadhanaFrame } from './routes/sadhana';
 import { tvFrame } from './routes/tv';
 import { gamesFrame } from './routes/games';
 import { enterFrame } from './routes/enter';
-import { fanTokenDistribution } from './routes/fanTokenDistribution';
+import { moxiefolioFrame } from './routes/moxiefolio';
 // **** ROUTE IMPORTS ****
 
 // **** FAST SCRIPTS ****
@@ -98,7 +98,7 @@ app.route('/sadhana', sadhanaFrame)
 app.route('/tv', tvFrame)
 app.route('/gamecaster', gamesFrame)
 app.route('/enter', enterFrame)
-app.route('/fantokendistribution', fanTokenDistribution)
+app.route('/moxiefolio', moxiefolioFrame)
 
 app.get("/aloja", (c) => {
   return c.json({
