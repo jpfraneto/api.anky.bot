@@ -100,12 +100,10 @@ fanTokenDistribution.use(async (c, next) => {
 fanTokenDistribution.castAction(
   "/moxiedistribution",
   (c) => {
-    console.log("IN HEREEEEEEE")
     const { actionData } = c;
     const { castId, fid, messageHash, network, timestamp, url } = actionData;
     const actionedCastHash = castId.hash;
     const actionedFid = castId.fid
-    console.log("IN HERE98sa78sca", actionedCastHash, actionedFid)
     const publicUrl = getPublicUrl()
     return c.res({
       type: "frame",
@@ -121,8 +119,8 @@ fanTokenDistribution.castAction(
 );
 
 fanTokenDistribution.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => {
-  const { actionedCastHash } = c.req.param();
-  console.log("the actioned cast hash is", actionedCastHash)
+  const { actionedCastHash, actionedCastFid } = c.req.param();
+  console.log("ALOJA ALOJA", actionedCastHash, actionedCastFid)
   return c.res({
       title: "anky",
       image: (
@@ -158,7 +156,7 @@ fanTokenDistribution.frame('/castAction/:actionedCastHash/:actionedCastFid', asy
 
 fanTokenDistribution.frame('/', async (c) => {
   return c.res({
-    title: 'vibra.so',
+    title: 'moxie aidrop',
     image: (
       <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
         <span tw="text-purple-500 text-2xl mb-2">understand how to distribute your moxie airdrop</span>
