@@ -243,7 +243,7 @@ moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c
       title: "anky",
       image: (
           <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-          <div tw="mt-10 flex text-6xl text-purple-400">
+          <div tw="mb-20 flex text-6xl text-purple-400">
             m o x i e f o l i o
           </div>
           <div tw="w-full p-4 flex flex-col rounded-xl border-white bg-purple-600">
@@ -288,13 +288,17 @@ async function getUsersMoxiefolio(fid: string): Promise<UserFantoken[]> {
   return usersFantokens;
 }
 
+async function getUsersAidropAllocation(fid: string): Promise<{fid: number, moxieAirdropAmount: number}> {
+  const response = await axios.get(`https://api.anky.bot/moxie-airdrop/${fid}`)
+  return response.data
+}
+
 moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
   const { fid } = c.req.param();
   try {
     const usersMoxiefolio = await getUsersMoxiefolio(fid)
-    console.log("the users moxiefolio is: ", usersMoxiefolio)
     const totalWeight = usersMoxiefolio.reduce((acc, user) => acc + user.moxiefolioWeight, 0);
-
+    const usersAirdrop = await getUsersAidropAllocation(fid)
     return c.res({
       title: "moxiefolio",
       image: (
@@ -302,13 +306,19 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
           <div tw="mt-10 flex text-4xl text-white">
             {fid}'s moxiefolio
           </div>
-          <div tw="mt-10 flex text-4xl text-white">
+          <div tw="mt-2 flex text-4xl text-white">
+            airdrop: {usersAirdrop.moxieAirdropAmount} $moxie
+          </div>
+          <div tw="mt-2 flex text-4xl text-white">
             total fan tokens owned: {usersMoxiefolio.length}
           </div>
-          <div tw="p-2 flex flex-col rounded-xl border-white bg-purple-600">
-            <div tw="mt-3 flex text-xl text-white">
-              % of airdrop allocated - {totalWeight}
+          {usersMoxiefolio.map((x,i) => {
+            return <div tw="mt-3 flex flex-col text-xl text-white border-white border-2 p-1">
+              <span tw="">{i}. @{x.username} - {x.moxiefolioWeight}%</span>
             </div>
+          })}
+          <div tw="mt-3 flex text-xl text-white">
+          {(totalWeight/100).toFixed(2)}% of airdrop allocated - {usersAirdrop.moxieAirdropAmount * totalWeight}/ {usersAirdrop} $moxie
           </div>
         </div>
       ),
