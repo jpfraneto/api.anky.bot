@@ -88,7 +88,7 @@ export async function updateMoxieFantokenEntry(userId: number, targetUserId: num
         await tx.moxieFantokenEntry.create({
           data: {
             moxieFantoken: { connect: { id: moxieFantoken.id } },
-            targetUserId: targetUserId,
+            targetUser: { connect: { id: targetUserId } },
             allocation: newAllocation
           }
         });
