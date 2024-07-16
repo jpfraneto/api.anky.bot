@@ -60,13 +60,13 @@ export async function updateMoxieFantokenEntry(userId: number, targetUserId: num
         });
       }
   
-      const existingEntry = moxieFantoken.entries?.find(e => e.targetUserId === targetUserId);
+      const existingEntry = moxieFantoken?.entries?.find(e => e.targetUserId === targetUserId);
       const oldAllocation = existingEntry ? existingEntry.allocation : 0;
       const allocationDiff = newAllocation - oldAllocation;
   
-      if (moxieFantoken.totalAllocated + allocationDiff > 100) {
+      if (moxieFantoken?.totalAllocated + allocationDiff > 100) {
         // Redistribute allocation
-        const availableAllocation = 100 - (moxieFantoken.totalAllocated + allocationDiff);
+        const availableAllocation = 100 - (moxieFantoken?.totalAllocated + allocationDiff);
         const redistributionFactor = availableAllocation / moxieFantoken.totalAllocated;
   
         for (const entry of moxieFantoken.entries) {
