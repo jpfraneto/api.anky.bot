@@ -94,7 +94,7 @@ let marketingCastHash = "0xb57a72e87bc7ed580553e22c2c30101086ea2146"
 replyToDanFrame.frame('/', async (c) => {
   return c.res({
     title: 'fc marketing',
-    image: "https://github.com/jpfraneto/images/blob/main/marketing.png?raw=true",
+    image: "https://github.com/jpfraneto/images/blob/main/anon-reply.png?raw=true",
     intents: [
       <TextInput placeholder='appreciate feedback, etc'/>,
       <Button action={`/replied`}>📭</Button>
