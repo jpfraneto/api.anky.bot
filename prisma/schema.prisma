@@ -159,7 +159,7 @@ model MoxieFantoken {
 
 model MoxieFantokenEntry {
   id                Int             @id @default(autoincrement())
-  moxieFantokens    MoxieFantoken  @relation(fields: [moxieFantokenId], references: [id])
+  moxieFantoken    MoxieFantoken  @relation(fields: [moxieFantokenId], references: [id])
   moxieFantokenId  Int
   targetUser        User            @relation(fields: [targetUserId], references: [id])
   targetUserId      Int

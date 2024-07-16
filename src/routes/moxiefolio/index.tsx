@@ -580,7 +580,7 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
           <div tw="mt-10 flex text-xl text-white">
-            You can only update your own Moxie Fantokens
+            You can only update your own Moxiefolio
           </div>
         </div>
       ),
@@ -590,9 +590,10 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
     });
   }
 
-  const { username, allocation } = c.req.query();
-  
-  if (!username || !allocation) {
+  const { targetFid, allocation } = c.req.query();
+  const inputText = c.frameData?.inputText;
+
+  if (!targetFid && !inputText) {
     return c.res({
       title: 'Error',
       image: (
@@ -608,20 +609,48 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
     });
   }
 
-  try {
-    const updatedMoxieFantokens = await updateMoxieFantokenEntry(parseInt(fid), username as string, parseFloat(allocation as string))
+  let targetUserFid: number;
+  let newAllocation: number;
 
+  if (targetFid) {
+    targetUserFid = parseInt(targetFid as string);
+    newAllocation = parseFloat(inputText || '0');
+  } else {
+    const [inputFid, inputAllocation] = inputText!.split(' ');
+    targetUserFid = parseInt(inputFid);
+    newAllocation = parseFloat(inputAllocation);
+  }
+
+  if (isNaN(targetUserFid) || isNaN(newAllocation)) {
     return c.res({
-      title: 'moxiefolio',
+      title: 'Error',
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
           <div tw="mt-10 flex text-xl text-white">
-            your moxiefolio was updated
+            Invalid input format. Please use "FID ALLOCATION" (e.g., "12345 10").
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/moxie-fantokens/${fid}`}>Back to my Moxie Fantokens</Button>
+      ],
+    });
+  }
+
+  try {
+    const updatedMoxieFantokens = await updateMoxieFantokenEntry(parseInt(fid), targetUserFid, newAllocation);
+
+    return c.res({
+      title: 'Moxiefolio Updated',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            Your moxiefolio was updated
           </div>
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
             {updatedMoxieFantokens.entries.map((entry: MoxieFantokenEntry, i: number) => (
               <div tw="flex w-full text-left" key={i}>
-                {i + 1}. {entry.targetUser.username} - {entry.allocation}%
+                {i + 1}. {entry.targetUser.username} (FID: {entry.targetUser.fid}) - {entry.allocation}%
               </div>
             ))}
           </div>
@@ -636,6 +665,7 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
       ],
     });
   } catch (error) {
+    console.error("Error updating Moxie Fantokens:", error);
     return c.res({
       title: 'Error',
       image: (
@@ -653,44 +683,78 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
 });
 
 moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
-  console
   const { fidToAddToMoxiefolio } = c.req.param();
-  const usersFid = c.frameData?.fid
-  const userToAdd = await getUserFromFid(Number(fidToAddToMoxiefolio))
-  console.log("the user to add is: ", userToAdd)
-  // sanitize data and check if everything exists
-  const username = userToAdd.username
-  const newAllocation = textInput.split(" ")[1]
-  const usersMoxiefolio = await getUsersMoxiefolio(usersFid?.toString()!)
-  return c.res({
-    title: 'vibra.so',
-    image: (
-          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+  const usersFid = c.frameData?.fid;
+  
+  if (!usersFid) {
+    return c.res({
+      title: 'Error',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
           <div tw="mt-10 flex text-xl text-white">
-            you are trying to add part of your allocation of $moxie to {username}
-          </div>
-          <div tw="p-2 border border-white bg-purple-200 text-black mt-2 flex text-2xl text-white">
-            how much do you want to add to it?
-          </div>
-          <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
-            {usersMoxiefolio.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.username} - {x.moxiefolioWeight}%</div>)
-            )}
-          </div>
-          <div tw="mt-2 flex text-xl text-white">
-            you have 1212 available
-          </div>
-          
-          <div tw="mt-3 flex flex-col justify-center text-xl text-white">
-            <div tw="flex w-full">after this, 80% of your airdrop will be allocated</div>
+            User not authenticated
           </div>
         </div>
       ),
-    intents: [
-      <Button action={`/update-moxiefolio/${usersFid}`}>accept</Button>,
-      <Button action={`/moxiefolio/${usersFid}`}>cancel</Button>
-    ],
-  });
-})
+      intents: [
+        <Button action="/">Back to Home</Button>
+      ],
+    });
+  }
+
+  try {
+    const userToAdd = await getUserFromFid(Number(fidToAddToMoxiefolio));
+    const usersMoxiefolio = await getUserMoxieFantokens(Number(usersFid));
+    const usersAirdrop = await getUsersAidropAllocation(usersFid.toString());
+
+    const totalAllocated = usersMoxiefolio ? usersMoxiefolio.entries.reduce((sum, entry) => sum + entry.allocation, 0) : 0;
+    const availableAllocation = Math.max(0, 100 - totalAllocated);
+
+    return c.res({
+      title: 'Add Fantoken to Moxiefolio',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            Add {userToAdd.username} to your moxiefolio
+          </div>
+          <div tw="p-2 border border-white bg-purple-200 text-black mt-2 flex text-2xl text-white">
+            Available allocation: {availableAllocation.toFixed(2)}%
+          </div>
+          <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
+            {usersMoxiefolio?.entries.map((x, i) => (
+              <div tw="flex w-full text-left" key={i}>
+                {i + 1}. {x.targetUser.username} - {x.allocation}%
+              </div>
+            ))}
+          </div>
+          <div tw="mt-2 flex text-xl text-white">
+            Your total airdrop: {usersAirdrop.moxieAirdropAmount} $MOXIE
+          </div>
+        </div>
+      ),
+      intents: [
+        <TextInput placeholder="Allocation percentage" />,
+        <Button action={`/update-moxiefolio/${usersFid}?targetFid=${fidToAddToMoxiefolio}`}>Add</Button>,
+        <Button action={`/moxiefolio/${usersFid}`}>Cancel</Button>
+      ],
+    });
+  } catch (error) {
+    console.error("Error in /add-this-fantoken route:", error);
+    return c.res({
+      title: 'Error',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            An error occurred while processing your request
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/moxiefolio/${usersFid}`}>Back to Moxiefolio</Button>
+      ],
+    });
+  }
+});
 
 
 
