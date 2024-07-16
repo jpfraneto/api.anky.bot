@@ -1,8 +1,10 @@
 import prisma from "../../../utils/prismaClient";
+import { getUserFromFid } from "../../../utils/farcaster";
 
 type MoxieFantokenEntry = {
   targetUser: {
     username: string;
+    fid: number;
   };
   allocation: number;
 };
@@ -11,14 +13,14 @@ type MoxieFantokens = {
   entries: MoxieFantokenEntry[];
 };
 
-export async function getUserMoxieFantokens(userId: number) {
+export async function getUserMoxieFantokens(userFid: number) {
   const response = await prisma.moxieFantoken.findUnique({
-    where: { userId },
+    where: { userFid },
     include: {
       entries: {
         include: {
           targetUser: {
-            select: { username: true, id: true }
+            select: { username: true, fid: true }
           }
         }
       }
@@ -27,30 +29,38 @@ export async function getUserMoxieFantokens(userId: number) {
   return response;
 }
 
-export async function updateMoxieFantokenEntry(userId: number, targetUsername: string, newAllocation: number) {
+export async function updateMoxieFantokenEntry(userFid: number, targetFid: number, newAllocation: number) {
   return prisma.$transaction(async (tx) => {
-    let user = await tx.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      user = await tx.user.create({ data: { id: userId, username: `user_${userId}` } });
-    }
+    // Fetch user data from Farcaster
+    const userData = await getUserFromFid(userFid);
+    const targetUserData = await getUserFromFid(targetFid);
 
-    let targetUser = await tx.user.findUnique({ where: { username: targetUsername } });
-    if (!targetUser) {
-      targetUser = await tx.user.create({ data: { username: targetUsername } });
-    }
+    // Upsert main user
+    let user = await tx.user.upsert({
+      where: { fid: userFid },
+      update: { username: userData.username },
+      create: { fid: userFid, username: userData.username }
+    });
+
+    // Upsert target user
+    let targetUser = await tx.user.upsert({
+      where: { fid: targetFid },
+      update: { username: targetUserData.username },
+      create: { fid: targetFid, username: targetUserData.username }
+    });
 
     let moxieFantokens = await tx.moxieFantoken.findUnique({ 
-      where: { userId },
+      where: { userFid },
       include: { entries: true }
     });
 
     if (!moxieFantokens) {
       moxieFantokens = await tx.moxieFantoken.create({
-        data: { userId, totalAllocated: 0 }
+        data: { userFid, totalAllocated: 0 }
       });
     }
 
-    const existingEntry = moxieFantokens.entries.find(e => e.targetUserId === targetUser.id);
+    const existingEntry = moxieFantokens.entries.find(e => e.targetUserFid === targetFid);
     const oldAllocation = existingEntry ? existingEntry.allocation : 0;
     const allocationDiff = newAllocation - oldAllocation;
 
@@ -60,7 +70,7 @@ export async function updateMoxieFantokenEntry(userId: number, targetUsername: s
       const redistributionFactor = availableAllocation / moxieFantokens.totalAllocated;
 
       for (const entry of moxieFantokens.entries) {
-        if (entry.targetUserId !== targetUser.id) {
+        if (entry.targetUserFid !== targetFid) {
           await tx.moxieFantokenEntry.update({
             where: { id: entry.id },
             data: { allocation: entry.allocation * redistributionFactor }
@@ -78,7 +88,7 @@ export async function updateMoxieFantokenEntry(userId: number, targetUsername: s
       await tx.moxieFantokenEntry.create({
         data: {
           moxieFantokensId: moxieFantokens.id,
-          targetUserId: targetUser.id,
+          targetUserFid: targetFid,
           allocation: newAllocation
         }
       });
@@ -91,7 +101,7 @@ export async function updateMoxieFantokenEntry(userId: number, targetUsername: s
         entries: {
           include: {
             targetUser: {
-              select: { username: true, id: true }
+              select: { username: true, fid: true }
             }
           }
         }
