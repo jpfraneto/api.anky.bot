@@ -322,7 +322,7 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
     if(usersMoxiefolio == null) {
       returnButtons = [
         <TextInput placeholder='jpfraneto 8888' />,
-        <Button action={`/update-airdrop-allowance/${usersFid}`}>create profile</Button>,
+        <Button action={`/add-member-to-moxiefolio/${fid}`}>add member</Button>,
         <Button.Link
         href={addActionLink({
           name: 'moxie fantokens',
@@ -336,11 +336,11 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
         title: "moxiefolio",
         image: (
             <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-            <div tw="mt-10 flex text-xl text-white">
+            <div tw="mt-10 flex text-2xl text-purple-200">
               welcome to your moxiefolio
             </div>
-            <div tw="mt-2 flex text-xl text-purple-200">
-              you don't have any members of farcaster on your moxiefolio
+            <div tw="mt-2 flex text-xl text-white">
+              you don't have any members of farcaster on your it
             </div>
             <div tw="mt-2 flex text-xl text-white">
               you can add one below (the format is "[username] [amount to bet]")

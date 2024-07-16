@@ -1,18 +1,17 @@
 import prisma from "../../../utils/prismaClient";
 
 type MoxieFantokenEntry = {
-    targetUser: {
-      username: string;
-    };
-    allocation: number;
+  targetUser: {
+    username: string;
   };
-  
-  type MoxieFantokens = {
-    entries: MoxieFantokenEntry[];
-  };
+  allocation: number;
+};
 
+type MoxieFantokens = {
+  entries: MoxieFantokenEntry[];
+};
 
-export async function getUserMoxieFantokens(userId: number){
+export async function getUserMoxieFantokens(userId: number) {
   const response = await prisma.moxieFantoken.findUnique({
     where: { userId },
     include: {
@@ -24,18 +23,22 @@ export async function getUserMoxieFantokens(userId: number){
         }
       }
     }
-  })
-  return response
+  });
+  return response;
 }
 
 export async function updateMoxieFantokenEntry(userId: number, targetUsername: string, newAllocation: number) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) throw new Error('User not found');
-
-  const targetUser = await prisma.user.findUnique({ where: { username: targetUsername } });
-  if (!targetUser) throw new Error('Target user not found');
-
   return prisma.$transaction(async (tx) => {
+    let user = await tx.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      user = await tx.user.create({ data: { id: userId, username: `user_${userId}` } });
+    }
+
+    let targetUser = await tx.user.findUnique({ where: { username: targetUsername } });
+    if (!targetUser) {
+      targetUser = await tx.user.create({ data: { username: targetUsername } });
+    }
+
     let moxieFantokens = await tx.moxieFantoken.findUnique({ 
       where: { userId },
       include: { entries: true }
