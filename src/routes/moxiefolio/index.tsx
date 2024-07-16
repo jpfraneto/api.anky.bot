@@ -318,7 +318,9 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
   try {
     let returnButtons;
     const usersMoxiefolio = await getUserMoxieFantokens(Number(fid))
+    console.log("in here,,,", usersMoxiefolio)
     const usersAirdrop = await getUsersAidropAllocation(fid)
+    console.log("aloooja", usersAirdrop)
     if(usersMoxiefolio == null) {
       returnButtons = [
         <TextInput placeholder='jpfraneto 8888' />,
@@ -353,6 +355,7 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
         intents: returnButtons,
       })
     } else {
+      console.log('iiin here,', usersMoxiefolio)
       const totalWeight = usersMoxiefolio.reduce((acc: number, user) => acc + user.moxiefolioWeight, 0);
       const usersAirdrop = await getUsersAidropAllocation(fid)
       const percentage = Number((totalWeight/100).toFixed(2))
