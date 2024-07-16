@@ -12,8 +12,8 @@ type MoxieFantokenEntry = {
   };
 
 
-export async function getUserMoxieFantokens(userId: number): Promise<MoxieFantokens | null> {
-  return prisma.moxieFantokens.findUnique({
+export async function getUserMoxieFantokens(userId: number){
+  const response = await prisma.moxieFantokens.findUnique({
     where: { userId },
     include: {
       entries: {
@@ -24,7 +24,8 @@ export async function getUserMoxieFantokens(userId: number): Promise<MoxieFantok
         }
       }
     }
-  });
+  })
+  return response
 }
 
 export async function updateMoxieFantokenEntry(userId: number, targetUsername: string, newAllocation: number) {

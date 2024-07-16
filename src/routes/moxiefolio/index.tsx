@@ -280,7 +280,7 @@ moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c
       intents: [
           <Button action={`/moxiefolio/${actionedCastFid}`}>spy user</Button>,
           <Button action={`/moxiefolio/${usersFid}`}>my mxflo</Button>,
-          <Button action={`/add-this-fantoken/${actionedCastFid}`}>add ftken</Button>,
+          <Button action={`/add-this-fantoken/${actionedCastFid}?add=true`}>add ftken</Button>,
           <Button action={`/how-it-works`}>wtf?</Button>,
         ],
   })
@@ -331,8 +331,9 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
     ]
   }
   try {
-    const usersMoxiefolio = await getUsersMoxiefolio(fid)
-    const totalWeight = usersMoxiefolio.reduce((acc, user) => acc + user.moxiefolioWeight, 0);
+    const usersMoxiefolio = await getUserMoxieFantokens(Number(fid))
+    console.log("the users moxiefolio is: ", usersMoxiefolio)
+    const totalWeight = usersMoxiefolio.reduce((acc: number, user) => acc + user.moxiefolioWeight, 0);
     const usersAirdrop = await getUsersAidropAllocation(fid)
     const percentage = Number((totalWeight/100).toFixed(2))
     return c.res({
@@ -543,10 +544,10 @@ moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
   console
   const { fidToAddToMoxiefolio } = c.req.param();
   const usersFid = c.frameData?.fid
-  const textInput = c.frameData?.inputText!
-  console.log('the text input is: ', textInput)
+  const userToAdd = await getUserFromFid(Number(fidToAddToMoxiefolio))
+  console.log("the user to add is: ", userToAdd)
   // sanitize data and check if everything exists
-  const username = textInput.split(" ")[0]
+  const username = userToAdd.username
   const newAllocation = textInput.split(" ")[1]
   const usersMoxiefolio = await getUsersMoxiefolio(usersFid?.toString()!)
   return c.res({
@@ -554,18 +555,19 @@ moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
     image: (
           <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
           <div tw="mt-10 flex text-xl text-white">
-            you are trying to update your allocation of $moxie to {username}
+            you are trying to add part of your allocation of $moxie to {username}
           </div>
           <div tw="p-2 border border-white bg-purple-200 text-black mt-2 flex text-2xl text-white">
-            from 4% of your airdrop to {newAllocation}% of it
-          </div>
-          <div tw="mt-2 flex text-xl text-white">
-            if you accept, this will be your new moxiefolio distribution
+            how much do you want to add to it?
           </div>
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
             {usersMoxiefolio.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.username} - {x.moxiefolioWeight}%</div>)
             )}
           </div>
+          <div tw="mt-2 flex text-xl text-white">
+            you have 1212 available
+          </div>
+          
           <div tw="mt-3 flex flex-col justify-center text-xl text-white">
             <div tw="flex w-full">after this, 80% of your airdrop will be allocated</div>
           </div>
