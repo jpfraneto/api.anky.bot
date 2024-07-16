@@ -321,6 +321,7 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
   const usersFid = c.frameData?.fid!
   let targetUserFid = userToAdd.fid
   let targetAllocation = parseFloat(amountOfMoxie);
+  const userAidropAllocation = await getUsersAidropAllocation(usersFid.toString())
 
   if (isNaN(targetUserFid) || isNaN(targetAllocation)) {
     return c.res({
@@ -352,7 +353,7 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
             {updatedMoxieFantokens.entries.map((entry: MoxieFantokenEntry, i: number) => (
               <div tw="flex w-full text-left" key={i}>
-                {i + 1}. {entry.targetUser.username} (FID: {entry.targetUser.id}) - {entry.allocation}%
+                {i + 1}. {entry.targetUser.username} (FID: {entry.targetUser.id}) - {entry.allocation} $moxie - {Number((100 * entry.allocation/Number(userAidropAllocation)).toFixed(2))}%
               </div>
             ))}
           </div>
@@ -363,7 +364,7 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
       ),
       intents: [
         <Button action={`/edit-moxie-fantokens/${usersFid}`}>Edit again</Button>,
-        <Button action={`/moxie-fantokens/${usersFid}`}>View my Moxie Fantokens</Button>
+        <Button action={`/moxie-fantokens/${usersFid}`}>my moxiefolio</Button>
       ],
     });
   } catch (error) {
@@ -378,7 +379,7 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
         </div>
       ),
       intents: [
-        <Button action={`/moxie-fantokens/${usersFid}`}>Back to my Moxie Fantokens</Button>
+        <Button action={`/this-users-moxiefolio/${usersFid}`}>my moxiefolio</Button>
       ],
     });
   }
@@ -479,8 +480,8 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
         </div>
       ),
       intents: [
-          <Button action={`/generic-reply`}>users moxiefolio</Button>,
-        ],
+        <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
+      ],
   })
   }
 })
@@ -500,7 +501,7 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
   } else {
     // this means that the user is watching another users moxiefolio
     returnButtons = [
-      <Button action={`/moxiefolio/${usersFid}`}>my mxflio</Button>,
+      <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
       <Button.Link href={`https://www.vibra.so`}>share mxflio</Button.Link>,
     ]
   }
@@ -582,8 +583,8 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
         </div>
       ),
       intents: [
-          <Button action={`/generic-reply`}>users moxiefolio</Button>,
-        ],
+        <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
+      ],
   })
   }
 })
@@ -676,7 +677,7 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
         </div>
       ),
       intents: [
-        <Button action={`/moxie-fantokens/${usersFid}`}>Back to my Moxie Fantokens</Button>
+        <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
       ],
     });
   }
@@ -695,7 +696,7 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
         </div>
       ),
       intents: [
-        <Button action={`/moxie-fantokens/${fid}`}>Back to my Moxie Fantokens</Button>
+        <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
       ],
     });
   }
@@ -723,7 +724,7 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
         </div>
       ),
       intents: [
-        <Button action={`/moxie-fantokens/${fid}`}>Back to my Moxie Fantokens</Button>
+        <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
       ],
     });
   }
@@ -752,7 +753,7 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
       ),
       intents: [
         <Button action={`/edit-moxie-fantokens/${fid}`}>Edit again</Button>,
-        <Button action={`/moxie-fantokens/${fid}`}>View my Moxie Fantokens</Button>
+        <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
       ],
     });
   } catch (error) {
@@ -767,7 +768,7 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
         </div>
       ),
       intents: [
-        <Button action={`/moxie-fantokens/${fid}`}>Back to my Moxie Fantokens</Button>
+        <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
       ],
     });
   }
@@ -841,7 +842,7 @@ moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
         </div>
       ),
       intents: [
-        <Button action={`/moxiefolio/${usersFid}`}>Back to Moxiefolio</Button>
+        <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
       ],
     });
   }
