@@ -609,10 +609,13 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
               you can add one below (the format is "[username] [amount to bet]")
             </div>
             <div tw="mt-2 flex text-xl text-white">
-              or just install the cast action and call it on any cast to add it to that user
+              or just install the cast action and call it to add that member to your moxiefolio
             </div>
             <div tw="mt-2 flex text-xl text-white">
               (your airdrop is {usersAirdrop.moxieAirdropAmount} $moxie, and you /can/ divide that on all the fantokens you want)
+            </div>
+            <div tw="mt-2 flex text-xl text-purple-300">
+              (this is not the real amount of your airdrop... yet)
             </div>
           </div>
         ),
