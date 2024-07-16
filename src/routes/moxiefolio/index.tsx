@@ -352,7 +352,7 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
             {updatedMoxieFantokens.entries.map((entry: MoxieFantokenEntry, i: number) => (
               <div tw="flex w-full text-left" key={i}>
-                {i + 1}. {entry.targetUser.username} (FID: {entry.targetUser.fid}) - {entry.allocation}%
+                {i + 1}. {entry.targetUser.username} (FID: {entry.targetUser.id}) - {entry.allocation}%
               </div>
             ))}
           </div>
@@ -362,8 +362,8 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
         </div>
       ),
       intents: [
-        <Button action={`/edit-moxie-fantokens/${fid}`}>Edit again</Button>,
-        <Button action={`/moxie-fantokens/${fid}`}>View my Moxie Fantokens</Button>
+        <Button action={`/edit-moxie-fantokens/${usersFid}`}>Edit again</Button>,
+        <Button action={`/moxie-fantokens/${usersFid}`}>View my Moxie Fantokens</Button>
       ],
     });
   } catch (error) {
@@ -378,7 +378,7 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
         </div>
       ),
       intents: [
-        <Button action={`/moxie-fantokens/${fid}`}>Back to my Moxie Fantokens</Button>
+        <Button action={`/moxie-fantokens/${usersFid}`}>Back to my Moxie Fantokens</Button>
       ],
     });
   }

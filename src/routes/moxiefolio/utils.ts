@@ -29,83 +29,86 @@ export async function getUserMoxieFantokens(userId: number) {
   return response;
 }
 
-export async function updateMoxieFantokenEntry(userFid: number, targetFid: number, newAllocation: number) {
-  return prisma.$transaction(async (tx) => {
-    // Fetch user data from Farcaster
-    const userData = await getUserFromFid(userFid);
-    const targetUserData = await getUserFromFid(targetFid);
-
-    // Upsert main user
-    let user = await tx.user.upsert({
-      where: { id: userFid },
-      update: { username: userData.username },
-      create: { id: userFid, username: userData.username }
-    });
-
-    // Upsert target user
-    let targetUser = await tx.user.upsert({
-      where: { id: targetFid },
-      update: { username: targetUserData.username },
-      create: { id: targetFid, username: targetUserData.username }
-    });
-
-    let moxieFantokens = await tx.moxieFantoken.findUnique({ 
-      where: { userId: userFid },
-      include: { entries: true }
-    });
-
-    if (!moxieFantokens) {
-      moxieFantokens = await tx.moxieFantoken.create({
-        data: { userId: userFid, totalAllocated: 0 }
+export async function updateMoxieFantokenEntry(userId: number, targetUserId: number, newAllocation: number) {
+    return prisma.$transaction(async (tx) => {
+      // Fetch user data from Farcaster
+      const userData = await getUserFromFid(userId);
+      const targetUserData = await getUserFromFid(targetUserId);
+  
+      // Upsert main user
+      let user = await tx.user.upsert({
+        where: { id: userId },
+        update: { username: userData.username },
+        create: { id: userId, username: userData.username }
       });
-    }
-
-    const existingEntry = moxieFantokens.entries?.find(e => e.targetUserFid === targetFid);
-    const oldAllocation = existingEntry ? existingEntry.allocation : 0;
-    const allocationDiff = newAllocation - oldAllocation;
-
-    if (moxieFantokens.totalAllocated + allocationDiff > 100) {
-      // Redistribute allocation
-      const availableAllocation = 100 - (moxieFantokens.totalAllocated + allocationDiff);
-      const redistributionFactor = availableAllocation / moxieFantokens.totalAllocated;
-
-      for (const entry of moxieFantokens.entries) {
-        if (entry.targetUserFid !== targetFid) {
-          await tx.moxieFantokenEntry.update({
-            where: { id: entry.id },
-            data: { allocation: entry.allocation * redistributionFactor }
-          });
-        }
+  
+      // Upsert target user
+      let targetUser = await tx.user.upsert({
+        where: { id: targetUserId },
+        update: { username: targetUserData.username },
+        create: { id: targetUserId, username: targetUserData.username }
+      });
+  
+      let moxieFantoken = await tx.moxieFantoken.findUnique({ 
+        where: { userId },
+        include: { entries: true }
+      });
+  
+      if (!moxieFantoken) {
+        moxieFantoken = await tx.moxieFantoken.create({
+          data: { userId, totalAllocated: 0 }
+        });
       }
-    }
-
-    if (existingEntry) {
-      await tx.moxieFantokenEntry.update({
-        where: { id: existingEntry.id },
-        data: { allocation: newAllocation }
-      });
-    } else {
-      await tx.moxieFantokenEntry.create({
-        data: {
-          moxieFantokensId: moxieFantokens.id,
-          targetUserFid: targetFid,
-          allocation: newAllocation
-        }
-      });
-    }
-
-    return tx.moxieFantoken.update({
-      where: { id: moxieFantokens.id },
-      data: { totalAllocated: { increment: allocationDiff } },
-      include: {
-        entries: {
-          include: {
-            targetUser: {
-              select: { username: true, id: true }
-            }
+  
+      const existingEntry = moxieFantoken.entries?.find(e => e.targetUserId === targetUserId);
+      const oldAllocation = existingEntry ? existingEntry.allocation : 0;
+      const allocationDiff = newAllocation - oldAllocation;
+  
+      if (moxieFantoken.totalAllocated + allocationDiff > 100) {
+        // Redistribute allocation
+        const availableAllocation = 100 - (moxieFantoken.totalAllocated + allocationDiff);
+        const redistributionFactor = availableAllocation / moxieFantoken.totalAllocated;
+  
+        for (const entry of moxieFantoken.entries) {
+          if (entry.targetUserId !== targetUserId) {
+            await tx.moxieFantokenEntry.update({
+              where: { id: entry.id },
+              data: { allocation: entry.allocation * redistributionFactor }
+            });
           }
         }
       }
+  
+      if (existingEntry) {
+        await tx.moxieFantokenEntry.update({
+          where: { id: existingEntry.id },
+          data: { allocation: newAllocation }
+        });
+      } else {
+        await tx.moxieFantokenEntry.create({
+          data: {
+            moxieFantoken: { connect: { id: moxieFantoken.id } },
+            targetUserId: targetUserId,
+            allocation: newAllocation
+          }
+        });
+      }
+  
+      return tx.moxieFantoken.update({
+        where: { id: moxieFantoken.id },
+        data: { 
+          totalAllocated: { increment: allocationDiff },
+          lastUpdated: new Date()
+        },
+        include: {
+          entries: {
+            include: {
+              targetUser: {
+                select: { username: true, id: true }
+              }
+            }
+          }
+        }
+      });
     });
-  });
-}
+  }
