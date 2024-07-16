@@ -31,12 +31,15 @@ export async function getUserFromUsername(username: string, retryCount = 0): Pro
     const MAX_RETRIES = 5;
 
     try {
+
         const options = {
             method: 'GET',
-            url: `'https://api.neynar.com/v1/farcaster/user-by-username?username=${username}&viewerFid=16098`,
-            headers: { accept: 'application/json', api_key: NEYNAR_API_KEY }
-        };
+            url: `https://api.neynar.com/v1/farcaster/user-by-username?username=${username}&viewerFid=16098`,
+            headers: {accept: 'application/json', api_key: NEYNAR_API_KEY}
+          };
+          
         const response = await axios.request(options);
+        console.log("THE RESPONSE IN HERE IS: ", response)
         return response.data.user[0];
     } catch (error) {
         console.log(`Error fetching user from fid (attempt ${retryCount + 1}):`, error);
