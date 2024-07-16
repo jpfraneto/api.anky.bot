@@ -168,3 +168,7 @@ model MoxieFantokenEntry {
 
   @@unique([moxieFantokenId, targetUserId])
 }
+
+model Dummy {
+  id Int @id @default(autoincrement())
+}
