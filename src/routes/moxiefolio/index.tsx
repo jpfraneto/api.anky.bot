@@ -177,8 +177,10 @@ moxiefolioFrame.frame('/', async (c) => {
 
 moxiefolioFrame.frame('/how-it-works', async (c) => {
   try {
+    const usersFid = c.frameData?.fid
+    const user = await getUserFromFid(Number(usersFid)) 
     const userAirdrop = 1234567
-    const username = "jpfraneto"
+    const username = user.username
     return c.res({
       title: 'moxiefolio',
       image: (
@@ -253,8 +255,10 @@ moxiefolioFrame.frame('/how-it-works', async (c) => {
 moxiefolioFrame.frame('/wtf/:actionedCastHash/:actionedCastFid', async (c) => {
   try {
     const { actionedCastHash, actionedCastFid } = c.req.param();
+    const usersFid = c.frameData?.fid
     const userAirdrop = 1234567
-    const username = "jpfraneto"
+    const user = await getUserFromFid(Number(usersFid)) 
+    const username = user.username
     return c.res({
       title: 'moxiefolio',
       image: (
@@ -280,7 +284,7 @@ moxiefolioFrame.frame('/wtf/:actionedCastHash/:actionedCastFid', async (c) => {
         <Button.Link href="https://paragraph.xyz/@maretus.eth/moxie-protocol-for-laymen?referrer=0xcb69c793478a7355178979ae0be453bf61c378ee">
           moxie?
         </Button.Link>,
-        <Button.Link href="https://warpcast.com/jpfraneto/0x3efaf3a0">
+        <Button.Link href="https://warpcast.com/jpfraneto/0x6c6b2526">
           feedback
         </Button.Link>,
         <Button action={`/castAction/${actionedCastHash}/${actionedCastFid}`}>
