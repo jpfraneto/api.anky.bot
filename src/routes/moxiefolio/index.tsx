@@ -248,6 +248,70 @@ moxiefolioFrame.frame('/how-it-works', async (c) => {
   }
 })
 
+moxiefolioFrame.frame('/wtf/:actionedCastHash/:actionedCastFid', async (c) => {
+  try {
+    const { actionedCastHash, actionedCastFid } = c.req.param();
+    const userAirdrop = 1234567
+    const username = "jpfraneto"
+    return c.res({
+      title: 'moxiefolio',
+      image: (
+        <div tw="flex h-full w-full flex-col items-center justify-center py-2 px-8 bg-black text-white">
+          <div tw="mt-2 flex text-2xl">
+            you are @{username}
+          </div>
+          <div tw="mt-2 flex text-2xl">
+            your $moxie airdrop is {userAirdrop}.
+          </div>
+          <div tw="mt-2 flex text-xl text-purple-700">
+            (this number is not real -yet- and this frame is being tested, so please give feedback)
+          </div>
+          <div tw="mt-2 flex text-2xl">
+            you can buy farcaster's members FAN TOKENS with your airdrop. or sell it very slowly (dont do this, nfa)
+          </div>
+          <div tw="mt-2 text-2xl flex flex-col w-full">
+            <span>the system that you will install with this frame will help you to plan on how to do that. you can call the cast action on any cast and add that member of farcaster to your... </span><span tw="mx-auto text-7xl text-purple-400">moxiefolio</span>
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button.Link href="https://paragraph.xyz/@maretus.eth/moxie-protocol-for-laymen?referrer=0xcb69c793478a7355178979ae0be453bf61c378ee">
+          moxie?
+        </Button.Link>,
+        <Button.Link href="https://warpcast.com/jpfraneto/0x3efaf3a0">
+          feedback
+        </Button.Link>,
+        <Button action={`/castAction/${actionedCastHash}/${actionedCastFid}`}>
+          back
+        </Button>,
+    ],
+    });
+  } catch (error) {
+    console.log("there was an error")
+    return c.res({
+      title: 'moxiefolio',
+      image: (
+        <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
+          <div tw="text-8xl">THERE WAS AN ERROR!</div>
+          <div tw="mt-5 flex text-3xl">
+            Made with ❤️ by{' '}
+            <span
+              tw="ml-1"
+
+            >
+              @jpfraneto
+            </span>
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action="/">
+          back
+        </Button>,
+    ],
+    });
+  }
+})
 
 moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => {
   const { actionedCastHash, actionedCastFid } = c.req.param();
@@ -285,7 +349,7 @@ moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c
           <Button action={`/moxiefolio/${actionedCastFid}`}>spy user</Button>,
           <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
           <Button action={`/add-this-fantoken/${actionedCastFid}?add=true`}>add ftken</Button>,
-          <Button action={`/how-it-works`}>wtf?</Button>,
+          <Button action={`/wtf/${actionedCastHash}/${actionedCastFid}`}>wtf?</Button>,
         ],
   })
 })
