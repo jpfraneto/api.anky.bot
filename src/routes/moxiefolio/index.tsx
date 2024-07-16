@@ -427,18 +427,17 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
             {updatedMoxieFantokens.entries.map((entry: MoxieFantokenEntry, i: number) => (
               <div tw="flex w-full text-left" key={i}>
-                {i + 1}. {entry.targetUser.username} - {entry.allocation} $moxie - {Number((100 * entry.allocation/Number(userAidropAllocation)).toFixed(2))}%
+                {i + 1}. {entry.targetUser.username} ~ {entry.allocation} $moxie ~ {Number((100 * entry.allocation/Number(userAidropAllocation)).toFixed(2))}%
               </div>
             ))}
           </div>
           <div tw="mt-3 flex text-xl text-white">
-            Total allocated: {updatedMoxieFantokens.totalAllocated}%
+            Total allocated: {updatedMoxieFantokens.totalAllocated} $moxie
           </div>
         </div>
       ),
       intents: [
-        <Button action={`/edit-moxie-fantokens/${usersFid}`}>Edit again</Button>,
-        <Button action={`/moxie-fantokens/${usersFid}`}>my moxiefolio</Button>
+        <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
       ],
     });
   } catch (error) {
@@ -947,17 +946,16 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
             {updatedMoxieFantokens.entries.map((entry: MoxieFantokenEntry, i: number) => (
               <div tw="flex w-full text-left" key={i}>
-                {i + 1}. {entry.targetUser.username} - {entry.allocation} $moxie
+                {i + 1}. {entry.targetUser.username} ~ {entry.allocation} $moxie
               </div>
             ))}
           </div>
           <div tw="mt-3 flex text-xl text-white">
-            Total allocated: {updatedMoxieFantokens.totalAllocated}%
+            Total allocated: {updatedMoxieFantokens.totalAllocated} $moxie
           </div>
         </div>
       ),
       intents: [
-        <Button action={`/edit-moxie-fantokens/${fid}`}>Edit again</Button>,
         <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
       ],
     });
