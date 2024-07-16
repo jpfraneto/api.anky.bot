@@ -60,7 +60,7 @@ export async function updateMoxieFantokenEntry(userFid: number, targetFid: numbe
       });
     }
 
-    const existingEntry = moxieFantokens.entries.find(e => e.targetUserFid === targetFid);
+    const existingEntry = moxieFantokens.entries?.find(e => e.targetUserFid === targetFid);
     const oldAllocation = existingEntry ? existingEntry.allocation : 0;
     const allocationDiff = newAllocation - oldAllocation;
 
