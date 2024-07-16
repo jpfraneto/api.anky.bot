@@ -432,9 +432,9 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
       })
     } else {
       console.log('iiin here,', usersMoxiefolio)
-      const totalWeight = usersMoxiefolio.reduce((acc: number, user) => acc + user.moxiefolioWeight, 0);
+      const totalAllocated = usersMoxiefolio.entries.reduce((acc: number, fanToken) => acc + fanToken.allocation, 0);
       const usersAirdrop = await getUsersAidropAllocation(fid)
-      const percentage = Number((totalWeight/100).toFixed(2))
+      const percentage = Number((100*totalAllocated/Number(usersAirdrop)).toFixed(2))
       return c.res({
         title: "moxiefolio",
         image: (
@@ -449,7 +449,7 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
               total fan tokens in moxiefolio: {usersMoxiefolio.length}
             </div>
             <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
-              {usersMoxiefolio.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.username} - {x.moxiefolioWeight}%</div>)
+              {usersMoxiefolio.entries.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.targetUser.username} - {x.allocation} $moxie</div>)
               )}
             </div>
             <div tw="mt-3 flex flex-col justify-center text-xl text-black">
