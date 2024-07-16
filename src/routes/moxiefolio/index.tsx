@@ -8,6 +8,7 @@ import { neynar, NeynarVariables } from 'frog/middlewares';
 import { getStartOfDay } from '../../../utils/time';
 import { abbreviateAddress } from '../../../utils/strings';
 import axios from 'axios';
+import queryString from 'query-string';
 import { addActionLink } from '../../../utils/url';
 import { Logger } from '../../../utils/Logger';
 import { neynarClient } from '../../services/neynar-service';
@@ -168,6 +169,7 @@ moxiefolioFrame.frame('/', async (c) => {
     >
       moxiefolio action
     </Button.Link>,
+    <Button action="/create-moxiefolio">my moxiefolio</Button>,
     <Button action="/how-it-works">how this works?</Button>,
   ],
   });
@@ -453,6 +455,105 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
   }
 })
 
+moxiefolioFrame.frame('/create-moxiefolio', async (c) => {
+  const usersFid = c.frameData?.fid
+  try {
+    let returnButtons;
+    const usersMoxiefolio = await getUserMoxieFantokens(Number(usersFid))
+    const usersAirdrop = await getUsersAidropAllocation(usersFid?.toString()!)
+    if(usersMoxiefolio == null) {
+      returnButtons = [
+        <TextInput placeholder='jpfraneto 8888' />,
+        <Button action={`/add-member-to-moxiefolio`}>add member</Button>,
+        <Button.Link
+        href={addActionLink({
+          name: 'moxie fantokens',
+          postUrl: '/moxiefolio/moxiedistribution',
+        })}
+       >
+        moxiefolio action
+          </Button.Link>,,
+      ]
+      return c.res({
+        title: "moxiefolio",
+        image: (
+            <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+            <div tw="mt-10 flex text-2xl text-purple-200">
+              your moxiefolio was created
+            </div>
+            <div tw="mt-2 flex text-xl text-white">
+              you don't have any members of farcaster on your it -yet-
+            </div>
+            <div tw="mt-2 flex text-xl text-white">
+              you can add one below (the format is "[username] [amount to bet]")
+            </div>
+            <div tw="mt-2 flex text-xl text-white">
+              or just install the cast action and call it on any cast to add it to that user
+            </div>
+            <div tw="mt-2 flex text-xl text-white">
+              (your airdrop is {usersAirdrop.moxieAirdropAmount} $moxie, and you /can/ divide that on all the fantokens you want)
+            </div>
+          </div>
+        ),
+        intents: returnButtons,
+      })
+    } else {
+      const totalAllocated = usersMoxiefolio.entries.reduce((acc: number, fanToken) => acc + fanToken.allocation, 0);
+      const usersAirdropResponse = await getUsersAidropAllocation(usersFid)
+      const usersAirdrop = usersAirdropResponse.moxieAirdropAmount
+      const percentage = Number((100*totalAllocated/Number(usersAirdrop)).toFixed(2))
+      returnButtons = [
+        <TextInput placeholder='kenny 333'/>,
+        <Button action="/rebalance-moxiefolio">rebalance</Button>
+      ]
+      return c.res({
+        title: "moxiefolio",
+        image: (
+            <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+            <div tw="mt-10 flex text-xl text-white">
+              {usersFid}'s moxiefolio
+            </div>
+            <div tw="mt-2 flex text-xl text-purple-200">
+              airdrop: {usersAirdrop} $moxie
+            </div>
+            <div tw="mt-2 flex text-xl text-white">
+              total fan tokens in moxiefolio: {usersMoxiefolio.length}
+            </div>
+            <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
+              {usersMoxiefolio.entries.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.targetUser.username} - {x.allocation} $moxie</div>)
+              )}
+            </div>
+            <div tw="w-full px-4 mt-3 flex flex-col justify-center text-xl text-black">
+              <div tw="w-full flex flex-col px-2 py-1 mb-2 items-center bg-purple-300 rounded-xl">
+                <div tw="flex w-full">{percentage}% of airdrop allocated - {totalAllocated} $moxie</div>
+              </div>
+              <div tw="w-full flex flex-col px-2 py-1 bg-green-300 rounded-xl">
+                <div tw="flex w-full">{Number((1 - percentage).toFixed(2))}% of airdrop available - {+usersAirdrop - totalAllocated} $moxie</div>
+              </div>
+            </div>
+          </div>
+        ),
+        intents: returnButtons,
+      })
+    }
+  } catch (error) {
+    console.log("THERE WAS AN ERROR HERE", error)
+    return c.res({
+      title: "moxiefolio",
+      image: (
+          <div tw="flex h-full w-full px-16 items-center justify-center bg-black text-white">
+            <div tw="mt-10 flex text-4xl text-white">
+              there was an error
+            </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/this-users-moxiefolio/${usersFid}`}>my mxflo</Button>,
+      ],
+  })
+  }
+})
+
 moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
   const { fid } = c.req.param();
   const usersFid = c.frameData?.fid
@@ -581,6 +682,17 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
     console.log("the users moxiefolio is: ", usersMoxiefolio)
     if(usersMoxiefolio == null) {
       const usersAirdrop = await getUsersAidropAllocation(fid)
+      const user = await getUserFromFid(Number(fid))
+      const qs = {
+        text: `hey @${user.username}, it is time to create your moxiefolio\n\norganize your favorite casters using this system\n\nby @jpfraneto 🎩`,
+        'embeds[]': [
+          `https://api.anky.bot/moxiefolio`,
+        ],
+      };
+      
+      const shareQs = queryString.stringify(qs);
+      const warpcastRedirectLink = `https://warpcast.com/~/compose?${shareQs}`;
+
       returnButtons = [
         <TextInput placeholder='888888 (no spaces/commas)' />,
         <Button action={`/update-airdrop-allowance/${usersFid}`}>create profile</Button>,
@@ -591,16 +703,16 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
         image: (
             <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
             <div tw="mt-10 flex text-xl text-white">
-              welcome to your moxiefolio
+              @{user.username} has not created their moxiefolio yet
+            </div>
+            <div tw="mt-10 flex text-xl text-white">
+              having an airdrop of {usersAirdrop.moxieAirdropAmount} $moxie
             </div>
             <div tw="mt-2 flex text-xl text-purple-200">
-              a tool for you to keep track of what you plan to do for moxie
+              ping them with the cast below so that they can get going
             </div>
             <div tw="mt-2 flex text-xl text-white">
-              your allowance is {usersAirdrop.moxieAirdropAmount} (airstack please open the API)
-            </div>
-            <div tw="mt-2 flex text-xl text-white">
-              how much of that do you want to bet on 
+              and organize for what is coming
             </div>
           </div>
         ),
