@@ -178,7 +178,7 @@ moxiefolioFrame.frame('/how-it-works', async (c) => {
     const userAirdrop = 12345
     const username = "jpfraneto"
     return c.res({
-      title: 'Anky Genesis',
+      title: 'moxiefolio',
       image: (
         <div tw="flex h-full w-full flex-col items-center justify-center py-2 px-8 bg-black text-white">
           <div tw="text-4xl">moxie airdrop</div>
@@ -217,7 +217,7 @@ moxiefolioFrame.frame('/how-it-works', async (c) => {
   } catch (error) {
     console.log("there was an error")
     return c.res({
-      title: 'Anky Genesis',
+      title: 'moxiefolio',
       image: (
         <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
           <div tw="text-8xl">THERE WAS AN ERROR!</div>
@@ -818,7 +818,7 @@ moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
             {usersMoxiefolio?.entries.map((x, i) => (
               <div tw="flex w-full text-left" key={i}>
-                {i + 1}. {x.targetUser.username} - {x.allocation}%
+                {i + 1}. {x.targetUser.username} - {x.allocation}
               </div>
             ))}
           </div>
@@ -828,8 +828,8 @@ moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
         </div>
       ),
       intents: [
-        <TextInput placeholder="888 $moxie | 888" />,
-        <Button action={`/update-moxiefolio/${usersFid}?targetFid=${fidToAddToMoxiefolio}`}>Add</Button>,
+        <TextInput placeholder={`${userToAdd.username} 888`} />,
+        <Button action={`/update-moxiefolio/${usersFid}`}>Add</Button>,
         <Button action={`/moxiefolio/${usersFid}`}>Cancel</Button>
       ],
     });
@@ -851,5 +851,41 @@ moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
   }
 });
 
+moxiefolioFrame.frame(`/update-moxiefolio/:fidToAddToMoxiefolio`, async (c) => {
+  const { fidToAddToMoxiefolio } = c.req.param()
+  const usersFid = c.frameData?.fid!;
+  const textInput = c.frameData?.inputText!;
+  const [username, targetAllocation] = textInput.split(" ");
+  const newTargetAllocation = parseFloat(targetAllocation);
+  const userAidropAllocation = await getUsersAidropAllocation(usersFid.toString())
 
+  const updatedMoxieFantokens = await updateMoxieFantokenEntry(+usersFid, +fidToAddToMoxiefolio, newTargetAllocation);
+  console.log("THE UPDATED MOXIE FANTOKENS ARE ", updatedMoxieFantokens)
+  return c.res({
+    title: 'moxiefolio',
+    image: (
+      <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+        <div tw="mt-10 flex text-xl text-white">
+          Your moxiefolio was updated
+        </div>
+        <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
+          {updatedMoxieFantokens.entries.map((entry: MoxieFantokenEntry, i: number) => (
+            <div tw="flex w-full text-left" key={i}>
+              {i + 1}. {entry.targetUser.username} (FID: {entry.targetUser.id}) - {entry.allocation} $moxie - {Number((100 * entry.allocation/Number(userAidropAllocation)).toFixed(2))}%
+            </div>
+          ))}
+        </div>
+        <div tw="mt-3 flex text-xl text-white">
+          Total allocated: {updatedMoxieFantokens.totalAllocated} $moxie
+        </div>
+        <div tw="mt-3 flex text-xl text-white">
+          Total airdrop: {userAidropAllocation} $moxie
+        </div>
+      </div>
+    ),
+    intents: [
+      <Button action={`/moxie-fantokens/${usersFid}`}>my moxiefolio</Button>
+    ],
+  });
+}
 
