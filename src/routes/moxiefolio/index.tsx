@@ -24,6 +24,7 @@ import * as chains from 'viem/chains';
 import { ALCHEMY_INSTANCES, getTransport } from '../../../utils/web3';
 import { HYPERSUB_ABI } from '../../constants/abi/HYPERSUB_ABI';
 import { MOXIE_PASS_ABI } from '../../constants/abi/MOXIE_PASS_ABI';
+import { getUserMoxieFantokens, updateMoxieFantokenEntry } from './utils';
 
 
 export function getViemChain(chainId: number) {
@@ -268,7 +269,7 @@ moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c
       intents: [
           <Button action={`/moxiefolio/${actionedCastFid}`}>spy user</Button>,
           <Button action={`/moxiefolio/${usersFid}`}>my mxflo</Button>,
-          <Button action={`/check-stats/${actionedCastHash}`}>add ftken</Button>,
+          <Button action={`/add-this-fantoken/${actionedCastFid}`}>add ftken</Button>,
           <Button action={`/how-it-works`}>wtf?</Button>,
         ],
   })
@@ -375,15 +376,168 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
 moxiefolioFrame.frame(`/edit-moxiefolio/:fid`, async (c) => {
   const { fid } = c.req.param();
   const usersFid = c.frameData?.fid
-  if(usersFid?.toString() == fid){
-    console.log("THIS IS INVALID BECAUSE THE FIDS DON'T CORRESPOND TO EACH OTHER")
+
+  if (usersFid?.toString() !== fid) {
+    return c.res({
+      title: 'Error',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            You can only edit your own Moxie Fantokens
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/moxie-fantokens/${usersFid}`}>back</Button>
+      ],
+    });
   }
+
+  const textInput = c.frameData?.inputText!;
+  const [username, newAllocationStr] = textInput.split(" ");
+  const newAllocation = parseFloat(newAllocationStr);
+
+  if (!username || isNaN(newAllocation)) {
+    return c.res({
+      title: 'Error',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            Invalid input. Please use format: "username allocation%"
+          </div>
+          <div tw="mt-10 flex text-xl text-white">
+            Examples: "jpfraneto 12" || "pichi 33" || "downshift.eth 44"
+          </div>
+        </div>
+      ),
+      intents: [
+        <TextInput placeholder="undefined 12" />,
+        <Button action={`/update-moxiefolio/${fid}`}>edit</Button>,
+        <Button action={`/moxie-fantokens/${fid}`}>cancel</Button>
+      ],
+    });
+  }
+
+  const moxieFantokens = await getUserMoxieFantokens(parseInt(fid))
+
+  return c.res({
+    title: 'Confirm Moxie Fantokens Update',
+    image: (
+      <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+        <div tw="mt-10 flex text-xl text-white">
+          Update allocation for {username} to {newAllocation}%
+        </div>
+        <div tw="mt-2 flex text-xl text-white">
+          Current allocations:
+        </div>
+        <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
+          {moxieFantokens?.entries.map((entry, i) => (
+            <div tw="flex w-full text-left" key={i}>
+              {i + 1}. {entry.targetUser.username} - {entry.allocation}%
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+    intents: [
+      <Button action={`/update-moxie-fantokens/${fid}?username=${username}&allocation=${newAllocation}`}>Confirm</Button>,
+      <Button action={`/moxie-fantokens/${fid}`}>Cancel</Button>
+    ],
+  });
+})
+
+moxieFantokensFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
+  const { fid } = c.req.param();
+  const usersFid = c.frameData?.fid;
+  
+  if (usersFid?.toString() !== fid) {
+    return c.res({
+      title: 'Error',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            You can only update your own Moxie Fantokens
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/moxie-fantokens/${usersFid}`}>Back to my Moxie Fantokens</Button>
+      ],
+    });
+  }
+
+  const { username, allocation } = c.req.query();
+  
+  if (!username || !allocation) {
+    return c.res({
+      title: 'Error',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            Invalid update parameters
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/moxie-fantokens/${fid}`}>Back to my Moxie Fantokens</Button>
+      ],
+    });
+  }
+
+  try {
+    const updatedMoxieFantokens = await updateMoxieFantokenEntry(parseInt(fid), username as string, parseFloat(allocation as string))
+
+    return c.res({
+      title: 'moxiefolio',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            your moxiefolio was updated
+          </div>
+          <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
+            {updatedMoxieFantokens.entries.map((entry, i) => (
+              <div tw="flex w-full text-left" key={i}>
+                {i + 1}. {entry.targetUser.username} - {entry.allocation}%
+              </div>
+            ))}
+          </div>
+          <div tw="mt-3 flex text-xl text-white">
+            Total allocated: {updatedMoxieFantokens.totalAllocated}%
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/edit-moxie-fantokens/${fid}`}>Edit again</Button>,
+        <Button action={`/moxie-fantokens/${fid}`}>View my Moxie Fantokens</Button>
+      ],
+    });
+  } catch (error) {
+    return c.res({
+      title: 'Error',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            An error occurred while updating your Moxie Fantokens
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/moxie-fantokens/${fid}`}>Back to my Moxie Fantokens</Button>
+      ],
+    });
+  }
+});
+
+moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
+  console
+  const { fidToAddToMoxiefolio } = c.req.param();
+  const usersFid = c.frameData?.fid
   const textInput = c.frameData?.inputText!
   console.log('the text input is: ', textInput)
   // sanitize data and check if everything exists
   const username = textInput.split(" ")[0]
   const newAllocation = textInput.split(" ")[1]
-  const usersMoxiefolio = await getUsersMoxiefolio(fid)
+  const usersMoxiefolio = await getUsersMoxiefolio(usersFid)
   return c.res({
     title: 'vibra.so',
     image: (
@@ -414,42 +568,4 @@ moxiefolioFrame.frame(`/edit-moxiefolio/:fid`, async (c) => {
 })
 
 
-moxiefolioFrame.frame('/update-moxiefolio/:fid', async (c) => {
-  const { fid } = c.req.param();
-  const usersFid = c.frameData?.fid
-  if(usersFid?.toString() == fid){
-    console.log("THIS IS INVALID BECAUSE THE FIDS DON'T CORRESPOND TO EACH OTHER")
-  }
-  // process the moxiefolio update for the user, call the database, update everything, and render the new moxiefolio for the user here
-  const updatedUsersMoxiefolio = await updateUsersMoxiefolio(fid, [])
-  const totalWeight = updatedUsersMoxiefolio.reduce((acc, user) => acc + user.moxiefolioWeight, 0);
-  const percentage = Number((totalWeight/100).toFixed(2))
-  const usersAirdrop = await getUsersAidropAllocation(fid)
-  const newMoxiefolioLinkForUser = "i just updated my moxiefolio, preparing for the upcoming $moxie airdrop. did you? you can install the moxiefolio cast action on this frame. 👇🏽 https://www.vibra.so"
-  console.log("JUST BEFORE UPDATING THE MOXIEFOLIO")
-  return c.res({
-    title: 'vibra.so',
-    image: (
-          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-          <div tw="mt-10 flex text-xl text-white">
-            your moxiefolio was updated
-          </div>
-          <div tw="mt-2 flex text-xl text-white">
-            this is the new one
-          </div>
-          <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
-            {updatedUsersMoxiefolio.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.username} - {x.moxiefolioWeight}%</div>)
-            )}
-          </div>
-          <div tw="mt-3 flex flex-col justify-center text-xl text-white">
-            <div tw="flex w-full">{percentage}% of airdrop allocated</div>
-            <div tw="flex w-full text-purple-300">{Math.floor(usersAirdrop.moxieAirdropAmount * percentage)}/{usersAirdrop.moxieAirdropAmount} $moxie</div>
-          </div>
-        </div>
-      ),
-    intents: [
-      <Button action={`/edit-moxiefolio/${fid}`}>edit again</Button>,
-      <Button.Link href={newMoxiefolioLinkForUser}>share</Button.Link>
-    ],
-  });
-})
+
