@@ -20,7 +20,7 @@ export async function getUserMoxieFantokens(userId: number) {
       entries: {
         include: {
           targetUser: {
-            select: { username: true, fid: true }
+            select: { username: true, id: true }
           }
         }
       }
