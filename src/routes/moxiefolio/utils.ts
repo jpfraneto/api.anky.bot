@@ -37,16 +37,16 @@ export async function updateMoxieFantokenEntry(userFid: number, targetFid: numbe
 
     // Upsert main user
     let user = await tx.user.upsert({
-      where: { fid: userFid },
+      where: { id: userFid },
       update: { username: userData.username },
-      create: { fid: userFid, username: userData.username }
+      create: { id: userFid, username: userData.username }
     });
 
     // Upsert target user
     let targetUser = await tx.user.upsert({
-      where: { fid: targetFid },
+      where: { id: targetFid },
       update: { username: targetUserData.username },
-      create: { fid: targetFid, username: targetUserData.username }
+      create: { id: targetFid, username: targetUserData.username }
     });
 
     let moxieFantokens = await tx.moxieFantoken.findUnique({ 
@@ -101,7 +101,7 @@ export async function updateMoxieFantokenEntry(userFid: number, targetFid: numbe
         entries: {
           include: {
             targetUser: {
-              select: { username: true, fid: true }
+              select: { username: true, id: true }
             }
           }
         }
