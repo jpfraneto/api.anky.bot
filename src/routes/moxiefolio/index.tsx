@@ -318,6 +318,7 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
   const amountOfMoxie = textInput.split(" ")[1]
   const userToAdd = await getUserFromUsername(username)
   console.log("The user to add is", userToAdd)
+  const usersFid = c.frameData?.fid!
   let targetUserFid = userToAdd.fid
   let targetAllocation = parseFloat(amountOfMoxie);
 
@@ -339,10 +340,10 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
   }
 
   try {
-    const updatedMoxieFantokens = await updateMoxieFantokenEntry(parseInt(fid), targetUserFid, newAllocation);
-
+    const updatedMoxieFantokens = await updateMoxieFantokenEntry(usersFid, targetUserFid, targetAllocation);
+    console.log("THE UPDATED MOXIE FANTOKENS ARE ", updatedMoxieFantokens)
     return c.res({
-      title: 'Moxiefolio Updated',
+      title: 'moxiefolio',
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
           <div tw="mt-10 flex text-xl text-white">
