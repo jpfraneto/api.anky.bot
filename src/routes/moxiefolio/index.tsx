@@ -175,8 +175,7 @@ moxiefolioFrame.frame('/', async (c) => {
 
 moxiefolioFrame.frame('/how-it-works', async (c) => {
   try {
-    const usersFid = c.frameData?.fid!
-    const userAirdrop = await getUsersAidropAllocation(usersFid.toString())
+    const userAirdrop = 12345
     const username = "jpfraneto"
     return c.res({
       title: 'moxiefolio',
