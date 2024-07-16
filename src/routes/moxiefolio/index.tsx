@@ -316,6 +316,7 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
   const { fid } = c.req.param();
   const usersFid = c.frameData?.fid
   let returnButtons;
+  console.log('the users ifd', fid, usersFid)
   if(usersFid?.toString() == fid) {
     // this means the user is watching her moxiefolio
     returnButtons = [
@@ -369,6 +370,7 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
       intents: returnButtons,
     })
   } catch (error) {
+    console.log("the error is: ", error)
     return c.res({
       title: "moxiefolio",
       image: (
