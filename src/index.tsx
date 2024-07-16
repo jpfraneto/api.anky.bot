@@ -26,13 +26,12 @@ import { scrollFeedAndReply } from '../utils/anky';
 
 // **** ROUTE IMPORTS ****
 import { app as landing } from './routes/landing'
-import { app as stream } from './routes/stream'
+import { tvFrame as stream } from './routes/stream'
 import { ankyGenesis } from './routes/anky-genesis'
 import { ankyFrames } from './routes/ankyFrame'
 import { vibraFrame } from './routes/vibra'
 import { extractWordBeforeWaveEmoji } from '../utils/zurf';
 import { sadhanaFrame } from './routes/sadhana';
-import { tvFrame } from './routes/tv';
 import { gamesFrame } from './routes/games';
 import { enterFrame } from './routes/enter';
 import { moxiefolioFrame } from './routes/moxiefolio';
@@ -95,7 +94,6 @@ app.route('/anky-genesis', ankyGenesis)
 app.route('/vibra', vibraFrame)
 app.route('/stream', stream)
 app.route('/sadhana', sadhanaFrame)
-app.route('/tv', tvFrame)
 app.route('/gamecaster', gamesFrame)
 app.route('/enter', enterFrame)
 app.route('/moxiefolio', moxiefolioFrame)
@@ -298,9 +296,9 @@ app.post('/video', async (c) => {
 
     const farcasterUser = farcasterUserString ? JSON.parse(farcasterUserString) : null;
     const user = {
-      fid : farcasterUser.fid || 16098,
+      fid: farcasterUser?.fid || 16098,
       username: farcasterUser?.username || "jpfraneto",
-      craft: farcasterUser ? extractWordBeforeWaveEmoji(farcasterUser.bio) : "",
+      craft: farcasterUser?.bio ? extractWordBeforeWaveEmoji(farcasterUser.bio) : "",
       pfp_url: farcasterUser?.pfp || "https://dl.openseauserdata.com/cache/originImage/files/9bb46d16f20ed3d54ae01d1aeac89e23.png"
     };
 
@@ -308,10 +306,9 @@ app.post('/video', async (c) => {
     const fileExtension = mime.extension(file.type) || 'mp4';
     const filename = `${uuid}.${fileExtension}`;
     const videoPath = path.join(process.cwd(), 'public', 'videos', filename);
-    const gifPath = path.join(process.cwd(), 'public', 'gifs', `${uuid}.gif`);
     const farcasterGifPath = path.join(process.cwd(), 'public', 'gifs_farcaster', `${uuid}_farcaster.gif`);
-    
-    tempFiles = [videoPath, gifPath, farcasterGifPath];
+        
+    tempFiles = [videoPath, farcasterGifPath];
 
     // Save video file locally
     logProgress('Saving video file...');
@@ -333,9 +330,11 @@ app.post('/video', async (c) => {
     // Append that gif to the static background and create a new gif (with user information also)
     logProgress('Creating framed GIF...');
     await createFramedGifFromVideo(videoPath, farcasterGifPath, user);
+    logProgress('Creating black and white GIF...');
 
-    logProgress('Uploading GIF to cloud...');
+    logProgress('Uploading GIFs to cloud...');
     const cloudinaryGifUploadResult = await uploadGifToTheCloud(farcasterGifPath, `farcaster_gifs/${uuid}`);
+    console.log("Colored GIF upload result:", cloudinaryGifUploadResult);
 
     logProgress('Publishing cast...');
     let castOptions = {
@@ -378,33 +377,25 @@ app.post('/video', async (c) => {
 
     console.log("the prisma response is: ", prismaResponse)
 
-    // model ZurfVideo {
-    //   id             String   @id @default(uuid())
-    //   originalName   String
-    //   gifLink        String
-    //   videoLink      String?
-    //   castHash       String?
-    //   createdAt      DateTime @default(now())
-    //   updatedAt      DateTime @updatedAt
-    //   ZurfUser       ZurfUser?                  @relation(fields: [zurfUserFid], references: [fid])
-    //   zurfUserFid    Int?
-    // }
-
     return c.json({ 
       gifLink: cloudinaryGifUploadResult.secure_url,
-      castHash: castResponse.hash 
+      castHash: castResponse.hash,
+      warpcastLink: `https://warpcast.com/~/conversations/${castResponse.hash}` // Add this line
     });
 
   } catch (error) {
     console.error("There was an error processing the video", error);
-    return c.json({ error: error }, 500);
+    return c.json({ error: error.message }, 500);
   } finally {
     for (const file of tempFiles) {
       try {
+        await fs.access(file);  // Check if file exists before attempting to delete
         await fs.unlink(file);
         console.log(`Deleted temporary file: ${file}`);
       } catch (err) {
-        console.error(`Failed to delete temporary file ${file}:`, err);
+        if (err.code !== 'ENOENT') {  // Only log error if it's not a "file not found" error
+          console.error(`Failed to delete temporary file ${file}:`, err);
+        }
       }
     }
   }

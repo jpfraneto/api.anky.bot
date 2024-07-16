@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { OPENAI_API_KEY } from "../env/server-env";
+import axios from "axios";
 
 import { sleep } from "./time";
 
@@ -55,7 +56,6 @@ export async function sendBasicCompletionToOllama(
 
 export async function callChatGTPToGetReply(systemPrompt: string, castText: string) {
     try {
-      console.log("calling chatgtp to get the reply to this cast");
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -69,7 +69,30 @@ export async function callChatGTPToGetReply(systemPrompt: string, castText: stri
           },
         ],
       });
-      console.log("the response from the completicsaOoooon", completion);
+      const dataResponse = completion.choices[0].message.content;
+      return dataResponse;
+    } catch (error) {
+      console.log("there was an error calling the chatgtp api");
+      return "";
+    }
+  }
+
+  export async function callChatGTPToGetJSONReply(systemPrompt: string, userPrompt: string) {
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        response_format: { "type": "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+      });
       const dataResponse = completion.choices[0].message.content;
       return dataResponse;
     } catch (error) {

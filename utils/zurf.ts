@@ -1,13 +1,8 @@
-export function extractWordBeforeWaveEmoji(input: string): string {
-    const regex = /(\S+)\s+🌊/;
-    const match = input.match(regex);
-    
-    if (match && match[1]) {
-      return match[1];
-    }
-    
-    return "";
-  }
+export function extractWordBeforeWaveEmoji(bio: string | undefined): string {
+  if (!bio) return "";
+  const match = bio.match(/(\S+)\s*👋/);
+  return match ? match[1] : "";
+}
 
 const testStrings = [
     "meditation 🌊 · learning how to write (both words and code) /anky",

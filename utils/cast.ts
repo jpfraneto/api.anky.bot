@@ -104,7 +104,7 @@ export async function publishCastToTheProtocol(castOptions: CastIntention, apiKe
           return response.data.cast;
         } catch (error) {
             console.log("trying to send the cast again", error)
-            await sleep(60000)
+            await sleep(20000)
             publishCastToTheProtocol(castOptions)
         }
       }
