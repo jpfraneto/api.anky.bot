@@ -395,9 +395,9 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
   const usersFid = c.frameData?.fid!
   let targetUserFid = userToAdd.fid
   let targetAllocation = parseFloat(amountOfMoxie);
-  const userAidropAllocation = await getUsersAidropAllocation(usersFid.toString())
+  const userAidropAllocation = await getUsersAidropAllocation(usersFid.toString()) 
 
-  if (isNaN(targetUserFid) || isNaN(targetAllocation)) {
+  if (isNaN(targetUserFid) || isNaN(targetAllocation) || !userToAdd) {
     return c.res({
       title: 'Error',
       image: (
@@ -523,7 +523,7 @@ moxiefolioFrame.frame('/create-moxiefolio', async (c) => {
       const percentage = Number((100*totalAllocated/Number(usersAirdrop)).toFixed(2))
       returnButtons = [
         <TextInput placeholder='kenny 333'/>,
-        <Button action="/rebalance-moxiefolio">rebalance</Button>
+        <Button action="/add-member-to-moxiefolio">add new</Button>
       ]
       return c.res({
         title: "moxiefolio",
