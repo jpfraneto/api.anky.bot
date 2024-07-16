@@ -393,7 +393,20 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
       })
     }
   } catch (error) {
-    
+    console.log("THERE WAS AN ERROR HERE", error)
+    return c.res({
+      title: "moxiefolio",
+      image: (
+          <div tw="flex h-full w-full px-16 items-center justify-center bg-black text-white">
+            <div tw="mt-10 flex text-4xl text-white">
+              there was an error
+            </div>
+        </div>
+      ),
+      intents: [
+          <Button action={`/generic-reply`}>users moxiefolio</Button>,
+        ],
+  })
   }
 })
 
