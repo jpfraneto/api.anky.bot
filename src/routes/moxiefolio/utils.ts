@@ -13,7 +13,7 @@ type MoxieFantokenEntry = {
 
 
 export async function getUserMoxieFantokens(userId: number){
-  const response = await prisma.moxieFantokens.findUnique({
+  const response = await prisma.moxieFantoken.findUnique({
     where: { userId },
     include: {
       entries: {
@@ -36,13 +36,13 @@ export async function updateMoxieFantokenEntry(userId: number, targetUsername: s
   if (!targetUser) throw new Error('Target user not found');
 
   return prisma.$transaction(async (tx) => {
-    let moxieFantokens = await tx.moxieFantokens.findUnique({ 
+    let moxieFantokens = await tx.moxieFantoken.findUnique({ 
       where: { userId },
       include: { entries: true }
     });
 
     if (!moxieFantokens) {
-      moxieFantokens = await tx.moxieFantokens.create({
+      moxieFantokens = await tx.moxieFantoken.create({
         data: { userId, totalAllocated: 0 }
       });
     }
@@ -81,7 +81,7 @@ export async function updateMoxieFantokenEntry(userId: number, targetUsername: s
       });
     }
 
-    return tx.moxieFantokens.update({
+    return tx.moxieFantoken.update({
       where: { id: moxieFantokens.id },
       data: { totalAllocated: { increment: allocationDiff } },
       include: {
