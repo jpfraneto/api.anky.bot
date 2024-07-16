@@ -210,7 +210,7 @@ moxiefolioFrame.frame('/how-it-works', async (c) => {
         >
           install
         </Button.Link>,
-        <Button.Link href="https://www.warpcast.com/jpfraneto/0x4a1691a8">
+        <Button.Link href="https://warpcast.com/jpfraneto/0x3efaf3a0">
           feedback
         </Button.Link>,
         <Button action="/">
