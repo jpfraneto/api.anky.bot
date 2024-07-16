@@ -423,7 +423,7 @@ moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
             {updatedMoxieFantokens.entries.map((entry: MoxieFantokenEntry, i: number) => (
               <div tw="flex w-full text-left" key={i}>
-                {i + 1}. {entry.targetUser.username} (FID: {entry.targetUser.id}) - {entry.allocation} $moxie - {Number((100 * entry.allocation/Number(userAidropAllocation)).toFixed(2))}%
+                {i + 1}. {entry.targetUser.username} - {entry.allocation} $moxie - {Number((100 * entry.allocation/Number(userAidropAllocation)).toFixed(2))}%
               </div>
             ))}
           </div>
@@ -499,7 +499,7 @@ moxiefolioFrame.frame('/create-moxiefolio', async (c) => {
       })
     } else {
       const totalAllocated = usersMoxiefolio.entries.reduce((acc: number, fanToken) => acc + fanToken.allocation, 0);
-      const usersAirdropResponse = await getUsersAidropAllocation(usersFid)
+      const usersAirdropResponse = await getUsersAidropAllocation(usersFid?.toString()!)
       const usersAirdrop = usersAirdropResponse.moxieAirdropAmount
       const percentage = Number((100*totalAllocated/Number(usersAirdrop)).toFixed(2))
       returnButtons = [
@@ -517,7 +517,7 @@ moxiefolioFrame.frame('/create-moxiefolio', async (c) => {
               airdrop: {usersAirdrop} $moxie
             </div>
             <div tw="mt-2 flex text-xl text-white">
-              total fan tokens in moxiefolio: {usersMoxiefolio.length}
+              total fan tokens in moxiefolio: {usersMoxiefolio.entries.length}
             </div>
             <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
               {usersMoxiefolio.entries.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.targetUser.username} - {x.allocation} $moxie</div>)
@@ -621,7 +621,7 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
               airdrop: {usersAirdrop} $moxie
             </div>
             <div tw="mt-2 flex text-xl text-white">
-              total fan tokens in moxiefolio: {usersMoxiefolio.length}
+              total fan tokens in moxiefolio: {usersMoxiefolio.entries.length}
             </div>
             <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
               {usersMoxiefolio.entries.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.targetUser.username} - {x.allocation} $moxie</div>)
@@ -719,7 +719,7 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
         intents: returnButtons,
       })
     }
-    const totalWeight = usersMoxiefolio.reduce((acc: number, user) => acc + user.moxiefolioWeight, 0);
+    const totalWeight = usersMoxiefolio.entries.reduce((acc: number, entry: any) => acc + entry.allocation, 0);
     const usersAirdrop = await getUsersAidropAllocation(fid)
     const percentage = Number((totalWeight/100).toFixed(2))
     return c.res({
@@ -733,10 +733,10 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
             airdrop: {usersAirdrop.moxieAirdropAmount} $moxie
           </div>
           <div tw="mt-2 flex text-xl text-white">
-            total fan tokens in moxiefolio: {usersMoxiefolio.length}
+            total fan tokens in moxiefolio: {usersMoxiefolio.entries.length}
           </div>
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
-            {usersMoxiefolio.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.username} - {x.moxiefolioWeight}%</div>)
+            {usersMoxiefolio.entries.map((x,i) => (<div tw="flex w-full text-left">{i + 1}. {x.targetUser.username} - {x.allocation} $moxie</div>)
             )}
           </div>
           <div tw="mt-3 flex flex-col justify-center text-xl text-black">
@@ -925,7 +925,7 @@ moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
             {updatedMoxieFantokens.entries.map((entry: MoxieFantokenEntry, i: number) => (
               <div tw="flex w-full text-left" key={i}>
-                {i + 1}. {entry.targetUser.username} (FID: {entry.targetUser.fid}) - {entry.allocation}%
+                {i + 1}. {entry.targetUser.username} - {entry.allocation} $moxie
               </div>
             ))}
           </div>
@@ -1051,7 +1051,7 @@ moxiefolioFrame.frame(`/update-moxiefolio/:fidToAddToMoxiefolio`, async (c) => {
         <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
           {updatedMoxieFantokens.entries.map((entry: MoxieFantokenEntry, i: number) => (
             <div tw="flex w-full text-left" key={i}>
-              {i + 1}. {entry.targetUser.username} (FID: {entry.targetUser.id}) - {entry.allocation} $moxie - {Number((100 * entry.allocation/Number(userAidropAllocation)).toFixed(2))}%
+              {i + 1}. {entry.targetUser.username} - {entry.allocation} $moxie - {Number((100 * entry.allocation/Number(userAidropAllocation)).toFixed(2))}%
             </div>
           ))}
         </div>
