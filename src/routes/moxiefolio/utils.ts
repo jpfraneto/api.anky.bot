@@ -1,6 +1,18 @@
 import prisma from "../../../utils/prismaClient";
 
-export async function getUserMoxieFantokens(userId: number) {
+type MoxieFantokenEntry = {
+    targetUser: {
+      username: string;
+    };
+    allocation: number;
+  };
+  
+  type MoxieFantokens = {
+    entries: MoxieFantokenEntry[];
+  };
+
+
+export async function getUserMoxieFantokens(userId: number): Promise<MoxieFantokens | null> {
   return prisma.moxieFantokens.findUnique({
     where: { userId },
     include: {

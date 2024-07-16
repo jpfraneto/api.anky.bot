@@ -57,6 +57,17 @@ type VibraState = {
   };
 };
 
+type MoxieFantokenEntry = {
+  targetUser: {
+    username: string;
+  };
+  allocation: number;
+};
+
+type MoxieFantokens = {
+  entries: MoxieFantokenEntry[];
+};
+
 type UserMoxiefolioItem = {
   username: string;
   fid: number;
@@ -446,7 +457,7 @@ moxiefolioFrame.frame(`/edit-moxiefolio/:fid`, async (c) => {
   });
 })
 
-moxieFantokensFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
+moxiefolioFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
   const { fid } = c.req.param();
   const usersFid = c.frameData?.fid;
   
@@ -495,7 +506,7 @@ moxieFantokensFrame.frame('/update-moxie-fantokens/:fid', async (c) => {
             your moxiefolio was updated
           </div>
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
-            {updatedMoxieFantokens.entries.map((entry, i) => (
+            {updatedMoxieFantokens.entries.map((entry: MoxieFantokenEntry, i: number) => (
               <div tw="flex w-full text-left" key={i}>
                 {i + 1}. {entry.targetUser.username} - {entry.allocation}%
               </div>
@@ -537,7 +548,7 @@ moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
   // sanitize data and check if everything exists
   const username = textInput.split(" ")[0]
   const newAllocation = textInput.split(" ")[1]
-  const usersMoxiefolio = await getUsersMoxiefolio(usersFid)
+  const usersMoxiefolio = await getUsersMoxiefolio(usersFid?.toString()!)
   return c.res({
     title: 'vibra.so',
     image: (
@@ -561,8 +572,8 @@ moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
         </div>
       ),
     intents: [
-      <Button action={`/update-moxiefolio/${fid}`}>accept</Button>,
-      <Button action={`/moxiefolio/${fid}`}>cancel</Button>
+      <Button action={`/update-moxiefolio/${usersFid}`}>accept</Button>,
+      <Button action={`/moxiefolio/${usersFid}`}>cancel</Button>
     ],
   });
 })
