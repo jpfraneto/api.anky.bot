@@ -437,6 +437,10 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
       const usersAirdrop = usersAirdropResponse.moxieAirdropAmount
       const percentage = Number((100*totalAllocated/Number(usersAirdrop)).toFixed(2))
       console.log("the percentage is: ", percentage)
+      returnButtons = [
+        <TextInput placeholder='kenny 333'/>,
+        <Button action="/rebalance-moxiefolio">rebalance</Button>
+      ]
       return c.res({
         title: "moxiefolio",
         image: (
@@ -455,15 +459,12 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
               )}
             </div>
             <div tw="w-full px-4 mt-3 flex flex-col justify-center text-xl text-black">
-              <div tw="w-full flex flex-col px-2 py-1 items-center bg-purple-300 rounded-xl">
-                <div tw="flex w-full">{percentage}% of airdrop allocated</div>
-                <div tw="flex w-full ">{totalAllocated} $moxie</div>
+              <div tw="w-full flex flex-col px-2 py-1 mb-2 items-center bg-purple-300 rounded-xl">
+                <div tw="flex w-full">{percentage}% of airdrop allocated - {totalAllocated} $moxie</div>
               </div>
               <div tw="w-full flex flex-col px-2 py-1 bg-green-300 rounded-xl">
-                <div tw="flex w-full">{Number((1 - percentage).toFixed(2))}% of airdrop available</div>
-                <div tw="flex w-full">{+usersAirdrop - totalAllocated} $moxie</div>
+                <div tw="flex w-full">{Number((1 - percentage).toFixed(2))}% of airdrop available - {+usersAirdrop - totalAllocated} $moxie</div>
               </div>
-  
             </div>
           </div>
         ),
