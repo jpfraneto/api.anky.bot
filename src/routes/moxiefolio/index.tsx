@@ -455,11 +455,11 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
               )}
             </div>
             <div tw="w-full px-4 mt-3 flex flex-col justify-center text-xl text-black">
-              <div tw="w-full flex flex-col p-1 items-center bg-purple-300 rounded-xl">
+              <div tw="w-full flex flex-col px-2 py-1 items-center bg-purple-300 rounded-xl">
                 <div tw="flex w-full">{percentage}% of airdrop allocated</div>
                 <div tw="flex w-full ">{totalAllocated} $moxie</div>
               </div>
-              <div tw="w-full flex flex-col bg-green-300 rounded-xl">
+              <div tw="w-full flex flex-col px-2 py-1 bg-green-300 rounded-xl">
                 <div tw="flex w-full">{Number((1 - percentage).toFixed(2))}% of airdrop available</div>
                 <div tw="flex w-full">{+usersAirdrop - totalAllocated} $moxie</div>
               </div>
@@ -629,7 +629,7 @@ moxiefolioFrame.frame(`/edit-moxiefolio/:fid`, async (c) => {
         </div>
       ),
       intents: [
-        <TextInput placeholder="undefined 12" />,
+        <TextInput placeholder="downshift.eth 12" />,
         <Button action={`/update-moxiefolio/${fid}`}>edit</Button>,
         <Button action={`/moxie-fantokens/${fid}`}>cancel</Button>
       ],
@@ -809,10 +809,10 @@ moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
           <div tw="mt-10 flex text-xl text-white">
-            Add {userToAdd.username} to your moxiefolio
+            Add @{userToAdd.username} to your moxiefolio
           </div>
-          <div tw="p-2 border border-white bg-purple-200 text-black mt-2 flex text-2xl text-white">
-            Available allocation: {availableAllocation.toFixed(2)}%
+          <div tw="p-2 border border-white bg-purple-200 text-black mt-2 flex text-2xl rounded-xl">
+            Available $moxie: {usersAirdrop.moxieAirdropAmount - totalAllocated}
           </div>
           <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
             {usersMoxiefolio?.entries.map((x, i) => (
@@ -827,7 +827,7 @@ moxiefolioFrame.frame(`/add-this-fantoken/:fidToAddToMoxiefolio`, async (c) => {
         </div>
       ),
       intents: [
-        <TextInput placeholder="Allocation percentage" />,
+        <TextInput placeholder="888 $moxie | 888" />,
         <Button action={`/update-moxiefolio/${usersFid}?targetFid=${fidToAddToMoxiefolio}`}>Add</Button>,
         <Button action={`/moxiefolio/${usersFid}`}>Cancel</Button>
       ],
