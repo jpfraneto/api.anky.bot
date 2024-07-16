@@ -12,7 +12,7 @@ import { addActionLink } from '../../../utils/url';
 import { Logger } from '../../../utils/Logger';
 import { neynarClient } from '../../services/neynar-service';
 import { NEYNAR_API_KEY } from '../../../env/server-env';
-import { getUserFromFid } from '../../../utils/farcaster';
+import { getUserFromFid, getUserFromUsername } from '../../../utils/farcaster';
 import {
   createPublicClient,
   erc20Abi,
@@ -312,6 +312,76 @@ async function getUsersAidropAllocation(fid: string): Promise<{fid: number, moxi
   return response.data
 }
 
+moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
+  const textInput = c.frameData?.inputText!;
+  const username = textInput.split(" ")[0]
+  const amountOfMoxie = textInput.split(" ")[1]
+  const userToAdd = await getUserFromUsername(username)
+  let targetUserFid = userToAdd.fid
+  let targetAllocation = parseFloat(amountOfMoxie);
+
+  if (isNaN(targetUserFid) || isNaN(targetAllocation)) {
+    return c.res({
+      title: 'Error',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            Invalid input format. Please use "USERNAME ALLOCATION" (e.g., "jpfraneto 888").
+          </div>
+        </div>
+      ),
+      intents: [
+        <TextInput placeholder='jpfraneto 8888' />,
+        <Button action={`/add-member-to-moxiefolio`}>add member</Button>,
+      ],
+    });
+  }
+
+  try {
+    const updatedMoxieFantokens = await updateMoxieFantokenEntry(parseInt(fid), targetUserFid, newAllocation);
+
+    return c.res({
+      title: 'Moxiefolio Updated',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            Your moxiefolio was updated
+          </div>
+          <div tw="flex flex-col items-start my-3 text-black text-2xl justify-center p-2 rounded-xl bg-purple-200">
+            {updatedMoxieFantokens.entries.map((entry: MoxieFantokenEntry, i: number) => (
+              <div tw="flex w-full text-left" key={i}>
+                {i + 1}. {entry.targetUser.username} (FID: {entry.targetUser.fid}) - {entry.allocation}%
+              </div>
+            ))}
+          </div>
+          <div tw="mt-3 flex text-xl text-white">
+            Total allocated: {updatedMoxieFantokens.totalAllocated}%
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/edit-moxie-fantokens/${fid}`}>Edit again</Button>,
+        <Button action={`/moxie-fantokens/${fid}`}>View my Moxie Fantokens</Button>
+      ],
+    });
+  } catch (error) {
+    console.error("Error updating Moxie Fantokens:", error);
+    return c.res({
+      title: 'Error',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex text-xl text-white">
+            An error occurred while updating your Moxie Fantokens
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/moxie-fantokens/${fid}`}>Back to my Moxie Fantokens</Button>
+      ],
+    });
+  }
+})
+
 moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
   const { fid } = c.req.param();
   const usersFid = c.frameData?.fid
@@ -324,7 +394,7 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
     if(usersMoxiefolio == null) {
       returnButtons = [
         <TextInput placeholder='jpfraneto 8888' />,
-        <Button action={`/add-member-to-moxiefolio/${fid}`}>add member</Button>,
+        <Button action={`/add-member-to-moxiefolio`}>add member</Button>,
         <Button.Link
         href={addActionLink({
           name: 'moxie fantokens',
@@ -349,6 +419,9 @@ moxiefolioFrame.frame('/this-users-moxiefolio/:fid', async (c) => {
             </div>
             <div tw="mt-2 flex text-xl text-white">
               or just install the cast action and call it on any cast to add it to that user
+            </div>
+            <div tw="mt-2 flex text-xl text-white">
+              (your airdrop is {usersAirdrop.moxieAirdropAmount} $moxie, and you /can/ divide that on all the fantokens you want)
             </div>
           </div>
         ),
