@@ -35,6 +35,7 @@ import { sadhanaFrame } from './routes/sadhana';
 import { gamesFrame } from './routes/games';
 import { enterFrame } from './routes/enter';
 import { moxiefolioFrame } from './routes/moxiefolio';
+import { replyToDanFrame } from './routes/replyToDan';
 // **** ROUTE IMPORTS ****
 
 // **** FAST SCRIPTS ****
@@ -97,6 +98,7 @@ app.route('/sadhana', sadhanaFrame)
 app.route('/gamecaster', gamesFrame)
 app.route('/enter', enterFrame)
 app.route('/moxiefolio', moxiefolioFrame)
+app.route('/replytodan', replyToDanFrame)
 
 app.get("/aloja", (c) => {
   return c.json({
