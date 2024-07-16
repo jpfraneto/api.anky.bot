@@ -27,7 +27,6 @@ export function getViemChain(chainId: number) {
   return found;
 }
 
-
 const chainId = 8453
 const chain = getViemChain(Number(chainId));
 
@@ -152,7 +151,7 @@ replyToDanFrame.frame('/replied', async (c) => {
       })
     } else {
       return c.res({
-        title: "anky",
+        title: "fc marketing",
         image: (
             <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
             <div tw="mt-10 flex text-4xl text-white">
