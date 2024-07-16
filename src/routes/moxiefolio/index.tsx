@@ -153,7 +153,7 @@ moxiefolioFrame.frame('/', async (c) => {
     title: 'moxie aidrop',
     image: (
       <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-        <span tw="text-purple-500 text-2xl mb-2">understand how to plan for moxie</span>
+        <span tw="text-purple-500 text-2xl mb-2">understand -practically- how to plan for moxie</span>
         <div tw="flex text-4xl text-purple-200 mt-4">
           {formattedTime}
         </div>
@@ -182,7 +182,7 @@ moxiefolioFrame.frame('/how-it-works', async (c) => {
       image: (
         <div tw="flex h-full w-full flex-col items-center justify-center py-2 px-8 bg-black text-white">
           <div tw="mt-2 flex text-2xl">
-            you are {username}
+            you are @{username}
           </div>
           <div tw="mt-2 flex text-2xl">
             your $moxie airdrop is {userAirdrop}.
@@ -191,7 +191,7 @@ moxiefolioFrame.frame('/how-it-works', async (c) => {
             (this number is not real -yet- and this frame is being tested, so please give feedback)
           </div>
           <div tw="mt-2 flex text-2xl">
-            you can buy farcaster's members FAN TOKENS with it
+            you can buy farcaster's members FAN TOKENS with your airdrop. or sell it very slowly (dont do this, nfa)
           </div>
           <div tw="mt-2 text-2xl flex flex-col w-full">
             <span>the system that you will install with this frame will help you to plan on how to do that. you can call the cast action on any cast and add that member of farcaster to your... </span><span tw="mx-auto text-7xl text-purple-400">moxiefolio</span>
