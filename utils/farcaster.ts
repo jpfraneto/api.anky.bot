@@ -39,8 +39,8 @@ export async function getUserFromUsername(username: string, retryCount = 0): Pro
           };
           
         const response = await axios.request(options);
-        console.log("THE RESPONSE IN HERE IS: ", response)
-        return response.data.result.user[0];
+        console.log("reasa", response.data.result.user)
+        return response.data.result.user;
     } catch (error) {
         console.log(`Error fetching user from fid (attempt ${retryCount + 1}):`, error);
 

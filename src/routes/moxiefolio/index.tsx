@@ -314,9 +314,10 @@ async function getUsersAidropAllocation(fid: string): Promise<{fid: number, moxi
 
 moxiefolioFrame.frame('/add-member-to-moxiefolio', async (c) => {
   const textInput = c.frameData?.inputText!;
-  const username = textInput.split(" ")[0]
+  const username = textInput.trim().split(" ")[0]
   const amountOfMoxie = textInput.split(" ")[1]
   const userToAdd = await getUserFromUsername(username)
+  console.log("The user to add is", userToAdd)
   let targetUserFid = userToAdd.fid
   let targetAllocation = parseFloat(amountOfMoxie);
 
