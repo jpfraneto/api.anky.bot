@@ -175,7 +175,7 @@ moxiefolioFrame.frame('/', async (c) => {
 
 moxiefolioFrame.frame('/how-it-works', async (c) => {
   try {
-    const userAirdrop = 12345
+    const userAirdrop = 1234567
     const username = "jpfraneto"
     return c.res({
       title: 'moxiefolio',
@@ -273,10 +273,10 @@ moxiefolioFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c
               actioned cast's fid - {actionedCastFid}
             </div>
             <div tw="mt-3 flex text-xl text-white">
-              (farscore) user social score - {socialScoreOfUser}
+              (farscore) user social score - {socialScoreOfUser} (not real number)
             </div>
             <div tw="mt-3 flex text-xl text-white">
-              cast score  - {thisCastScore}
+              cast score  - {thisCastScore} (not real number)
             </div>
           </div>
         </div>
