@@ -887,5 +887,5 @@ moxiefolioFrame.frame(`/update-moxiefolio/:fidToAddToMoxiefolio`, async (c) => {
       <Button action={`/moxie-fantokens/${usersFid}`}>my moxiefolio</Button>
     ],
   });
-}
+})
 
