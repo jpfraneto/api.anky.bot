@@ -153,7 +153,7 @@ moxiefolioFrame.frame('/', async (c) => {
     title: 'moxie aidrop',
     image: (
       <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-        <span tw="text-purple-500 text-2xl mb-2">understand how to plan for the upcoming moxie airdrop</span>
+        <span tw="text-purple-500 text-2xl mb-2">understand how to plan for moxie</span>
         <div tw="flex text-4xl text-purple-200 mt-4">
           {formattedTime}
         </div>
@@ -181,33 +181,37 @@ moxiefolioFrame.frame('/how-it-works', async (c) => {
       title: 'moxiefolio',
       image: (
         <div tw="flex h-full w-full flex-col items-center justify-center py-2 px-8 bg-black text-white">
-          <div tw="text-4xl">moxie airdrop</div>
           <div tw="mt-2 flex text-2xl">
             you are {username}
           </div>
           <div tw="mt-2 flex text-2xl">
             your $moxie airdrop is {userAirdrop}.
           </div>
+          <div tw="mt-2 flex text-xl text-purple-700">
+            (this number is not real -yet- and this frame is being tested, so please give feedback)
+          </div>
           <div tw="mt-2 flex text-2xl">
             you can buy farcaster's members FAN TOKENS with it
           </div>
           <div tw="mt-2 text-2xl flex flex-col w-full">
-            <span>the system that you will install with this frame will help you do that. you can call the cast action on any cast and add that member of farcaster to your... </span><span tw="mx-auto text-7xl text-purple-400">moxiefolio</span>
-          </div>
-          <div tw="mt-2 flex text-2xl">
-            by /vibra
+            <span>the system that you will install with this frame will help you to plan on how to do that. you can call the cast action on any cast and add that member of farcaster to your... </span><span tw="mx-auto text-7xl text-purple-400">moxiefolio</span>
           </div>
         </div>
       ),
       intents: [
-        <Button.Link href="https://www.moxie.xyz">
+        <Button.Link href="https://paragraph.xyz/@maretus.eth/moxie-protocol-for-laymen?referrer=0xcb69c793478a7355178979ae0be453bf61c378ee">
           moxie?
         </Button.Link>,
-         <Button.Link href="https://warpcast.com/burrrrrberry/0xbb396912">
-         fan tokens?
+          <Button.Link
+          href={addActionLink({
+            name: 'moxie fantokens',
+            postUrl: '/moxiefolio/moxiedistribution',
+          })}
+        >
+          install
         </Button.Link>,
-        <Button.Link href="https://www.vibra.so">
-          vibra?
+        <Button.Link href="https://www.warpcast.com/jpfraneto/0x4a1691a8">
+          feedback
         </Button.Link>,
         <Button action="/">
           back
@@ -526,7 +530,7 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
               welcome to your moxiefolio
             </div>
             <div tw="mt-2 flex text-xl text-purple-200">
-              a tool for you to keep track of what you plan to do for the upcoming $moxie airdrop
+              a tool for you to keep track of what you plan to do for moxie
             </div>
             <div tw="mt-2 flex text-xl text-white">
               your allowance is {usersAirdrop.moxieAirdropAmount} (airstack please open the API)
