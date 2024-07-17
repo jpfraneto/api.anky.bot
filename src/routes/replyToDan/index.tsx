@@ -97,6 +97,7 @@ replyToDanFrame.frame('/', async (c) => {
     image: "https://github.com/jpfraneto/images/blob/main/anon-reply.png?raw=true",
     intents: [
       <TextInput placeholder='appreciate feedback, etc'/>,
+      <Button.Link href={`https://www.warpcast.com/~/conversations/${marketingCastHash}`}>original cast</Button.Link>,
       <Button action={`/replied`}>📭</Button>
     ],
   });
