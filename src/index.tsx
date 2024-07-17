@@ -8,7 +8,7 @@ import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
 import axios from 'axios';
 import { cors } from "hono/cors"
-import { createAndSaveLocallyCompressedGifFromVideo, createFramedGifFromVideo } from '../utils/video-processing';
+import { createAndSaveLocallyCompressedGifFromVideo } from '../utils/video-processing';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises'; 
 import { createCanvas, loadImage } from 'canvas';

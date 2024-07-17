@@ -155,10 +155,10 @@ replyToDanFrame.frame('/replied', async (c) => {
         title: "fc marketing",
         image: (
             <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
-            <div tw="mt-10 flex text-4xl text-white">
+            <div tw="mt-10 flex text-2xl text-white">
               your feedback is not acceptable. try harder
             </div>
-            <div tw="mt-10 flex text-4xl text-white">
+            <div tw="mt-10 flex text-2xl text-purple-300">
               {snarkyReply}
             </div>
           </div>
