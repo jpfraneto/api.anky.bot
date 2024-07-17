@@ -15,7 +15,7 @@ import { ALCHEMY_INSTANCES, getTransport } from '../../../utils/web3';
 import { HYPERSUB_ABI } from '../../constants/abi/HYPERSUB_ABI';
 import { MOXIE_PASS_ABI } from '../../constants/abi/MOXIE_PASS_ABI';
 import { callChatGTPToGetJSONReply } from '../../../utils/ai';
-import { DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY } from '../../../env/server-env';
+import { ANKY_SIGNER, DUMMY_BOT_SIGNER, NEYNAR_API_KEY, NEYNAR_DUMMY_BOT_API_KEY } from '../../../env/server-env';
 
 
 export function getViemChain(chainId: number) {
@@ -124,51 +124,38 @@ replyToDanFrame.frame('/replied', async (c) => {
         ],
     })
   } else {
-    const systemPrompt = "you are a helpful assistant that understands the context of a decentralized social media platform called farcaster. a user of that platform is giving anonyomous feedback to the leader of it, replying to a post where the leader (which's name is Dan Romero) said: 'thats my job (being the marketing person of the company that creates the protocol and its main client), what am i not doing?.\n\nyou are going to receive what a user wrote, and your mission is to process the reply of the user and return a json object that has the following properties with its explanations:\n\n {isValidFeedback: <>a boolean assertion if this is valid feedback or not</>, snarkyReplyToUser: <>imagine you are the sarcastic leader of this platoform and your mission is to make the user that gave this feedback feel ridiculous. you are bullying the user, and this is the reply that you are producing for that purpose, based on what the user said. always end up this reply with: 'if you don't like this, build your own client.'</>}'"
+    const systemPrompt = "you are a helpful assistant that understands the context of a decentralized social media platform called farcaster. a user of that platform is giving anonyomous feedback to the leader of it, replying to a post where the leader (which's name is Dan Romero) said: 'thats my job (being the marketing person of the company that creates the protocol and its main client), what am i not doing?.\n\nyou are going to receive what a user wrote, and your mission is to process the reply of the user and return a json object that has the following properties with its explanations:\n\n {isValidFeedback: <>a boolean assertion if this is valid feedback or not</>, snarkyReplyToUser: <>imagine you are the sarcastic leader of this platoform that finally tried lsd and opened his mind and your mission is to make the user that gave this feedback feel ridiculous. you are bullying the user, but in a fun way and this is the reply that you are producing for that purpose, based on what the user said. always end up this reply with: 'if you don't like this, build your own client.'</>}'"
     const userPrompt = userFeedback!
     const response = await callChatGTPToGetJSONReply(systemPrompt, userPrompt)
     const parsedResponse = JSON.parse(response!)
     const isValidFeedback = parsedResponse?.isValidReply!
     const snarkyReply = parsedResponse?.snarkyReplyToUser!
-    if(isValidFeedback) {
-      let castOptions = {
-        text: userFeedback!,
-        embeds: [],
-        parent: marketingCastHash,
-        signer_uuid: DUMMY_BOT_SIGNER,
-      };
-      const castResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
-      return c.res({
-        title: "anky",
-        image: (
-            <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
-            <div tw="mt-10 flex w-5/6 text-4xl text-white">
-              {snarkyReply}
-            </div>
+    let castOptions = {
+      text: userFeedback!,
+      embeds: [],
+      parent: marketingCastHash,
+      signer_uuid: DUMMY_BOT_SIGNER,
+    };
+    const castResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
+    let castOptions2 = {
+      text: userFeedback!,
+      embeds: [],
+      parent: castResponse.hash,
+      signer_uuid: ANKY_SIGNER,
+    };
+    const castResponse2 = await publishCastToTheProtocol(castOptions, NEYNAR_API_KEY);
+    return c.res({
+      title: "anky",
+      image: (
+          <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
+          <div tw="mt-10 flex w-5/6 text-4xl text-white">
+            DONE.
           </div>
-        ),
-        intents: [
-          <Button.Link href={`https://www.warpcast.com/~/conversations/${castResponse.hash}`}>see reply</Button.Link>,
-          ],
-      })
-    } else {
-      return c.res({
-        title: "fc marketing",
-        image: (
-            <div tw="flex h-full w-full flex-col px-16 items-center justify-center bg-black text-white">
-            <div tw="mt-10 flex text-2xl text-white">
-              your feedback is not acceptable. try harder
-            </div>
-            <div tw="mt-10 flex text-2xl text-purple-300">
-              {snarkyReply}
-            </div>
-          </div>
-        ),
-        intents: [
-          <TextInput placeholder='appreciate the builders, etc'/>,
-          <Button action={`/replied`}>📭</Button>
-          ],
-      })
-    }
+        </div>
+      ),
+      intents: [
+        <Button.Link href={`https://www.warpcast.com/~/conversations/${castResponse2.hash}`}>see reply</Button.Link>,
+        ],
+    })
   }
 });
