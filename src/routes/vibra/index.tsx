@@ -241,9 +241,9 @@ vibraFrame.frame('/cast-gifs/:uuid/:castHash', async (c) => {
     title: 'vibra.so',
     image: `https://res.cloudinary.com/dzpugkpuz/image/upload/v1721251888/zurf/cast_gifs/${uuid}.gif`,
     intents: [
-      <Button action={`https://warpcast.com/~/conversations/${castHash}`}>
+      <Button.Link href={`https://warpcast.com/~/conversations/${castHash}`}>
         original cast
-      </Button>
+      </Button.Link>
   ],
   });
 });

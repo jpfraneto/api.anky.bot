@@ -439,7 +439,6 @@ app.post('/wc-video', async (c) => {
       await fs.writeFile(videoPath, videoBuffer);
     }
 
-
     // Process the video and create a GIF
     const gifPath = path.join(process.cwd(), 'temp', `${uuid}.gif`);
     const videoDuration = await getVideoDuration(videoPath);
@@ -470,9 +469,17 @@ app.post('/wc-video', async (c) => {
     const cloudinaryResult = await uploadGifToTheCloud(gifPath, `cast_gifs/${uuid}`);
     console.log("the cloudinary result is: ", cloudinaryResult);
 
-    // Save to database
-    const castWithVideo = await prisma.castWithVideo.create({
-      data: {
+    // Upsert to database
+    const castWithVideo = await prisma.castWithVideo.upsert({
+      where: { castHash },
+      update: {
+        gifUrl: cloudinaryResult.secure_url,
+        videoDuration,
+        gifDuration,
+        fps,
+        scale,
+      },
+      create: {
         castHash,
         gifUrl: cloudinaryResult.secure_url,
         videoDuration,
@@ -489,8 +496,8 @@ app.post('/wc-video', async (c) => {
       signer_uuid: DUMMY_BOT_SIGNER,
     };
 
-    await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
-
+    const castingResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
+    console.log("the casting response is: ", castingResponse)
     // Clean up temporary files
     await fs.unlink(videoPath);
     await fs.unlink(gifPath);
