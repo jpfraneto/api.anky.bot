@@ -138,12 +138,12 @@ replyToDanFrame.frame('/replied', async (c) => {
     };
     const castResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
     let castOptions2 = {
-      text: userFeedback!,
+      text: snarkyReply,
       embeds: [],
       parent: castResponse.hash,
       signer_uuid: ANKY_SIGNER,
     };
-    const castResponse2 = await publishCastToTheProtocol(castOptions, NEYNAR_API_KEY);
+    const castResponse2 = await publishCastToTheProtocol(castOptions2, NEYNAR_API_KEY);
     return c.res({
       title: "anky",
       image: (
