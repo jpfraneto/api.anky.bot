@@ -172,3 +172,15 @@ model MoxieFantokenEntry {
 model Dummy {
   id Int @id @default(autoincrement())
 }
+
+model CastWithVideo {
+  id              Int      @id @default(autoincrement())
+  castHash        String   @unique
+  gifUrl          String
+  videoDuration   Float
+  gifDuration     Float
+  fps             Float
+  scale           Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

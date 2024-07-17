@@ -7,7 +7,23 @@ const FINAL_GIF_SIZE = 350; // Final size of the GIF
 const VIDEO_SIZE = Math.floor(FINAL_GIF_SIZE * 0.8); // 80% of the final GIF size
 const MAX_GIF_SIZE = 9.9 * 1024 * 1024; // 9.9MB in bytes
 
-function getVideoDuration(inputPath: string): Promise<number> {
+export function isHLSStream(url: string): boolean {
+  return url.toLowerCase().endsWith('.m3u8');
+}
+
+export function downloadHLSStream(inputUrl: string, outputPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    ffmpeg(inputUrl)
+      .outputOptions('-c copy') // Copy without re-encoding
+      .outputOptions('-bsf:a aac_adtstoasc') // Fix for some HLS streams
+      .output(outputPath)
+      .on('end', () => resolve())
+      .on('error', (err) => reject(err))
+      .run();
+  });
+}
+
+export function getVideoDuration(inputPath: string): Promise<number> {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(inputPath, (err, metadata) => {
       if (err) reject(err);
@@ -35,7 +51,7 @@ export async function createAndSaveLocallyCompressedGifFromVideo(inputPath: stri
         ffmpeg(inputPath)
           .inputOptions(`-t ${duration}`)
           .outputOptions([
-            '-vf', `scale=${scale}:${scale}:force_original_aspect_ratio=decrease,pad=${scale}:${scale}:(ow-iw)/2:(oh-ih)/2:color=pink,fps=${fps},split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`,
+            '-vf', `scale=${scale}:${scale}:force_original_aspect_ratio=decrease,pad=${scale}:${scale}:(ow-iw)/2:(oh-ih)/2:color=black,fps=${fps},split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`,
             '-loop', '0'
           ])
           .toFormat('gif')
@@ -109,6 +125,12 @@ async function getGifFrames(gifPath: string): Promise<Buffer[]> {
   return [];
 }
 
+export function isValidVideoUrl(url: string): boolean {
+  const videoExtensions = ['.mp4', '.mov', '.avi', '.webm', '.mkv', 'm3u8'];
+  const lowercaseUrl = url.toLowerCase();
+  return videoExtensions.some(ext => lowercaseUrl.endsWith(ext));
+}
+
 function getVideoDimensions(inputPath: string): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(inputPath, (err, metadata) => {
@@ -143,23 +165,15 @@ export async function createFramedGifFromVideo(
     let fps = 10;
     let scale = VIDEO_SIZE;
 
-    const pinkBackground = await sharp({
+    const blackBackground = await sharp({
       create: {
         width: FINAL_GIF_SIZE,
         height: FINAL_GIF_SIZE,
         channels: 4,
-        background: { r: 255, g: 192, b: 203, alpha: 1 }
+        background: { r: 0, g: 0, b: 0, alpha: 1 }
       }
     }).png().toBuffer();
 
-    const pfpSize = Math.floor(FINAL_GIF_SIZE * 0.2);
-    const pfp = await sharp(await fetch(user.pfp_url).then(res => res.arrayBuffer()))
-      .resize(pfpSize, pfpSize, { fit: 'cover' })
-      .composite([{
-        input: Buffer.from(`<svg><circle cx="${pfpSize/2}" cy="${pfpSize/2}" r="${pfpSize/2}" /></svg>`),
-        blend: 'dest-in'
-      }])
-      .toBuffer();
 
     const createFramedGif = async () => {
       const tempDir = path.join(process.cwd(), 'temp_frames');
@@ -169,7 +183,7 @@ export async function createFramedGifFromVideo(
         ffmpeg(inputPath)
           .inputOptions(`-t ${duration}`)
           .outputOptions([
-            `-vf fps=${fps},scale=${scale}:${scale}:force_original_aspect_ratio=decrease,pad=${scale}:${scale}:(ow-iw)/2:(oh-ih)/2:color=pink`,
+            `-vf fps=${fps},scale=${scale}:${scale}:force_original_aspect_ratio=decrease,pad=${scale}:${scale}:(ow-iw)/2:(oh-ih)/2:color=black`,
             '-vsync', '0'
           ])
           .output(path.join(tempDir, 'frame%d.png'))
@@ -184,19 +198,14 @@ export async function createFramedGifFromVideo(
 
               for (const framePath of framePaths) {
                 const frame = await fs.readFile(path.join(tempDir, framePath));
-                const compositeImage = await sharp(pinkBackground)
+                const compositeImage = await sharp(blackBackground)
                   .composite([
                     {
                       input: await sharp(frame)
-                        .resize(VIDEO_SIZE, VIDEO_SIZE, { fit: 'contain', background: { r: 255, g: 192, b: 203, alpha: 1 } })
+                        .resize(VIDEO_SIZE, VIDEO_SIZE, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 1 } })
                         .toBuffer(),
                       top: Math.floor((FINAL_GIF_SIZE - VIDEO_SIZE) / 2),
                       left: Math.floor((FINAL_GIF_SIZE - VIDEO_SIZE) / 2),
-                    },
-                    {
-                      input: pfp,
-                      top: 20,
-                      left: FINAL_GIF_SIZE - pfpSize - 20,
                     },
                     {
                       input: Buffer.from(`

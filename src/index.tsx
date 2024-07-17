@@ -8,7 +8,7 @@ import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
 import axios from 'axios';
 import { cors } from "hono/cors"
-import { createAndSaveLocallyCompressedGifFromVideo } from '../utils/video-processing';
+import { createAndSaveLocallyCompressedGifFromVideo, createFramedGifFromVideo, downloadHLSStream, getVideoDuration, isHLSStream, isValidVideoUrl } from '../utils/video-processing';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises'; 
 import { createCanvas, loadImage } from 'canvas';
@@ -21,7 +21,7 @@ import { Readable } from 'stream'
 import ffmpeg from 'fluent-ffmpeg';
 import { v2 as cloudinary } from 'cloudinary';
 import { uploadVideoToTheCloud, uploadGifToTheCloud } from '../utils/cloudinary';
-import { publishCastToTheProtocol } from '../utils/cast';
+import { fetchCastInformationFromHash, publishCastToTheProtocol } from '../utils/cast';
 import { scrollFeedAndReply } from '../utils/anky';
 
 // **** ROUTE IMPORTS ****
@@ -400,6 +400,105 @@ app.post('/video', async (c) => {
         }
       }
     }
+  }
+});
+
+app.post('/wc-video', async (c) => {
+  const { castHash } = await c.req.json();
+
+  if (!castHash) {
+    return c.json({ message: 'Cast hash is required' }, 400);
+  }
+
+  try {
+    // Fetch cast information from Neynar
+    const castInfo = await fetchCastInformationFromHash(castHash);
+    console.log('the cast info is: ', castInfo);
+    const videoUrl = castInfo.embeds?.find(embed => isValidVideoUrl(embed.url))?.url;
+
+    if (!videoUrl) {
+      return c.json({ message: 'No valid video URL found in the cast' }, 400);
+    }
+
+    // Generate unique identifiers for our files
+    const uuid = uuidv4();
+    const videoPath = path.join(process.cwd(), 'temp', `${uuid}.mp4`);
+    await fs.mkdir(path.dirname(videoPath), { recursive: true });
+
+    // Handle HLS streams
+    if (isHLSStream(videoUrl)) {
+      console.log("IN HERE")
+      await downloadHLSStream(videoUrl, videoPath);
+      console.log("after")
+    } else {
+      // For direct video files, download as before
+      const videoResponse = await fetch(videoUrl);
+      console.log('after the video response')
+      const videoArrayBuffer = await videoResponse.arrayBuffer();
+      const videoBuffer = Buffer.from(videoArrayBuffer);
+      await fs.writeFile(videoPath, videoBuffer);
+    }
+
+
+    // Process the video and create a GIF
+    const gifPath = path.join(process.cwd(), 'temp', `${uuid}.gif`);
+    const videoDuration = await getVideoDuration(videoPath);
+    console.log('the video duration is: ', videoDuration)
+    let gifDuration = Math.min(videoDuration, 30); // Cap at 30 seconds
+    let fps = 10;
+    let scale = 350;
+    let gifSize = Infinity;
+
+    while (gifSize > 10 * 1024 * 1024 && gifDuration > 1) { // 10MB limit
+      await createAndSaveLocallyCompressedGifFromVideo(videoPath, gifPath);
+      const stats = await fs.stat(gifPath);
+      console.log("the stats are: ", stats)
+      gifSize = stats.size;
+
+      if (gifSize > 10 * 1024 * 1024) {
+        gifDuration = Math.max(gifDuration * 0.9, 1);
+        fps = Math.max(fps * 0.9, 5);
+        scale = Math.max(Math.floor(scale * 0.9), 160);
+      }
+    }
+
+    if (gifSize > 10 * 1024 * 1024) {
+      throw new Error('Unable to create GIF within size limit');
+    }
+
+    // Upload the GIF to Cloudinary
+    const cloudinaryResult = await uploadGifToTheCloud(gifPath, `cast_gifs/${uuid}`);
+    console.log("the cloudinary result is: ", cloudinaryResult);
+
+    // Save to database
+    const castWithVideo = await prisma.castWithVideo.create({
+      data: {
+        castHash,
+        gifUrl: cloudinaryResult.secure_url,
+        videoDuration,
+        gifDuration,
+        fps,
+        scale,
+      },
+    });
+
+    let castOptions = {
+      text: "",
+      embeds: [{url: `https://api.anky.bot/vibra/cast-gifs/${uuid}/${castInfo.hash}`}],
+      parent: castInfo.hash,
+      signer_uuid: DUMMY_BOT_SIGNER,
+    };
+
+    await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
+
+    // Clean up temporary files
+    await fs.unlink(videoPath);
+    await fs.unlink(gifPath);
+
+    return c.json({ gifUrl: castWithVideo.gifUrl });
+  } catch (error) {
+    console.error('Error processing cast:', error);
+    return c.json({ message: 'Error processing cast', error: error.message }, 500);
   }
 });
 

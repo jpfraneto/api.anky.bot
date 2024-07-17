@@ -234,6 +234,20 @@ vibraFrame.frame('/livestream/:streamer/:tokenAddress', async (c) => {
   });
 });
 
+// frame que comparte el usuario cuando empieza su stream
+vibraFrame.frame('/cast-gifs/:uuid/:castHash', async (c) => {
+  const { uuid, castHash } = c.req.param();
+  return c.res({
+    title: 'vibra.so',
+    image: `https://res.cloudinary.com/dzpugkpuz/image/upload/v1721251888/zurf/cast_gifs/${uuid}.gif`,
+    intents: [
+      <Button action={`https://warpcast.com/~/conversations/${castHash}`}>
+        original cast
+      </Button>
+  ],
+  });
+});
+
 vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
   const body = await c.req.json();
   let { streamer, tokenAddress } = c.req.param();
