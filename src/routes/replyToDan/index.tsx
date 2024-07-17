@@ -138,7 +138,7 @@ replyToDanFrame.frame('/replied', async (c) => {
     };
     const castResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
     let castOptions2 = {
-      text: snarkyReply,
+      text: snarkyReply.toLowerCase(),
       embeds: [],
       parent: castResponse.hash,
       signer_uuid: ANKY_SIGNER,
