@@ -182,8 +182,8 @@ vibraTvFrame.frame('/processing-video/:castHashToSave', async (c) => {
 
 vibraTvFrame.frame('/', async (c) => {
   console.log("inside this route")
-  const randomVideo = await prisma.castWithVideo.findMany({})
-  console.log("the random video is", randomVideo)
+  const allVideos = await prisma.castWithVideo.findMany({})
+  const randomVideo = allVideos[Math.floor(allVideos.length * Math.random())]
   if(randomVideo) {
     return c.res({
       title: 'moxie aidrop',
