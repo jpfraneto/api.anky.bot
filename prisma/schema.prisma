@@ -176,11 +176,21 @@ model Dummy {
 model CastWithVideo {
   id              Int      @id @default(autoincrement())
   castHash        String   @unique
-  gifUrl          String
-  videoDuration   Float
-  gifDuration     Float
-  fps             Float
-  scale           Int
+  gifUrl          String?
+  addedByFid      Int?
+  videoDuration   Float?
+  gifDuration     Float?
+  fps             Float?
+  scale           Int?
+  status          VideoProcessingStatus @default(PENDING)
+  errorMessage    String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+enum VideoProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  ERROR
 }

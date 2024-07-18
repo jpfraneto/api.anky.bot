@@ -21,6 +21,7 @@ import * as chains from 'viem/chains';
 import { getUserMoxieFantokens, updateMoxieFantokenEntry } from './utils';
 import { fetchCastInformationFromHash } from '../../../utils/cast';
 import prisma from '../../../utils/prismaClient';
+import { processCastVideo } from '../../../utils/video-processing';
 
 type VibraState = {
   // profiles
@@ -104,12 +105,20 @@ vibraTvFrame.castAction(
 
     const cast = await fetchCastInformationFromHash(castId.hash)
     const doesCastHaveVideo = checkIfCastHasVideo(cast.embeds[0].url)
-    console.log("does the cast have video?" , doesCastHaveVideo)
     if(doesCastHaveVideo) {
-      return c.res({
-        type: "frame",
-        path: `${publicUrl}/vibratv/save-video/${actionedCastHash}/${actionedFid}`,
-      });
+      try {
+        await processCastVideo(cast, actionedFid);
+        return c.res({
+          type: "frame",
+          path: `${publicUrl}/vibratv/processing-video/${actionedCastHash}`,
+        });
+      } catch (error) {
+        console.error('Error processing video:', error);
+        return c.res({
+          type: "frame",
+          path: `${publicUrl}/vibratv/error-processing-video`,
+        });
+      }
     } else {
       return c.res({
         type: "frame",
@@ -178,6 +187,17 @@ vibraTvFrame.frame('/processing-video/:castHashToSave', async (c) => {
     ],
     });
   }
+});
+
+vibraTvFrame.frame('/invalid-video', async (c) => {
+  return c.res({
+    title: 'vibra tv',
+    image: (
+      <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+        <span tw="text-purple-500 text-2xl mb-2">do this on a cast that has a video on it</span>
+    </div>
+   )
+  });
 });
 
 vibraTvFrame.frame('/', async (c) => {

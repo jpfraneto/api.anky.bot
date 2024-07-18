@@ -2,6 +2,85 @@ import ffmpeg from 'fluent-ffmpeg';
 import sharp from 'sharp';
 import fs from 'fs/promises';
 import path from 'path';
+import { Cast } from './types/cast';
+import { v4 as uuidv4 } from 'uuid';
+import { uploadGifToTheCloud } from './cloudinary';
+import prisma from './prismaClient';
+import { DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, REDIS_URL } from '../env/server-env';
+import { fetchCastInformationFromHash, publishCastToTheProtocol } from './cast';
+import Queue from 'bull';
+import { Redis } from 'ioredis';
+
+// Create a Redis client
+const redis = new Redis(REDIS_URL);
+
+// Create a Bull queue
+const videoProcessingQueue = new Queue('video-processing', REDIS_URL);
+
+interface VideoProcessingJob {
+  castHash: string;
+  addedByFid: number;
+}
+
+// Function to add a job to the queue
+export async function queueVideoProcessing(cast: Cast, addedByFid: number) {
+  const job = await videoProcessingQueue.add({
+    castHash: cast.hash,
+    addedByFid,
+  });
+
+  // Update the database to reflect that processing has started
+  await prisma.castWithVideo.upsert({
+    where: { castHash: cast.hash },
+    update: { status: 'PROCESSING' },
+    create: {
+      castHash: cast.hash,
+      status: 'PROCESSING',
+      addedByFid,
+    },
+  });
+
+  return job.id;
+}
+
+// Process jobs from the queue
+videoProcessingQueue.process(async (job) => {
+  const { castHash, addedByFid } = job.data as VideoProcessingJob;
+
+  try {
+    const cast = await fetchCastInformationFromHash(castHash);
+    const gifUrl = await processCastVideo(cast, addedByFid);
+
+    // Update the database with the result
+    await prisma.castWithVideo.update({
+      where: { castHash },
+      data: {
+        status: 'COMPLETED',
+        gifUrl,
+      },
+    });
+  } catch (error) {
+    console.error(`Error processing video for cast ${castHash}:`, error);
+
+    // Update the database to reflect the error
+    await prisma.castWithVideo.update({
+      where: { castHash },
+      data: {
+        status: 'ERROR',
+        errorMessage: error.message,
+      },
+    });
+  }
+});
+
+// Function to check the status of a video processing job
+export async function checkVideoProcessingStatus(castHash: string) {
+  const castWithVideo = await prisma.castWithVideo.findUnique({
+    where: { castHash },
+  });
+
+  return castWithVideo?.status || 'NOT_FOUND';
+}
 
 const FINAL_GIF_SIZE = 350; // Final size of the GIF
 const VIDEO_SIZE = Math.floor(FINAL_GIF_SIZE * 0.8); // 80% of the final GIF size
@@ -277,5 +356,95 @@ export async function createFramedGifFromVideo(
   } catch (error) {
     console.error('Error in createFramedGifFromVideo:', error);
     throw error;
+  }
+}
+
+export async function processCastVideo (cast: Cast, addedByFid: number) {
+  try {
+    const videoUrl = cast.embeds[0]?.url;
+
+    if (!isValidVideoUrl(videoUrl)) {
+      throw new Error('No valid video URL found in the cast');
+    }
+  
+    // Generate unique identifiers for our files
+    const uuid = uuidv4();
+    const videoPath = path.join(process.cwd(), 'temp', `${uuid}.mp4`);
+    await fs.mkdir(path.dirname(videoPath), { recursive: true });
+  
+    // Download the video
+    if (isHLSStream(videoUrl)) {
+      await downloadHLSStream(videoUrl, videoPath);
+    } else {
+      const videoResponse = await fetch(videoUrl);
+      const videoArrayBuffer = await videoResponse.arrayBuffer();
+      const videoBuffer = Buffer.from(videoArrayBuffer);
+      await fs.writeFile(videoPath, videoBuffer);
+    }
+  
+    // Process the video and create a GIF
+    const gifPath = path.join(process.cwd(), 'temp', `${uuid}.gif`);
+    const videoDuration = await getVideoDuration(videoPath);
+    let gifDuration = Math.min(videoDuration, 30); // Cap at 30 seconds
+    let fps = 10;
+    let scale = 350;
+    let gifSize = Infinity;
+  
+    while (gifSize > 10 * 1024 * 1024 && gifDuration > 1) { // 10MB limit
+      await createAndSaveLocallyCompressedGifFromVideo(videoPath, gifPath);
+      const stats = await fs.stat(gifPath);
+      gifSize = stats.size;
+  
+      if (gifSize > 10 * 1024 * 1024) {
+        gifDuration = Math.max(gifDuration * 0.9, 1);
+        fps = Math.max(fps * 0.9, 5);
+        scale = Math.max(Math.floor(scale * 0.9), 160);
+      }
+    }
+  
+    if (gifSize > 10 * 1024 * 1024) {
+      throw new Error('Unable to create GIF within size limit');
+    }
+  
+    // Upload the GIF to Cloudinary
+    const cloudinaryResult = await uploadGifToTheCloud(gifPath, `cast_gifs/${uuid}`);
+  
+    // Upsert to database
+    const castWithVideo = await prisma.castWithVideo.upsert({
+      where: { castHash: cast.hash },
+      update: {
+        gifUrl: cloudinaryResult.secure_url,
+        videoDuration,
+        gifDuration,
+        fps,
+        scale,
+      },
+      create: {
+        castHash: cast.hash,
+        gifUrl: cloudinaryResult.secure_url,
+        videoDuration,
+        gifDuration,
+        fps,
+        scale,
+      },
+    });
+  
+    // Publish a cast with the GIF
+    const castOptions = {
+      text: "",
+      embeds: [{url: `https://api.anky.bot/vibra/cast-gifs/${uuid}/${cast.hash}`}],
+      parent: cast.hash,
+      signer_uuid: DUMMY_BOT_SIGNER,
+    };
+  
+    await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
+  
+    // Clean up temporary files
+    await fs.unlink(videoPath);
+    await fs.unlink(gifPath);
+  
+    return castWithVideo.gifUrl;
+  } catch (error) {
+    console.log("there was an error hereeee")
   }
 }

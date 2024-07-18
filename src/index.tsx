@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { Frog } from "frog";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "frog/serve-static";
-import { SECRET, CLOUDINARY_CLOUD_NAME ,CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY } from '../env/server-env';
+import { SECRET, CLOUDINARY_CLOUD_NAME ,REDIS_URL, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY } from '../env/server-env';
 import { Logger } from '../utils/Logger';
 import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
@@ -37,6 +37,7 @@ import { enterFrame } from './routes/enter';
 import { moxiefolioFrame } from './routes/moxiefolio';
 import { replyToDanFrame } from './routes/replyToDan';
 import { vibraTvFrame } from './routes/vibratv';
+dotenv.config();
 // **** ROUTE IMPORTS ****
 
 // **** FAST SCRIPTS ****
@@ -60,7 +61,16 @@ import { vibraTvFrame } from './routes/vibratv';
 // });
 // **** PERIODIC ACTIONS THROUGHOUT THE DAY ****
 
-dotenv.config();
+import { Redis } from 'ioredis';
+
+const redis = new Redis(REDIS_URL);
+
+redis.ping().then(() => {
+  console.log('Successfully connected to Redis');
+}).catch((error) => {
+  console.error('Failed to connect to Redis:', error);
+});
+
 
 const origin = getPublicUrl();
 console.log({ origin });
