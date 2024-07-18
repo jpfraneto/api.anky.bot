@@ -168,7 +168,7 @@ vibraTvFrame.frame('/processing-video/:castHashToSave', async (c) => {
         const qs = {
           text: `Wow! I just magically transformed a video into a GIF!`,
           'embeds[]': [
-            `https://api.anky.bot/vibratv/cast-gifs/${savedVideo.uuid}/${castHashToSave}`,
+            `https://api.anky.bot/vibra/cast-gifs/${savedVideo.uuid}/${castHashToSave}`,
           ],
         };
         
@@ -202,7 +202,7 @@ vibraTvFrame.frame('/processing-video/:castHashToSave', async (c) => {
         title: 'Vibra TV - Processing',
         image: (
           <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-            <span tw="text-purple-500 text-2xl mb-2">Your video is still processing...</span>
+            <span tw="text-purple-500 text-2xl mb-2">The video is being transformed into a gif...</span>
             <span tw="text-white text-lg">This may take a few moments. Please check back soon!</span>
           </div>
         ),
