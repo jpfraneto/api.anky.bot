@@ -21,7 +21,7 @@ import * as chains from 'viem/chains';
 import { getUserMoxieFantokens, updateMoxieFantokenEntry } from './utils';
 import { fetchCastInformationFromHash } from '../../../utils/cast';
 import prisma from '../../../utils/prismaClient';
-import { processCastVideo } from '../../../utils/video-processing';
+import { processCastVideo, queueCastVideoProcessing } from '../../../utils/video-processing';
 
 type VibraState = {
   // profiles
@@ -109,7 +109,9 @@ vibraTvFrame.castAction(
     console.log("DOES DCAST HAVE VIDEO ", doesCastHaveVideo)
     if(doesCastHaveVideo) {
       try {
-        await processCastVideo(cast, actionedFid);
+        console.log('right before sending the fideo for processing')
+        const jobId = await queueCastVideoProcessing(cast, actionedFid);
+        console.log("right after processcastvideo function")
         return c.res({
           type: "frame",
           path: `${publicUrl}/vibratv/processing-video/${actionedCastHash}`,

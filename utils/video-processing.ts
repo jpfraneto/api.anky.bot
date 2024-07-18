@@ -22,8 +22,8 @@ interface VideoProcessingJob {
   addedByFid: number;
 }
 
-// Function to add a job to the queue
-export async function queueVideoProcessing(cast: Cast, addedByFid: number) {
+
+export async function queueCastVideoProcessing(cast: Cast, addedByFid: number) {
   const job = await videoProcessingQueue.add({
     castHash: cast.hash,
     addedByFid,
@@ -49,7 +49,7 @@ videoProcessingQueue.process(async (job) => {
 
   try {
     const cast = await fetchCastInformationFromHash(castHash);
-    const gifUrl = await processCastVideo(cast, addedByFid);
+    const gifUrl = await processVideoJob(cast, addedByFid);
 
     // Update the database with the result
     await prisma.castWithVideo.update({
@@ -59,6 +59,8 @@ videoProcessingQueue.process(async (job) => {
         gifUrl,
       },
     });
+
+    return gifUrl;
   } catch (error) {
     console.error(`Error processing video for cast ${castHash}:`, error);
 
@@ -70,6 +72,8 @@ videoProcessingQueue.process(async (job) => {
         errorMessage: error.message,
       },
     });
+
+    throw error;
   }
 });
 
