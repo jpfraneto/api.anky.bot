@@ -36,6 +36,7 @@ import { gamesFrame } from './routes/games';
 import { enterFrame } from './routes/enter';
 import { moxiefolioFrame } from './routes/moxiefolio';
 import { replyToDanFrame } from './routes/replyToDan';
+import { vibraTvFrame } from './routes/vibratv';
 // **** ROUTE IMPORTS ****
 
 // **** FAST SCRIPTS ****
@@ -99,6 +100,7 @@ app.route('/gamecaster', gamesFrame)
 app.route('/enter', enterFrame)
 app.route('/moxiefolio', moxiefolioFrame)
 app.route('/replytodan', replyToDanFrame)
+app.route('/vibratv', vibraTvFrame)
 
 app.get("/aloja", (c) => {
   return c.json({

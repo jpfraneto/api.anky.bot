@@ -53,3 +53,7 @@ export async function getUserFromUsername(username: string, retryCount = 0): Pro
         }
     }
 }
+
+export function checkIfCastHasVideo (embedUrl : string) {
+    return embedUrl.includes('stream.warpcast') && embedUrl.slice(-4) == ".m3u8"
+}
