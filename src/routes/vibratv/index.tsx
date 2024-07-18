@@ -119,9 +119,9 @@ vibraTvFrame.castAction(
   },
   { 
     name: "vibra tv", 
-    icon: "diamond", 
-    aboutUrl: "https://tv.vibra.so", 
-    description: "curate videos for the initial launch of vibra"
+    icon: "play", 
+    aboutUrl: "https://www.vibra.so", 
+    description: "help us curate videos for the initial launch of vibra"
   }
 );
 
