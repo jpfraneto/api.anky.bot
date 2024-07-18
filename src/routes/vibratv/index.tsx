@@ -179,7 +179,7 @@ vibraTvFrame.frame('/processing-video/:castHashToSave', async (c) => {
           title: 'Vibra TV - GIF Ready!',
           image: savedVideo.gifUrl,
           intents: [
-            <Button.Link href={warpcastRedirectLink}>Share GIF</Button.Link>,
+            <Button.Link href={warpcastRedirectLink}>Share Frame</Button.Link>,
           ],
         });
       } else {

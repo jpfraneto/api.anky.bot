@@ -23,6 +23,7 @@ import * as chains from 'viem/chains';
 import { ALCHEMY_INSTANCES, getTransport } from '../../../utils/web3';
 import { HYPERSUB_ABI } from '../../constants/abi/HYPERSUB_ABI';
 import { MOXIE_PASS_ABI } from '../../constants/abi/MOXIE_PASS_ABI';
+import queryString from 'query-string';
 
 
 export function getViemChain(chainId: number) {
@@ -237,10 +238,22 @@ vibraFrame.frame('/livestream/:streamer/:tokenAddress', async (c) => {
 // frame que comparte el usuario cuando empieza su stream
 vibraFrame.frame('/cast-gifs/:uuid/:castHash', async (c) => {
   const { uuid, castHash } = c.req.param();
+  const qs = {
+    text: `check this video inside a frame. soon, you will be able to upload these on to /vibra and have them rendered inside a frame on warpcast\n\nstay tuned`,
+    'embeds[]': [
+      `https://api.anky.bot/vibratv/cast-gifs/${uuid}/${castHash}`,
+    ],
+  };
+  
+  const shareQs = queryString.stringify(qs);
+  const warpcastRedirectLink = `https://warpcast.com/~/compose?${shareQs}`;
   return c.res({
     title: 'vibra.so',
     image: `https://res.cloudinary.com/dzpugkpuz/image/upload/v1721251888/zurf/cast_gifs/${uuid}.gif`,
     intents: [
+      <Button.Link href={warpcastRedirectLink}>
+        share frame
+      </Button.Link>,
       <Button.Link href={`https://warpcast.com/~/conversations/${castHash}`}>
         original cast
       </Button.Link>
