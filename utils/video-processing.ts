@@ -419,6 +419,7 @@ export async function processVideoJob (cast: Cast, addedByFid: number) {
       update: {
         gifUrl: cloudinaryResult.secure_url,
         videoDuration,
+        uuid,
         gifDuration,
         fps,
         scale,
@@ -426,6 +427,7 @@ export async function processVideoJob (cast: Cast, addedByFid: number) {
       create: {
         castHash: cast.hash,
         gifUrl: cloudinaryResult.secure_url,
+        uuid,
         videoDuration,
         gifDuration,
         fps,

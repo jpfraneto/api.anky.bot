@@ -176,6 +176,7 @@ model Dummy {
 model CastWithVideo {
   id              Int      @id @default(autoincrement())
   castHash        String   @unique
+  uuid            String?
   gifUrl          String?
   addedByFid      Int?
   videoDuration   Float?

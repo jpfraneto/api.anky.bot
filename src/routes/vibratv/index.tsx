@@ -168,7 +168,7 @@ vibraTvFrame.frame('/processing-video/:castHashToSave', async (c) => {
         const qs = {
           text: `Wow! I just magically transformed a video into a GIF!`,
           'embeds[]': [
-            `https://api.anky.bot/vibratv/gif/${castHashToSave}`,
+            `https://api.anky.bot/vibratv/cast-gifs/${savedVideo.uuid}/${castHashToSave}`,
           ],
         };
         
