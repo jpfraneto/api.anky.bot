@@ -21,7 +21,7 @@ import * as chains from 'viem/chains';
 import { getUserMoxieFantokens, updateMoxieFantokenEntry } from './utils';
 import { fetchCastInformationFromHash } from '../../../utils/cast';
 import prisma from '../../../utils/prismaClient';
-import { processCastVideo, queueCastVideoProcessing } from '../../../utils/video-processing';
+import { checkVideoProcessingStatus, processCastVideo, queueCastVideoProcessing } from '../../../utils/video-processing';
 
 type VibraState = {
   // profiles
@@ -155,41 +155,90 @@ vibraTvFrame.frame('/save-video/:castHashToSave/:fidOfCurator', async (c) => {
 });
 
 vibraTvFrame.frame('/processing-video/:castHashToSave', async (c) => {
-  const { castHashToSave } = c.req.param()
-  const savedVideo = await prisma.castWithVideo.findUnique({
-    where: {
-      castHash: castHashToSave
-    }
-  })
-  if(savedVideo) {
-    const qs = {
-      text: `wow! i just magically transformed a gif into a video!`,
-      'embeds[]': [
-        `https://api.anky.bot/vibratv/gif/${castHashToSave}`,
-      ],
-    };
-    
-    const shareQs = queryString.stringify(qs);
-    const warpcastRedirectLink = `https://warpcast.com/~/compose?${shareQs}`;
-    return c.res({
-      title: 'vibra tv',
-      image: savedVideo.gifUrl,
-      intents: [
-      <Button.Link href={warpcastRedirectLink}>share gif</Button.Link>,
-    ],
-    });
-  } else {
-    return c.res({
-      title: 'vibra tv',
-      image: (
-        <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-          <span tw="text-purple-500 text-2xl mb-2">the video is processing</span>
-      </div>
-     ),
-      intents: [
-      <Button action={`/processing-video/${castHashToSave}`}>refresh state</Button>,
-    ],
-    });
+  const { castHashToSave } = c.req.param();
+  const status = await checkVideoProcessingStatus(castHashToSave);
+
+  switch (status) {
+    case 'COMPLETED':
+      const savedVideo = await prisma.castWithVideo.findUnique({
+        where: { castHash: castHashToSave }
+      });
+
+      if (savedVideo && savedVideo.gifUrl) {
+        const qs = {
+          text: `Wow! I just magically transformed a video into a GIF!`,
+          'embeds[]': [
+            `https://api.anky.bot/vibratv/gif/${castHashToSave}`,
+          ],
+        };
+        
+        const shareQs = queryString.stringify(qs);
+        const warpcastRedirectLink = `https://warpcast.com/~/compose?${shareQs}`;
+
+        return c.res({
+          title: 'Vibra TV - GIF Ready!',
+          image: savedVideo.gifUrl,
+          intents: [
+            <Button.Link href={warpcastRedirectLink}>Share GIF</Button.Link>,
+          ],
+        });
+      } else {
+        // This shouldn't happen, but just in case
+        return c.res({
+          title: 'Vibra TV - Error',
+          image: (
+            <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+              <span tw="text-red-500 text-2xl mb-2">An error occurred while retrieving the GIF.</span>
+            </div>
+          ),
+          intents: [
+            <Button action={`/processing-video/${castHashToSave}`}>Try Again</Button>,
+          ],
+        });
+      }
+
+    case 'PROCESSING':
+      return c.res({
+        title: 'Vibra TV - Processing',
+        image: (
+          <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+            <span tw="text-purple-500 text-2xl mb-2">Your video is still processing...</span>
+            <span tw="text-white text-lg">This may take a few moments. Please check back soon!</span>
+          </div>
+        ),
+        intents: [
+          <Button action={`/processing-video/${castHashToSave}`}>Refresh Status</Button>,
+        ],
+      });
+
+    case 'ERROR':
+      return c.res({
+        title: 'Vibra TV - Error',
+        image: (
+          <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+            <span tw="text-red-500 text-2xl mb-2">An error occurred while processing your video.</span>
+            <span tw="text-white text-lg">Please try again later or contact support if the issue persists.</span>
+          </div>
+        ),
+        intents: [
+          <Button action="/install">Try Another Video</Button>,
+        ],
+      });
+
+    case 'NOT_FOUND':
+    default:
+      return c.res({
+        title: 'Vibra TV - Not Found',
+        image: (
+          <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+            <span tw="text-yellow-500 text-2xl mb-2">Video not found or processing hasn't started.</span>
+            <span tw="text-white text-lg">Please make sure you've submitted a video for processing.</span>
+          </div>
+        ),
+        intents: [
+          <Button action="/install">Start Over</Button>,
+        ],
+      });
   }
 });
 
