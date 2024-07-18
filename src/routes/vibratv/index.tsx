@@ -104,7 +104,9 @@ vibraTvFrame.castAction(
     const publicUrl = getPublicUrl()
 
     const cast = await fetchCastInformationFromHash(castId.hash)
+    console.log("the cast is: ", cast)
     const doesCastHaveVideo = checkIfCastHasVideo(cast.embeds[0].url)
+    console.log("DOES DCAST HAVE VIDEO ", doesCastHaveVideo)
     if(doesCastHaveVideo) {
       try {
         await processCastVideo(cast, actionedFid);
