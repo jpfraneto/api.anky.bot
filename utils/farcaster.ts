@@ -55,5 +55,6 @@ export async function getUserFromUsername(username: string, retryCount = 0): Pro
 }
 
 export function checkIfCastHasVideo (embedUrl : string) {
-    return embedUrl.includes('stream.warpcast') && embedUrl.slice(-4) == ".m3u8"
+    console.log("THE EMBED URL IS: ", embedUrl)
+    return embedUrl.includes('stream.warpcast.com') && embedUrl.slice(-5) == ".m3u8"
 }
