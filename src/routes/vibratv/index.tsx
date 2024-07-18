@@ -181,6 +181,7 @@ vibraTvFrame.frame('/processing-video/:castHashToSave', async (c) => {
 });
 
 vibraTvFrame.frame('/', async (c) => {
+  console.log("inside this route")
   const randomVideo = await prisma.castWithVideo.findMany({})
   console.log("the random video is", randomVideo)
   if(randomVideo) {
