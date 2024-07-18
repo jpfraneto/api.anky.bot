@@ -189,6 +189,14 @@ vibraTvFrame.frame('/', async (c) => {
       title: 'moxie aidrop',
       image: randomVideo?.gifUrl!,
       intents: [
+        <Button.Link
+        href={addActionLink({
+          name: 'vibra tv',
+          postUrl: '/vibratv/install',
+        })}
+      >
+        install
+      </Button.Link>,
         <Button.Link href={`https://warpcast.com/~/conversations/${randomVideo.castHash}`}>
           original cast
         </Button.Link>
