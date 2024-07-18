@@ -363,7 +363,7 @@ export async function createFramedGifFromVideo(
   }
 }
 
-export async function processCastVideo (cast: Cast, addedByFid: number) {
+export async function processVideoJob (cast: Cast, addedByFid: number) {
   try {
     const videoUrl = cast.embeds[0]?.url;
 
@@ -435,7 +435,7 @@ export async function processCastVideo (cast: Cast, addedByFid: number) {
   
     // Publish a cast with the GIF
     const castOptions = {
-      text: "",
+      text: "check this out, your video was transformed to a gif, so that it could be displayed inside a frame. why?\n\nbecause frames are fun\n\nand this opens a whole new world of possibilities\n\nstay tuned: /vibra",
       embeds: [{url: `https://api.anky.bot/vibra/cast-gifs/${uuid}/${cast.hash}`}],
       parent: cast.hash,
       signer_uuid: DUMMY_BOT_SIGNER,
