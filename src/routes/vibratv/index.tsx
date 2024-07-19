@@ -255,7 +255,6 @@ vibraTvFrame.frame('/invalid-video', async (c) => {
 });
 
 vibraTvFrame.frame('/', async (c) => {
-  console.log("inside this route")
   const allVideos = await prisma.castWithVideo.findMany({})
   const randomVideo = allVideos[Math.floor(allVideos.length * Math.random())]
   if(randomVideo) {
@@ -263,18 +262,18 @@ vibraTvFrame.frame('/', async (c) => {
       title: 'moxie aidrop',
       image: randomVideo?.gifUrl!,
       intents: [
-        <Button action={`/`}>new video</Button>,
-        <Button.Link href={randomVideo?.gifUrl!}>Download Gif</Button.Link>,
+        <Button action={`/`}>🔄</Button>,
+        <Button.Link href={randomVideo?.gifUrl!}>download</Button.Link>,
         <Button.Link
         href={addActionLink({
           name: 'vibra tv',
           postUrl: '/vibratv/install',
         })}
       >
-        install action
+        cast action
       </Button.Link>,
         <Button.Link href={`https://warpcast.com/~/conversations/${randomVideo.castHash}`}>
-          original cast
+          cast video
         </Button.Link>
     ],
     });
