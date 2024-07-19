@@ -182,6 +182,10 @@ model CastWithVideo {
   videoDuration   Float?
   gifDuration     Float?
   fps             Float?
+  warpcastVideoUrl String?
+  authorFid       Int?
+  authorUsername  String?
+  castChannel     String?
   scale           Int?
   status          VideoProcessingStatus @default(PENDING)
   errorMessage    String?

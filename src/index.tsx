@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { Frog } from "frog";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "frog/serve-static";
-import { SECRET, CLOUDINARY_CLOUD_NAME ,REDIS_URL, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY } from '../env/server-env';
+import { SECRET, DUNE_API_KEY, CLOUDINARY_CLOUD_NAME ,REDIS_URL, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY } from '../env/server-env';
 import { Logger } from '../utils/Logger';
 import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
@@ -62,6 +62,48 @@ dotenv.config();
 // **** PERIODIC ACTIONS THROUGHOUT THE DAY ****
 
 import { Redis } from 'ioredis';
+import { processData } from '../utils/moxie';
+
+async function updateVideos() {
+  try {
+    console.log("the update videos are")
+    let output = []
+    let temp = {}
+    const videos = await prisma.castWithVideo.findMany();
+    console.log(videos.length);
+    for (let video of videos) {
+      console.log(video)
+      temp = {
+        hash: video.castHash,
+        channel: video.castChannel,
+        username: video.authorUsername,
+        fid: video.authorFid,
+        gifUrl: video.gifUrl,
+        videoUrl: video.warpcastVideoUrl,
+      }
+      output.push({...temp})
+      // const response = await fetchCastInformationFromHash(video.castHash);
+      // let channel = response?.parent_url?.split('/').pop() || ""; // Use pop() to get the last element
+      // await prisma.castWithVideo.update({
+      //   where: {
+      //     id: video.id
+      //   },
+      //   data: {
+      //     warpcastVideoUrl: response.embeds[0].url,
+      //     authorFid: response.author.fid,
+      //     authorUsername: response.author.username,
+      //     castChannel: channel
+      //   }
+      // });
+      // Removed return and break statements to process all videos
+    }
+    console.log("the casthashes are: ", output)
+  } catch (error) {
+    console.error('Error updating videos:', error);
+  }
+}
+
+// updateVideos()
 
 const redis = new Redis(REDIS_URL);
 
@@ -71,6 +113,7 @@ redis.ping().then(() => {
   console.error('Failed to connect to Redis:', error);
 });
 
+// processData().catch(console.error);
 
 const origin = getPublicUrl();
 console.log({ origin });

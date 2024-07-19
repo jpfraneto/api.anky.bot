@@ -27,7 +27,9 @@ const envSchema = object({
     CLOUDINARY_API_SECRET: string("CLOUDINARY_API_SECRET is required"),
     STREAM_API_KEY: string("STREAM_API_KEY is required"),
     STREAM_API_SECRET_KEY: string("STREAM_API_SECRET_KEY is required"),
-    REDIS_URL: string("REDIS_URL is required")
+    REDIS_URL: string("REDIS_URL is required"),
+    DUNE_API_KEY: string("DUNE_API_KEY is required"),
+    BASE_RPC_URL: string("BASE_RPC_URL is required")
   });
   
   export const {
@@ -54,5 +56,7 @@ const envSchema = object({
     CLOUDINARY_API_SECRET,
     STREAM_API_KEY,
     STREAM_API_SECRET_KEY,
-    REDIS_URL
+    REDIS_URL,
+    DUNE_API_KEY, 
+    BASE_RPC_URL
   } = parse(envSchema, process.env);

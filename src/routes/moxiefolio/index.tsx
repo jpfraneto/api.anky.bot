@@ -179,7 +179,7 @@ moxiefolioFrame.frame('/how-it-works', async (c) => {
   try {
     const usersFid = c.frameData?.fid
     const user = await getUserFromFid(Number(usersFid)) 
-    const userAirdrop = 1234567
+    const userAirdrop = await getUsersMoxieAirdropAllocation(usersFid)
     const username = user.username
     return c.res({
       title: 'moxiefolio',

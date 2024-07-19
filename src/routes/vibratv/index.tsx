@@ -179,6 +179,7 @@ vibraTvFrame.frame('/processing-video/:castHashToSave', async (c) => {
           title: 'Vibra TV - GIF Ready!',
           image: savedVideo.gifUrl,
           intents: [
+            <Button.Link href={`https://res.cloudinary.com/dzpugkpuz/image/upload/v1721251888/zurf/cast_gifs/${savedVideo.uuid}.gif`}>Download Gif</Button.Link>,
             <Button.Link href={warpcastRedirectLink}>Share Frame</Button.Link>,
           ],
         });
@@ -263,6 +264,7 @@ vibraTvFrame.frame('/', async (c) => {
       image: randomVideo?.gifUrl!,
       intents: [
         <Button action={`/`}>new video</Button>,
+        <Button.Link href={randomVideo.gifUrl}>Download Gif</Button.Link>,
         <Button.Link
         href={addActionLink({
           name: 'vibra tv',
