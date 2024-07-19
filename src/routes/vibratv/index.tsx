@@ -264,7 +264,7 @@ vibraTvFrame.frame('/', async (c) => {
       image: randomVideo?.gifUrl!,
       intents: [
         <Button action={`/`}>new video</Button>,
-        <Button.Link href={randomVideo.gifUrl}>Download Gif</Button.Link>,
+        <Button.Link href={randomVideo?.gifUrl!}>Download Gif</Button.Link>,
         <Button.Link
         href={addActionLink({
           name: 'vibra tv',

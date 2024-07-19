@@ -254,6 +254,7 @@ vibraFrame.frame('/cast-gifs/:uuid/:castHash', async (c) => {
       <Button.Link href={warpcastRedirectLink}>
         share frame
       </Button.Link>,
+      <Button.Link href={uuid}>Download Gif</Button.Link>,
       <Button.Link href={`https://warpcast.com/~/conversations/${castHash}`}>
         original cast
       </Button.Link>
