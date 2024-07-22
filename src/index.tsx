@@ -161,6 +161,22 @@ app.get("/aloja", (c) => {
   });
 });
 
+app.post("/video-posted", async (c) => {
+  try {
+    console.log('inside the video posted webhook')
+    const body = await c.req.json()
+    console.log("OIN HERE, THE BODY IS: ", body)
+    return c.json({
+      134: 124,
+    });
+  } catch (error) {
+    console.log("there was an error on the video posted webhook", error)
+    return c.json({
+      123:456
+    })
+  }
+})
+
 app.get("/moxie-airdrop/:fid", (c) => {
   let { fid } = c.req.param();
 
@@ -597,6 +613,7 @@ app.get('/videos/:uuid', async (c) => {
     return c.json({ videoRecord: null }); 
   }
 })
+
 
 app.use("/*", serveStatic({ root: "./public" }));
 devtools(app, { serveStatic });
