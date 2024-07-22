@@ -6,7 +6,7 @@ import { Cast } from './types/cast';
 import { v4 as uuidv4 } from 'uuid';
 import { uploadGifToTheCloud } from './cloudinary';
 import prisma from './prismaClient';
-import { DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, REDIS_URL } from '../env/server-env';
+import { DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, REDIS_URL, CHISPITA_OXIDA_SIGNER_UUID } from '../env/server-env';
 import { fetchCastInformationFromHash, publishCastToTheProtocol } from './cast';
 import Queue from 'bull';
 import { Redis } from 'ioredis';
@@ -443,7 +443,7 @@ export async function processVideoJob (cast: Cast, addedByFid: number) {
       signer_uuid: DUMMY_BOT_SIGNER,
     };
   
-    await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
+    await publishCastToTheProtocol(castOptions, CHISPITA_OXIDA_SIGNER_UUID );
   
     // Clean up temporary files
     await fs.unlink(videoPath);

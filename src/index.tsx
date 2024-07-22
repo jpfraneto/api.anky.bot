@@ -2,13 +2,13 @@ import dotenv from 'dotenv';
 import { Frog } from "frog";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "frog/serve-static";
-import { SECRET, DUNE_API_KEY, CLOUDINARY_CLOUD_NAME ,REDIS_URL, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY } from '../env/server-env';
+import { SECRET, DUNE_API_KEY, CLOUDINARY_CLOUD_NAME ,REDIS_URL, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, NEYNAR_API_KEY, CHISPITA_OXIDA_SIGNER_UUID } from '../env/server-env';
 import { Logger } from '../utils/Logger';
 import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
 import axios from 'axios';
 import { cors } from "hono/cors"
-import { createAndSaveLocallyCompressedGifFromVideo, createFramedGifFromVideo, downloadHLSStream, getVideoDuration, isHLSStream, isValidVideoUrl } from '../utils/video-processing';
+import { createAndSaveLocallyCompressedGifFromVideo, createFramedGifFromVideo, downloadHLSStream, getVideoDuration, isHLSStream, isValidVideoUrl, queueCastVideoProcessing } from '../utils/video-processing';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises'; 
 import { createCanvas, loadImage } from 'canvas';
@@ -63,6 +63,7 @@ dotenv.config();
 
 import { Redis } from 'ioredis';
 import { processData } from '../utils/moxie';
+import { checkIfCastHasVideo } from '../utils/farcaster';
 
 async function updateVideos() {
   try {
@@ -163,19 +164,64 @@ app.get("/aloja", (c) => {
 
 app.post("/video-posted", async (c) => {
   try {
-    console.log('inside the video posted webhook')
-    const body = await c.req.json()
-    console.log("OIN HERE, THE BODY IS: ", body)
-    return c.json({
-      134: 124,
-    });
+    console.log('inside the video posted webhook');
+    const body = await c.req.json();
+    console.log("IN HERE, THE BODY IS: ", body);
+
+    const { data } = body;
+    if (data.object !== 'cast') {
+      return c.json({ error: 'Not a cast object' }, 400);
+    }
+
+    const castHash = data.hash;
+    const fid = data.author.fid;
+
+    // Fetch cast information
+    const cast = await fetchCastInformationFromHash(castHash);
+    console.log("the cast is: ", cast);
+
+    // Check if the cast has a video
+    const doesCastHaveVideo = checkIfCastHasVideo(cast.embeds[0]?.url);
+    console.log("DOES CAST HAVE VIDEO ", doesCastHaveVideo);
+
+    if (doesCastHaveVideo) {
+      try {
+        console.log('right before sending the video for processing');
+        const jobId = await queueCastVideoProcessing(cast, fid);
+        console.log("right after processcastvideo function, jobId: ", jobId);
+
+        const publicUrl = getPublicUrl();
+        
+        // Instead of returning a frame response, we'll return a success message
+        return c.json({
+          status: 'success',
+          message: 'Video queued for processing',
+          processingUrl: `${publicUrl}/vibratv/processing-video/${castHash}`,
+          jobId
+        });
+      } catch (error) {
+        console.error('Error processing video:', error);
+        return c.json({
+          status: 'error',
+          message: 'Error processing video',
+          error: error.message
+        }, 500);
+      }
+    } else {
+      return c.json({
+        status: 'error',
+        message: 'Invalid video or no video found in cast'
+      }, 400);
+    }
   } catch (error) {
-    console.log("there was an error on the video posted webhook", error)
+    console.log("there was an error on the video posted webhook", error);
     return c.json({
-      123:456
-    })
+      status: 'error',
+      message: 'Internal server error',
+      error: error.message
+    }, 500);
   }
-})
+});
 
 app.get("/moxie-airdrop/:fid", (c) => {
   let { fid } = c.req.param();
@@ -417,7 +463,7 @@ app.post('/video', async (c) => {
       signer_uuid: DUMMY_BOT_SIGNER,
     };
 
-    const castResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
+    const castResponse = await publishCastToTheProtocol(castOptions, CHISPITA_OXIDA_SIGNER_UUID);
 
     logProgress('Process complete!');
 
@@ -614,6 +660,36 @@ app.get('/videos/:uuid', async (c) => {
   }
 })
 
+
+
+// async function getChannelsInformation () {
+//   try {
+//     let thisChannel;
+//     let organizedChannels = []
+//     const channels = ["replyguys", "superrare", "lp",  "memes", 'farther', 'masks', 'degen', 'itookaphoto', 'base', 'degentokenbase', 'warpcast', 'mfers', 'dev', 'ai', 'video', 'behindthescenes', 'success', 'crypto', 'wildcardclub', 'farcaster', 'cute-animals']
+//     for (let channel of channels) {
+//       const options = {
+//         method: 'GET',
+//         url: `https://api.neynar.com/v2/farcaster/channel/search?q=${channel}`,
+//         headers: {accept: 'application/json', api_key: NEYNAR_API_KEY}
+//       };
+//       const response = await axios.request(options)
+//       let channeeel = response.data.channels[0]
+//       thisChannel = {
+//         id: channeeel.id,
+//         name: channeeel.name,
+//         description: channeeel.description,
+//         follower_count: channeeel.follower_count,
+//         image_url: channeeel.image_url,
+//       }
+//       organizedChannels.push(thisChannel)
+//     }
+//     console.log("the organized channels are:" , organizedChannels)
+//   } catch (error) {
+    
+//   }
+// }
+// getChannelsInformation()
 
 app.use("/*", serveStatic({ root: "./public" }));
 devtools(app, { serveStatic });

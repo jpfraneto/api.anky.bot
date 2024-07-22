@@ -1,4 +1,4 @@
-import { NEYNAR_API_KEY, PINATA_JWT, ANKY_SIGNER, NEYNAR_DUMMY_BOT_API_KEY} from "../env/server-env";
+import { NEYNAR_API_KEY, PINATA_JWT, ANKY_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, CHISPITA_OXIDA_SIGNER_UUID} from "../env/server-env";
 import { sleep } from "./time";
 import axios from "axios";
 import { CastIntention, Cast } from "./types/cast";
@@ -117,7 +117,7 @@ export async function publishCastToTheProtocolThroughDummyBot(castOptions: CastI
         castOptions,
         {
           headers: {
-            api_key: NEYNAR_DUMMY_BOT_API_KEY,
+            api_key: CHISPITA_OXIDA_SIGNER_UUID,
           },
         }
       );

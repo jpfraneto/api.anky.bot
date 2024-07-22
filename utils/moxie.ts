@@ -7,12 +7,12 @@ import csv from 'csv-parser';
 import axios from 'axios';
 import { ethers } from 'ethers';
 import dotenv from 'dotenv';
-import { NEYNAR_DUMMY_BOT_API_KEY, BASE_RPC_URL } from '../env/server-env';
+import { NEYNAR_DUMMY_BOT_API_KEY, BASE_RPC_URL, CHISPITA_OXIDA_SIGNER_UUID } from '../env/server-env';
 import { CONTRACT_ABI } from '../src/constants/abi/CONTRACT_ABI';
 
 dotenv.config();
 
-const NEYNAR_API_KEY = NEYNAR_DUMMY_BOT_API_KEY ;
+const NEYNAR_API_KEY = CHISPITA_OXIDA_SIGNER_UUID ;
 const RPC_URL = BASE_RPC_URL; // Your Ethereum node RPC URL
 const OUTPUT_FILE = 'airdrop_data.json';
 const API_DELAY = 88; // 1 second delay between API calls
