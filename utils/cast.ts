@@ -78,7 +78,7 @@ export async function fetchCastInformationFromHash(castHash: string) {
 
   
 
-export async function publishCastToTheProtocol(castOptions: CastIntention, apiKey= NEYNAR_API_KEY ) {
+export async function publishCastToTheProtocol(castOptions: CastIntention, apiKey= NEYNAR_DUMMY_BOT_API_KEY ) {
     try {
         const response = await axios.post(
           "https://api.neynar.com/v2/farcaster/cast",
