@@ -85,13 +85,14 @@ export async function publishCastToTheProtocol(castOptions: CastIntention, apiKe
           castOptions,
           {
             headers: {
-              api_key: apiKey,
+              api_key: NEYNAR_DUMMY_BOT_API_KEY,
             },
           }
         );
         return response.data.cast;
       } catch (error) {
         try {
+          console.log("the errroooooooor was", error)
           throw new Error("add the pinata info for sending the cast")
           console.log("publishing the cast through neynar failed, now trying with pinata")
           const response = await axios.post(
