@@ -530,7 +530,6 @@ app.post('/wc-video', async (c) => {
   try {
     // Fetch cast information from Neynar
     const castInfo = await fetchCastInformationFromHash(castHash);
-    console.log('the cast info is: ', castInfo);
     const videoUrl = castInfo.embeds?.find(embed => isValidVideoUrl(embed.url))?.url;
 
     if (!videoUrl) {
@@ -544,9 +543,7 @@ app.post('/wc-video', async (c) => {
 
     // Handle HLS streams
     if (isHLSStream(videoUrl)) {
-      console.log("IN HERE")
       await downloadHLSStream(videoUrl, videoPath);
-      console.log("after")
     } else {
       // For direct video files, download as before
       const videoResponse = await fetch(videoUrl);
