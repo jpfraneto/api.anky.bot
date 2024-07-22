@@ -112,6 +112,7 @@ export async function publishCastToTheProtocol(castOptions: CastIntention, apiKe
 
 export async function publishCastToTheProtocolThroughDummyBot(castOptions: CastIntention) {
   try {
+    console.log("shipping the cast", castOptions)
       const response = await axios.post(
         "https://api.neynar.com/v2/farcaster/cast",
         castOptions,
