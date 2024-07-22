@@ -607,7 +607,7 @@ app.post('/wc-video', async (c) => {
       text: "",
       embeds: [{url: `https://api.anky.bot/vibra/cast-gifs/${uuid}/${castInfo.hash}`}],
       parent: castInfo.hash,
-      signer_uuid: DUMMY_BOT_SIGNER,
+      signer_uuid: CHISPITA_OXIDA_SIGNER_UUID,
     };
 
     const castingResponse = await publishCastToTheProtocol(castOptions, NEYNAR_DUMMY_BOT_API_KEY);
