@@ -28,7 +28,6 @@ const envSchema = object({
     STREAM_API_KEY: string("STREAM_API_KEY is required"),
     STREAM_API_SECRET_KEY: string("STREAM_API_SECRET_KEY is required"),
     REDIS_URL: string("REDIS_URL is required"),
-    DUNE_API_KEY: string("DUNE_API_KEY is required"),
     BASE_RPC_URL: string("BASE_RPC_URL is required"),
     CHISPITA_OXIDA_SIGNER_UUID: string("CHISPITA_OXIDA_SIGNER_UUID is required")
   });
@@ -58,7 +57,6 @@ const envSchema = object({
     STREAM_API_KEY,
     STREAM_API_SECRET_KEY,
     REDIS_URL,
-    DUNE_API_KEY, 
     BASE_RPC_URL,
     CHISPITA_OXIDA_SIGNER_UUID
   } = parse(envSchema, process.env);

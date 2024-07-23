@@ -199,3 +199,14 @@ enum VideoProcessingStatus {
   COMPLETED
   ERROR
 }
+
+model FailedCast {
+  id          String   @id @default(uuid())
+  castOptions Json
+  error       String
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([attempts])
+}

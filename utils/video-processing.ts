@@ -10,6 +10,7 @@ import { DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, REDIS_URL, CHISPITA_OXIDA_S
 import { fetchCastInformationFromHash, publishCastToTheProtocol } from './cast';
 import Queue from 'bull';
 import { Redis } from 'ioredis';
+import { CastIntention } from './types/cast';
 
 // Create a Redis client
 const redis = new Redis(REDIS_URL);
@@ -21,6 +22,50 @@ interface VideoProcessingJob {
   castHash: string;
   addedByFid: number;
 }
+
+export const failedCastsQueue = new Queue('failed-casts', REDIS_URL);
+
+interface FailedCastJob {
+  castOptions: CastIntention;
+  error: string;
+  attempts: number;
+}
+
+export async function queueFailedCast(castOptions: CastIntention, error: string) {
+  const job = await failedCastsQueue.add({
+    castOptions,
+    error,
+    attempts: 0,
+  });
+
+  return job.id;
+}
+
+// Process jobs from the failed casts queue
+failedCastsQueue.process(async (job) => {
+  const { castOptions, attempts } = job.data as FailedCastJob;
+
+  if (attempts >= 3) {
+    // If we've tried 3 times, give up and log the error
+    console.error(`Failed to publish cast after 3 attempts:`, castOptions);
+    return;
+  }
+
+  try {
+    const result = await publishCastToTheProtocol(castOptions);
+    // If successful, remove the job from the queue
+    await job.remove();
+    return result;
+  } catch (error) {
+    // If it fails again, increment the attempts and retry later
+    await job.update({
+      ...job.data,
+      attempts: attempts + 1,
+      error: error.message,
+    });
+    throw error;
+  }
+});
 
 
 export async function queueCastVideoProcessing(cast: Cast, addedByFid: number) {

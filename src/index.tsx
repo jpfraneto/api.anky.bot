@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { Frog } from "frog";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "frog/serve-static";
-import { SECRET, DUNE_API_KEY, CLOUDINARY_CLOUD_NAME ,REDIS_URL, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, NEYNAR_API_KEY, CHISPITA_OXIDA_SIGNER_UUID } from '../env/server-env';
+import { SECRET, CLOUDINARY_CLOUD_NAME ,REDIS_URL, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, NEYNAR_API_KEY, CHISPITA_OXIDA_SIGNER_UUID } from '../env/server-env';
 import { Logger } from '../utils/Logger';
 import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
@@ -161,6 +161,43 @@ app.get("/aloja", (c) => {
     134: 124,
   });
 });
+
+async function retryFailedCasts() {
+  const failedCasts = await prisma.failedCast.findMany({
+    where: {
+      attempts: {
+        lt: 3 // Only retry casts that have been attempted less than 3 times
+      }
+    },
+    orderBy: {
+      createdAt: 'asc'
+    },
+    take: 10 // Process 10 at a time to avoid overloading the system
+  });
+
+  for (const failedCast of failedCasts) {
+    try {
+      await publishCastToTheProtocol(failedCast.castOptions);
+      
+      // If successful, remove the failed cast record
+      await prisma.failedCast.delete({
+        where: { id: failedCast.id }
+      });
+    } catch (error) {
+      // If it fails again, increment the attempts
+      await prisma.failedCast.update({
+        where: { id: failedCast.id },
+        data: {
+          attempts: failedCast.attempts + 1,
+          error: error.message
+        }
+      });
+    }
+  }
+}
+
+// Run the retry process every 5 minutes
+cron.schedule('*/5 * * * *', retryFailedCasts);
 
 app.post("/video-posted", async (c) => {
   try {

@@ -4,6 +4,7 @@ import axios from "axios";
 import { CastIntention, Cast } from "./types/cast";
 import prisma from "./prismaClient";
 import { getStartOfDay } from "./time";
+import { queueFailedCast } from "./video-processing";
 
 export async function fetchCastInformationFromHash(castHash: string) {
     try {
@@ -78,38 +79,34 @@ export async function fetchCastInformationFromHash(castHash: string) {
 
   
 
-export async function publishCastToTheProtocol(castOptions: CastIntention, apiKey= NEYNAR_DUMMY_BOT_API_KEY ) {
-    try {
-        const response = await axios.post(
-          "https://api.neynar.com/v2/farcaster/cast",
-          castOptions,
-          {
-            headers: {
-              api_key: NEYNAR_DUMMY_BOT_API_KEY,
-            },
-          }
-        );
-        return response.data.cast;
-      } catch (error) {
-        try {
-          console.log("the errroooooooor was", error)
-          throw new Error("add the pinata info for sending the cast")
-          console.log("publishing the cast through neynar failed, now trying with pinata")
-          const response = await axios.post(
-            "https://api.pinata.cloud/v3/farcaster/casts",
-            castOptions,
-            {
-             
-            }
-          );
-          return response.data.cast;
-        } catch (error) {
-            console.log("trying to send the cast again", error)
-            await sleep(20000)
-            publishCastToTheProtocol(castOptions)
-        }
+export async function publishCastToTheProtocol(castOptions: CastIntention, apiKey = NEYNAR_DUMMY_BOT_API_KEY) {
+  try {
+    const response = await axios.post(
+      "https://api.neynar.com/v2/farcaster/cast",
+      castOptions,
+      {
+        headers: {
+          api_key: NEYNAR_DUMMY_BOT_API_KEY,
+        },
       }
-}
+    );
+    return response.data.cast;
+  } catch (error: any) {
+    console.error("Error publishing cast to Neynar:", error.message);
+    
+    if (error.response && error.response.status === 404) {
+      console.error("Cast not found. It may have been deleted.");
+      // Handle the case where the cast was deleted
+      // You might want to update your database or take other actions here
+      return null;
+    }
+
+    // Queue the failed cast for retry
+    await queueFailedCast(castOptions, error.message);
+    
+    throw error; // Re-throw the error for the caller to handle
+  }
+  }
 
 export async function publishCastToTheProtocolThroughDummyBot(castOptions: CastIntention) {
   try {
