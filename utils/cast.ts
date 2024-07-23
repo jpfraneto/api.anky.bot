@@ -18,25 +18,10 @@ export async function fetchCastInformationFromHash(castHash: string) {
       );
       return neynarResponse.data.cast;
     } catch (error) {
-      console.log("there was an error fetching the cast from neynar, trying pinata now", error)
-      try {
-        const pinataResponse = await axios.get(
-          `https://api.pinata.cloud/v3/farcaster/casts/${castHash}`,
-          {
-            headers: {
-              api_key: NEYNAR_API_KEY,
-              Authorization: `Bearer ${PINATA_JWT}`,
-            },
-          }
-        );
-        return pinataResponse.data.cast;
-      } catch (error) {
-        console.log(
-          `this was a really hard to get cast. it didnt want to be replied to: ${castHash}`
-        );
-        await sleep(60000)
-        return fetchCastInformationFromHash(castHash);
-      }
+      console.log(
+        `this was a really hard to get cast. it didnt want to be replied to: ${castHash}`
+      );
+      return []
     }
   }
 
