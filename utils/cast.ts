@@ -21,7 +21,7 @@ export async function fetchCastInformationFromHash(castHash: string) {
       console.log(
         `this was a really hard to get cast. it didnt want to be replied to: ${castHash}`
       );
-      return []
+      return [👨🏻‍⚕️ ]
     }
   }
 

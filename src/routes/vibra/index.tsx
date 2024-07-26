@@ -455,7 +455,7 @@ vibraFrame.frame('/leaderboard/:id', async (c) => {
     }
   ]
   return c.res({
-      title: "anky",
+      title: "vibra",
       image: (
         <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-7xl mb-2">VIBRA</span>
@@ -497,7 +497,7 @@ vibraFrame.frame('/video/:id/generate-link', async (c) => {
   console.log("the total balance is", totalBalance )
   if(totalBalance == BigInt(0)) {
     return c.res({
-      title: 'onda.so',
+      title: 'vibra.so',
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-3xl mb-2">welcome</span>
@@ -537,21 +537,21 @@ vibraFrame.frame('/video/:id', async (c) => {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
   
   console.log("the id of this video is: ", id)
-  const gifUrl =`https://res.cloudinary.com/dzpugkpuz/image/upload/v1720779500/zurf/farcaster_gifs/${id}.gif`
+  const gifUrl =`https://storage.googleapis.com/zurf-app-lens/${id}-gif`
   console.log("the gif url is ", gifUrl)
 
   if (uuidRegex.test(id)) {
     return c.res({
-      title: "anky",
+      title: "vibra",
       image: gifUrl,
       intents: [
         <Button action={`/what-is-vibra`}>vibra?</Button>,
-        <Button action={`/video/${id}/generate-link`}>generate link</Button>
+        <Button action={`/video/${id}/generate-link`}>view video</Button>
       ],
     });
   } else {
     return c.res({
-      title: "anky",
+      title: "vibra",
       image: (
         <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-7xl mb-2">vibra</span>
