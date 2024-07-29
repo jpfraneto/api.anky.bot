@@ -567,7 +567,7 @@ vibraFrame.frame('/video/:id/generate-link', async (c) => {
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
           <span tw="text-cyan-500 text-3xl mb-2">welcome</span>
-          <p tw="text-cyan-500 text-6xl mb-2">you own a moxie pass. congratulations. we hope you are ready for some fun. follow /vibra to stay tuned.</p>
+          <p tw="text-cyan-500 text-6xl mb-2">DC @jpfraneto to see this video inside /vibra</p>
       </div>
     ),
       intents: [
@@ -584,8 +584,8 @@ vibraFrame.frame('/video/:id/generate-link', async (c) => {
       title: 'vibra.so',
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-          <span tw="text-cyan-500 text-4xl mb-2">oh ohhh</span>
-          <p tw="text-cyan-500 text-6xl mb-2">you dont own a moxie pass. you can mint it below</p>
+          <span tw="text-cyan-500 text-4xl mb-2">welcome</span>
+          <p tw="text-cyan-500 text-6xl mb-2">DC @jpfraneto to view this video inside /vibra</p>
       </div>
     ),
       intents: [
