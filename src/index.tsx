@@ -496,7 +496,7 @@ app.post('/video', async (c) => {
     logProgress('Publishing cast...');
     let castOptions = {
       text: "",
-      embeds: [{url: `https://api.anky.bot/vibra/video/${uuid}`}],
+      embeds: [{url: `https://frames.vibra.so/vibra/video/${uuid}`}],
       parent: "0xbc7c9fd8a6278ed1f6f09c4990f42d504ebe17e7",
       signer_uuid: DUMMY_BOT_SIGNER,
     };
@@ -643,7 +643,7 @@ app.post('/wc-video', async (c) => {
 
     let castOptions = {
       text: "",
-      embeds: [{url: `https://api.anky.bot/vibra/cast-gifs/${uuid}/${castInfo.hash}`}],
+      embeds: [{url: `https://frames.vibra.so/vibra/cast-gifs/${uuid}/${castInfo.hash}`}],
       parent: castInfo.hash,
       signer_uuid: CHISPITA_OXIDA_SIGNER_UUID,
     };

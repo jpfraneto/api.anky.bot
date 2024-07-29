@@ -515,7 +515,7 @@ tvFrame.frame('/:username/:index', async (c) => {
     const qs = {
       text: `first time i see a tv inside a frame.\n\nby @jpfraneto 🎩`,
       'embeds[]': [
-        `https://api.anky.bot/tv/${username}/${index}`,
+        `https://frames.vibra.so/tv/${username}/${index}`,
       ],
     };
     

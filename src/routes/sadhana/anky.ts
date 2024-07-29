@@ -41,7 +41,7 @@ export async function getAnkysInterpretation (userReplies: Cast[]){
                     })
                     let castOptions = {
                         text: "",
-                        embeds: [{url: `https://api.anky.bot/sadhana/created-sadhana/${responseFromPrisma.id}`}],
+                        embeds: [{url: `https://frames.vibra.so/sadhana/created-sadhana/${responseFromPrisma.id}`}],
                         parent: reply.hash,
                         signer_uuid: ANKY_SIGNER,
                     };

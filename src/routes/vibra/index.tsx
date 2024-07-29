@@ -241,7 +241,7 @@ vibraFrame.frame('/cast-gifs/:uuid/:castHash', async (c) => {
   const qs = {
     text: `check this video inside a frame. soon, you will be able to upload these on to /vibra and have them rendered inside a frame on warpcast\n\nstay tuned`,
     'embeds[]': [
-      `https://api.anky.bot/vibra/cast-gifs/${uuid}/${castHash}`,
+      `https://frames.vibra.so/vibra/cast-gifs/${uuid}/${castHash}`,
     ],
   };
   
@@ -374,7 +374,7 @@ vibraFrame.frame('/more-info/:fid', async (c) => {
 
     return c.res({
       title: "vibra.so",
-      image: "https://www.api.anky.bot/generate-image",
+      image: "https://frames.vibra.so/generate-image",
       intents: [
         <Button action={`/index`}>back</Button>,
         <Button action={`/generate-link/${chosenLivestream.username}/0x1234`}>

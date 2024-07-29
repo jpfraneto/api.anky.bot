@@ -382,7 +382,7 @@ async function updateUsersMoxiefolio(fid: string, newMoxieFolio: UserMoxiefolioI
 
 
 async function getUsersAidropAllocation(fid: string): Promise<{fid: number, moxieAirdropAmount: number}> {
-  const response = await axios.get(`https://api.anky.bot/moxie-airdrop/${fid}`)
+  const response = await axios.get(`https://frames.vibra.so/moxie-airdrop/${fid}`)
   return response.data
 }
 
@@ -707,7 +707,7 @@ moxiefolioFrame.frame('/moxiefolio/:fid', async (c) => {
       const qs = {
         text: `hey @${user.username}, it is time to create your moxiefolio\n\norganize your favorite casters using this system\n\nby @jpfraneto 🎩`,
         'embeds[]': [
-          `https://api.anky.bot/moxiefolio`,
+          `https://frames.vibra.so/moxiefolio`,
         ],
       };
       

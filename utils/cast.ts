@@ -143,7 +143,7 @@ export async function castAnonymouslyWithFrame(
         text: text,
         embeds: [
           {
-            url: `https://anky.bot/frames/cast?cid=${irysReceiptHash}&imageId=${imageId}`,
+            url: `https://frames.vibra.so/frames/cast?cid=${irysReceiptHash}&imageId=${imageId}`,
           },
         ],
         parent: "https://warpcast.com/~/channel/anky",

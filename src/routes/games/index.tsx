@@ -255,7 +255,7 @@ gamesFrame.frame('/:game/:index', async (c) => {
     const qs = {
       text: `nostalgia is a good feeling to have.\n\nby @jpfraneto 🎩`,
       'embeds[]': [
-        `https://api.anky.bot/gamecaster/${game}/${index}`,
+        `https://frames.vibra.so/gamecaster/${game}/${index}`,
       ],
     };
   

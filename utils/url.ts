@@ -5,7 +5,7 @@ export function getPublicUrl() {
     console.log("inside the get public url function")
     const returnable = NODE_ENV !== 'production'
     ? `http://localhost:${PORT}`
-    : 'https://api.anky.bot';
+    : 'https://frames.vibra.so';
     console.log("the returnable is", returnable)
   return returnable
 }
