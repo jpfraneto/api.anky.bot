@@ -643,7 +643,7 @@ vibraFrame.frame('/video/:id/:castHash', async (c) => {
       image: gifUrl,
       intents: [
         <Button action={`/what-is-vibra`}>vibra?</Button>,
-        <Button action={`https://www.vibra.so/post/${castHash}`}>view video</Button>
+        <Button.Link href={`https://www.vibra.so/post/${castHash}`}>view video</Button.Link>
       ],
     });
   } else {
