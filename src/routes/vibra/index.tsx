@@ -418,7 +418,7 @@ vibraFrame.frame('/android-tester-submit', async (c) => {
       title: "vibra.so",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-          <span tw="text-cyan-500 text-2xl mb-2">thank you, we will reach back soon on</span>
+          <span tw="text-cyan-300 text-2xl mb-2">thank you, we will reach back soon at</span>
           <span tw="text-cyan-500 text-2xl mb-2">{emailString}</span>
           <span tw="text-purple-500 text-2xl mb-2">RELEASE THE BRAINZ</span>
           <span tw="text-yellow-500 text-4xl mb-2">QUE VENGA LA BUENA VIBRA</span>
