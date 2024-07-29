@@ -629,31 +629,38 @@ vibraFrame.frame('/video/:id', async (c) => {
       ],
     });
   }
+});
 
-  // if (uuidRegex.test(id)) {
-  //   return c.res({
-  //     title: "anky",
-  //     image: `https://storage.googleapis.com/zurf-app-lens/${id}-gif`,
-  //     intents: [
-  //       <Button action={`/leaderboard/${id}`}>leaderboard</Button>,
-  //       <Button.Link href={`https://www.guarpcast.com?v=${id}`}>see video</Button.Link>,
-  //     ],
-  //   });
-  // } else {
-  //   return c.res({
-  //     title: "anky",
-  //     image: (
-  //       <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
-  //         <span tw="text-cyan-500 text-7xl mb-2">vibra</span>
-  //         <span tw="text-yellow-500 text-4xl mb-2">this video was not found</span>
-  //       </div>
-  //     ),
-  //     intents: [
-  //       <Button action={`/`}>back</Button>,
-  //       <Button.Link href={`https://www.guarpcast.com/v/${id}`}>record new</Button.Link>,
-  //     ],
-  //   });
-  // }
+vibraFrame.frame('/video/:id/:castHash', async (c) => {
+  let { id, castHash } = c.req.param();
+  console.log("here here", c.frameData)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  
+  const gifUrl =`https://storage.googleapis.com/zurf-app-lens/${id}-gif`
+  if (uuidRegex.test(id)) {
+    return c.res({
+      title: "vibra",
+      image: gifUrl,
+      intents: [
+        <Button action={`/what-is-vibra`}>vibra?</Button>,
+        <Button action={`https://www.vibra.so/post/${castHash}`}>view video</Button>
+      ],
+    });
+  } else {
+    return c.res({
+      title: "vibra",
+      image: (
+        <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
+          <span tw="text-cyan-500 text-7xl mb-2">vibra</span>
+          <span tw="text-yellow-500 text-4xl mb-2">this video was not found</span>
+        </div>
+      ),
+      intents: [
+        <Button action={`/`}>back</Button>,
+        <Button.Link href={`https://www.vibra.so/`}>record new</Button.Link>,
+      ],
+    });
+  }
 });
 
 
