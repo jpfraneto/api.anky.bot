@@ -210,3 +210,8 @@ model FailedCast {
 
   @@index([attempts])
 }
+
+model AndroidTesters {
+  fid        Int   @id
+  email      String
+}

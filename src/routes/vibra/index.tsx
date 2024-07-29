@@ -364,6 +364,72 @@ vibraFrame.frame('/what-is-vibra', async (c) => {
   })
 })
 
+vibraFrame.frame('/android-testers', async (c) => {
+  return c.res({
+      title: "vibra.so",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+          <span tw="text-cyan-500 text-2xl mb-2">RELEASE THE BRAINZ</span>
+          <span tw="text-purple-500 text-2xl mb-2">QUE VENGA LA BUENA VIBRA</span>
+          <span tw="text-yellow-500 text-4xl mb-2">stream. be yourself.</span>
+      </div>
+    ),
+      intents: [
+          <TextInput placeholder="newclient@warpcast.com" />,
+          <Button action={`/android-tester-submit`}>submit email</Button>
+      ],
+  })
+})
+
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+function isValidEmail(email: string): boolean {
+  return emailRegex.test(email);
+}
+
+
+vibraFrame.frame('/android-tester-submit', async (c) => {
+  const { deriveState, inputText, buttonValue, frameData } = c;
+  const fid = frameData?.fid
+  const emailString = inputText
+  if(!isValidEmail(emailString!)) {
+    return c.res({
+      title: "vibra.so",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+          <span tw="text-cyan-500 text-2xl mb-2">this email</span>
+          <span tw="text-purple-500 text-2xl mb-2">{emailString}</span>
+          <span tw="text-yellow-500 text-4xl mb-2">is not valid</span>
+      </div>
+    ),
+    intents: [
+      <TextInput placeholder="newclient@warpcast.com" />,
+      <Button action={`/android-tester-submit`}>submit email</Button>
+  ],
+  })
+  }
+  const tester = await prisma.androidTesters.create({
+    data: {
+      fid: Number(fid),
+      email: emailString
+    }
+  })
+  return c.res({
+      title: "vibra.so",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+          <span tw="text-cyan-500 text-2xl mb-2">thank you, we will reach back soon</span>
+          <span tw="text-cyan-500 text-2xl mb-2">RELEASE THE BRAINZ</span>
+          <span tw="text-purple-500 text-2xl mb-2">QUE VENGA LA BUENA VIBRA</span>
+          <span tw="text-yellow-500 text-4xl mb-2">stream. be yourself.</span>
+      </div>
+    ),
+      intents: [
+          <Button.Link href={`https://www.vibra.so/`}>learn more</Button.Link>
+      ],
+  })
+})
+
 vibraFrame.frame('/more-info/:fid', async (c) => {
   const { deriveState, inputText, buttonValue } = c;
   const { fid } = c.req.param();
