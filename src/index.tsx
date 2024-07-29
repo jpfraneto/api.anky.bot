@@ -105,6 +105,17 @@ async function updateVideos() {
   }
 }
 
+async function checkWhitelist () {
+  try {
+    const users = await prisma.androidTesters.findMany();
+    console.log("the users are", users)
+  } catch (error) {
+    console.log('there was an error')
+  }
+}
+
+// checkWhitelist()
+
 // updateVideos()
 
 const redis = new Redis(REDIS_URL);

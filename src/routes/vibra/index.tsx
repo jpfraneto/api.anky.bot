@@ -239,7 +239,7 @@ vibraFrame.frame('/livestream/:streamer/:tokenAddress', async (c) => {
 vibraFrame.frame('/cast-gifs/:uuid/:castHash', async (c) => {
   const { uuid, castHash } = c.req.param();
   const qs = {
-    text: `check this video inside a frame. soon, you will be able to upload these on to /vibra and have them rendered inside a frame on warpcast\n\nstay tuned`,
+    text: `hey @jpfraneto! can you send me an invite for /vibra?`,
     'embeds[]': [
       `https://frames.vibra.so/vibra/cast-gifs/${uuid}/${castHash}`,
     ],
@@ -600,11 +600,10 @@ vibraFrame.frame('/video/:id/generate-link', async (c) => {
 
 vibraFrame.frame('/video/:id', async (c) => {
   let { id } = c.req.param();
+  console.log("here here", c.frameData)
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
   
-  console.log("the id of this video is: ", id)
   const gifUrl =`https://storage.googleapis.com/zurf-app-lens/${id}-gif`
-  console.log("the gif url is ", gifUrl)
 
   if (uuidRegex.test(id)) {
     return c.res({
@@ -612,7 +611,7 @@ vibraFrame.frame('/video/:id', async (c) => {
       image: gifUrl,
       intents: [
         <Button action={`/what-is-vibra`}>vibra?</Button>,
-        <Button action={`/video/${id}/generate-link`}>view video</Button>
+        <Button action={`https://www.vibra.so/post/${}`}>view video</Button>
       ],
     });
   } else {
