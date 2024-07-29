@@ -365,13 +365,15 @@ vibraFrame.frame('/what-is-vibra', async (c) => {
 })
 
 vibraFrame.frame('/android-testers', async (c) => {
+  const emails = await prisma.androidTesters.findMany({})
+  console.log('the emails are', emails)
   return c.res({
       title: "vibra.so",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-          <span tw="text-cyan-500 text-2xl mb-2">RELEASE THE BRAINZ</span>
-          <span tw="text-purple-500 text-2xl mb-2">QUE VENGA LA BUENA VIBRA</span>
-          <span tw="text-yellow-500 text-4xl mb-2">stream. be yourself.</span>
+          <span tw="text-cyan-500 text-5xl mb-2">ONLY FOR ANDROID TESTERS</span>
+          <span tw="text-purple-500 text-2xl mb-2">enter your best email</span>
+          <span tw="text-yellow-500 text-3xl mb-2">stream. be yourself.</span>
       </div>
     ),
       intents: [
