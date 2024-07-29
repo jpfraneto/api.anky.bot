@@ -367,7 +367,7 @@ vibraFrame.frame('/what-is-vibra', async (c) => {
 vibraFrame.frame('/android-testers', async (c) => {
   return c.res({
       title: "vibra.so",
-      image: "https://github.com/jpfraneto/images/blob/main/vibranadroid.png?raw=true",
+      image: "https://github.com/jpfraneto/images/blob/main/vibraframe.png?raw=true",
       intents: [
           <TextInput placeholder="newclient@warpcast.com" />,
           <Button action={`/android-tester-submit`}>submit email</Button>
