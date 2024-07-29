@@ -604,14 +604,13 @@ vibraFrame.frame('/video/:id', async (c) => {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
   
   const gifUrl =`https://storage.googleapis.com/zurf-app-lens/${id}-gif`
-  const castHash = "0xxxxxxxx"
   if (uuidRegex.test(id)) {
     return c.res({
       title: "vibra",
       image: gifUrl,
       intents: [
         <Button action={`/what-is-vibra`}>vibra?</Button>,
-        <Button action={`https://www.vibra.so/post/${castHash}`}>view video</Button>
+        <Button.Link href={`https://www.vibra.so/post/${id}`}>view video</Button.Link>
       ],
     });
   } else {
