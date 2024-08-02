@@ -84,14 +84,14 @@ export type VibraContext<T extends string = '/logic/:castHash'> = FrameContext<
 export const vibraFrame = new Frog<{
   State: VibraState;
 }>({
-  hub: {
-    apiUrl: "https://hubs.airstack.xyz",
-    fetchOptions: {
-      headers: {
-        "x-airstack-hubs": AIRSTACK_API_KEY,
-      }
-    }
-  },
+  // hub: {
+  //   apiUrl: "https://hubs.airstack.xyz",
+  //   fetchOptions: {
+  //     headers: {
+  //       "x-airstack-hubs": AIRSTACK_API_KEY,
+  //     }
+  //   }
+  // },
   imageOptions,
   imageAspectRatio: "1:1",
   initialState: {
@@ -105,6 +105,74 @@ vibraFrame.use(async (c, next) => {
   c.res.headers.set('Cache-Control', 'max-age=0');
   await next();
 });
+
+vibraFrame.castAction(
+  "/vibraction",
+  (c) => {
+    const { actionData } = c;
+    const { castId, fid, messageHash, network, timestamp, url } = actionData;
+    const actionedCastHash = castId.hash;
+    const actionedFid = castId.fid
+    const publicUrl = getPublicUrl()
+    return c.res({
+      type: "frame",
+      path: `${publicUrl}/vibra/castAction/${actionedCastHash}/${actionedFid}`,
+    });
+  },
+  { 
+    name: "vibra", 
+    icon: "play", 
+    aboutUrl: "https://www.vibra.so", 
+    description: "This action is the bridge between vibra and you"
+  }
+);
+
+vibraFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => {
+  const { actionedCastHash, actionedCastFid } = c.req.param();
+  const { frameData } = c
+  const usersFid = c.frameData?.fid
+  const cast = await fetchCastInformationFromHash(actionedCastHash)
+  const castEmbeds = cast.embeds
+  console.log('the cast embeds are' , castEmbeds)
+  const doesCastHaveVideo = true
+  if(doesCastHaveVideo){
+    return c.res({
+      title: "anky",
+      image: (
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="w-full p-4 flex flex-col rounded-xl border-white bg-purple-600">
+            <div tw="mt-3 flex text-xl text-white">
+              download this video
+            </div>
+          </div>
+        </div>
+      ),
+      intents: [
+          <Button.Link href={`https://www.vibra.so/post/${actionedCastHash}`}>Download Video</Button.Link>
+        ],
+  })} else {
+    return c.res({
+      title: "anky",
+      image: (
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mb-20 flex text-6xl text-purple-400">
+            the actioned cast doesn't have a video
+          </div>
+          <div tw="w-full p-4 flex flex-col rounded-xl border-white bg-purple-600">
+            <div tw="mt-3 flex text-xl text-white">
+              but you can go and watch on vibra
+            </div>
+          </div>
+        </div>
+      ),
+      intents: [
+          <Button.Link href={`https://www.vibra.so`}>Vibra</Button.Link>,
+        ],
+  })
+  }
+})
+
+//////
 
 vibraFrame.frame('/', async (c) => {
   const timestamp = new Date().getTime()
@@ -317,11 +385,9 @@ vibraFrame.frame('/turn-on-bot/:castHash', async (c) => {
     </div>
    ),
    intents: [
-    <Button action={`/turn-on-bot/${castHash}`}>
-    Turn Off Bot
-  </Button>,
+
   <Button.Link href={`https://www.vibra.so/post/${castHash}`}>
-    See on Vibra
+    Video on Vibra
   </Button.Link>
   ],
   })

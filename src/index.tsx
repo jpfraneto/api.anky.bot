@@ -135,14 +135,14 @@ const origin = getPublicUrl();
 console.log({ origin });
 
 export const app = new Frog({
-  hub: {
-    apiUrl: "https://hubs.airstack.xyz",
-    fetchOptions: {
-      headers: {
-        "x-airstack-hubs": AIRSTACK_API_KEY,
-      }
-    }
-  },
+  // hub: {
+  //   apiUrl: "https://hubs.airstack.xyz",
+  //   fetchOptions: {
+  //     headers: {
+  //       "x-airstack-hubs": AIRSTACK_API_KEY,
+  //     }
+  //   }
+  // },
   assetsPath: '/',
   basePath: '/',
   origin,
@@ -235,6 +235,11 @@ app.post("/video-posted", async (c) => {
 
     const castHash = data.hash;
     const fid = data.author.fid;
+
+    if (await isOptedOut(fid)) {
+      console.log(`User ${fid} has opted out. Skipping processing.`);
+      return c.json({ message: 'User has opted out' }, 200);
+    }
 
     // Fetch cast information
     const cast = await fetchCastInformationFromHash(castHash);
