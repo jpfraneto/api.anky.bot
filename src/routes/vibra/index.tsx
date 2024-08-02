@@ -24,6 +24,7 @@ import { ALCHEMY_INSTANCES, getTransport } from '../../../utils/web3';
 import { HYPERSUB_ABI } from '../../constants/abi/HYPERSUB_ABI';
 import { MOXIE_PASS_ABI } from '../../constants/abi/MOXIE_PASS_ABI';
 import queryString from 'query-string';
+import { addOptOutFid, removeOptOutFid } from '../../../utils/local-storage';
 
 
 export function getViemChain(chainId: number) {
@@ -273,16 +274,11 @@ vibraFrame.frame('/cast-gifs/:uuid/:castHash', async (c) => {
 vibraFrame.frame('/turn-off-bot/:castHash', async (c) => {
   const { castHash } = c.req.param();
   const thisUserFid = c.frameData?.fid
-  console.log("turn off the bot for ", thisUserFid)
-  const qs = {
-    text: `im looking for an invite code for /vibra\n\nwho's got some?`,
-    'embeds[]': [
-      `https://www.vibra.so`,
-    ],
-  };
   
-  const shareQs = queryString.stringify(qs);
-  const warpcastRedirectLink = `https://warpcast.com/~/compose?${shareQs}`;
+  if (thisUserFid) {
+    await addOptOutFid(thisUserFid);
+  }
+
   return c.res({
     title: 'vibra.so',
     image: (
@@ -307,6 +303,11 @@ vibraFrame.frame('/turn-off-bot/:castHash', async (c) => {
 vibraFrame.frame('/turn-on-bot/:castHash', async (c) => {
   const { castHash } = c.req.param();
   const thisUserFid = c.frameData?.fid
+
+  if (thisUserFid) {
+    await removeOptOutFid(thisUserFid);
+  }
+
   return c.res({
     title: 'vibra.so',
     image: (

@@ -65,6 +65,9 @@ dotenv.config();
 import { Redis } from 'ioredis';
 import { processData } from '../utils/moxie';
 import { checkIfCastHasVideo } from '../utils/farcaster';
+import { isOptedOut } from '../utils/local-storage';
+
+
 
 async function updateVideos() {
   try {
@@ -587,6 +590,13 @@ app.post('/wc-video', async (c) => {
   try {
     // Fetch cast information from Neynar
     const castInfo = await fetchCastInformationFromHash(castHash);
+    const authorFid = castInfo.author.fid;
+    // check if the user is on the list of the ones that don't want to be replied to. if so, just console log and return
+    if (await isOptedOut(authorFid)) {
+      console.log(`User ${authorFid} has opted out. Skipping processing.`);
+      return c.json({ message: 'User has opted out' }, 200);
+    }
+
     const videoUrl = castInfo.embeds?.find(embed => isValidVideoUrl(embed.url))?.url;
 
     if (!videoUrl) {

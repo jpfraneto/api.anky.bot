@@ -215,3 +215,8 @@ model AndroidTesters {
   fid        Int   @id
   email      String
 }
+
+model OptedOutVideoPublishers {
+  fid                       Int   @id
+  doesntWantReply           Boolean   @default(false)      
+}
