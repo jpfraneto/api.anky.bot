@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { Frog } from "frog";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "frog/serve-static";
-import { SECRET, CLOUDINARY_CLOUD_NAME ,REDIS_URL, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, NEYNAR_API_KEY, CHISPITA_OXIDA_SIGNER_UUID } from '../env/server-env';
+import { SECRET, CLOUDINARY_CLOUD_NAME ,REDIS_URL, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, NEYNAR_API_KEY, CHISPITA_OXIDA_SIGNER_UUID, AIRSTACK_API_KEY } from '../env/server-env';
 import { Logger } from '../utils/Logger';
 import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
@@ -132,6 +132,14 @@ const origin = getPublicUrl();
 console.log({ origin });
 
 export const app = new Frog({
+  hub: {
+    apiUrl: "https://hubs.airstack.xyz",
+    fetchOptions: {
+      headers: {
+        "x-airstack-hubs": AIRSTACK_API_KEY,
+      }
+    }
+  },
   assetsPath: '/',
   basePath: '/',
   origin,

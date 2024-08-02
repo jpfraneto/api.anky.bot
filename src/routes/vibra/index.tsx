@@ -10,7 +10,7 @@ import { abbreviateAddress } from '../../../utils/strings';
 import axios from 'axios';
 import { Logger } from '../../../utils/Logger';
 import { neynarClient } from '../../services/neynar-service';
-import { NEYNAR_API_KEY } from '../../../env/server-env';
+import { NEYNAR_API_KEY, AIRSTACK_API_KEY } from '../../../env/server-env';
 import { getUserFromFid } from '../../../utils/farcaster';
 import {
   createPublicClient,
@@ -83,6 +83,14 @@ export type VibraContext<T extends string = '/logic/:castHash'> = FrameContext<
 export const vibraFrame = new Frog<{
   State: VibraState;
 }>({
+  hub: {
+    apiUrl: "https://hubs.airstack.xyz",
+    fetchOptions: {
+      headers: {
+        "x-airstack-hubs": AIRSTACK_API_KEY,
+      }
+    }
+  },
   imageOptions,
   imageAspectRatio: "1:1",
   initialState: {
@@ -251,16 +259,72 @@ vibraFrame.frame('/cast-gifs/:uuid/:castHash', async (c) => {
     title: 'vibra.so',
     image: `https://res.cloudinary.com/dzpugkpuz/image/upload/v1721251888/zurf/cast_gifs/${uuid}.gif`,
     intents: [
-      <Button.Link href={warpcastRedirectLink}>
-        share frame
-      </Button.Link>,
+      <Button action={`/turn-off-bot/${castHash}`}>
+        Turn Off Bot
+      </Button>,
       <Button.Link href={`https://res.cloudinary.com/dzpugkpuz/image/upload/v1721251888/zurf/cast_gifs/${uuid}.gif`}>Download Gif</Button.Link>,
-      <Button.Link href={`https://warpcast.com/~/conversations/${castHash}`}>
-        original cast
+      <Button.Link href={`https://www.vibra.so/post/${castHash}`}>
+        See on Vibra
       </Button.Link>
   ],
   });
 });
+
+vibraFrame.frame('/turn-off-bot/:castHash', async (c) => {
+  const { castHash } = c.req.param();
+  const thisUserFid = c.frameData?.fid
+  console.log("turn off the bot for ", thisUserFid)
+  const qs = {
+    text: `im looking for an invite code for /vibra\n\nwho's got some?`,
+    'embeds[]': [
+      `https://www.vibra.so`,
+    ],
+  };
+  
+  const shareQs = queryString.stringify(qs);
+  const warpcastRedirectLink = `https://warpcast.com/~/compose?${shareQs}`;
+  return c.res({
+    title: 'vibra.so',
+    image: (
+      <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+        <span tw="text-purple-500 text-2xl mb-2">the bot was disabled. it won't reply to your videos with a gif again</span>
+        <span tw="text-purple-500 text-2xl mb-2">sorry if it was spammy</span>
+        <span tw="text-yellow-500 text-4xl mb-2">it won't happen again</span>
+        <span tw="text-white text-3xl mb-2">you can still see the video on /vibra tho</span>
+    </div>
+   ),
+   intents: [
+    <Button action={`/turn-on-bot/${castHash}`}>
+      Turn On Bot
+    </Button>,
+    <Button.Link href={`https://www.vibra.so/post/${castHash}`}>
+    See on Vibra
+    </Button.Link>
+  ],
+  })
+})
+
+vibraFrame.frame('/turn-on-bot/:castHash', async (c) => {
+  const { castHash } = c.req.param();
+  const thisUserFid = c.frameData?.fid
+  return c.res({
+    title: 'vibra.so',
+    image: (
+      <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+        <span tw="text-purple-500 text-2xl mb-2">the bot was activated</span>
+        <span tw="text-white text-4xl mb-2">que venga la buena /vibra</span>
+    </div>
+   ),
+   intents: [
+    <Button action={`/turn-on-bot/${castHash}`}>
+    Turn Off Bot
+  </Button>,
+  <Button.Link href={`https://www.vibra.so/post/${castHash}`}>
+    See on Vibra
+  </Button.Link>
+  ],
+  })
+})
 
 vibraFrame.frame('/generate-link/:streamer/:tokenAddress', async (c) => {
   const body = await c.req.json();
@@ -600,7 +664,6 @@ vibraFrame.frame('/video/:id/generate-link', async (c) => {
 
 vibraFrame.frame('/video/:id', async (c) => {
   let { id } = c.req.param();
-  console.log("here here", c.frameData)
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
   
   const gifUrl =`https://storage.googleapis.com/zurf-app-lens/${id}-gif`

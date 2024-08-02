@@ -29,7 +29,8 @@ const envSchema = object({
     STREAM_API_SECRET_KEY: string("STREAM_API_SECRET_KEY is required"),
     REDIS_URL: string("REDIS_URL is required"),
     BASE_RPC_URL: string("BASE_RPC_URL is required"),
-    CHISPITA_OXIDA_SIGNER_UUID: string("CHISPITA_OXIDA_SIGNER_UUID is required")
+    CHISPITA_OXIDA_SIGNER_UUID: string("CHISPITA_OXIDA_SIGNER_UUID is required"),
+    AIRSTACK_API_KEY: string("AIRSTACK_API_KEY is required"),
   });
   
   export const {
@@ -58,5 +59,6 @@ const envSchema = object({
     STREAM_API_SECRET_KEY,
     REDIS_URL,
     BASE_RPC_URL,
-    CHISPITA_OXIDA_SIGNER_UUID
+    CHISPITA_OXIDA_SIGNER_UUID,
+    AIRSTACK_API_KEY
   } = parse(envSchema, process.env);
