@@ -1,6 +1,6 @@
 import { Button, FrameContext, Frog, TextInput } from 'frog';
 import { Author } from '../../../utils/types/cast'
-import { getPublicUrl } from '../../../utils/url';
+import { addActionLink, getPublicUrl } from '../../../utils/url';
 import { replyToThisCastThroughChatGtp } from '../../../utils/anky';
 import { fetchCastInformationFromHash, fetchCastInformationFromUrl, saveCastTriadeOnDatabase } from '../../../utils/cast';
 import prisma from '../../../utils/prismaClient';
@@ -123,7 +123,7 @@ vibraFrame.castAction(
     name: "vibra", 
     icon: "play", 
     aboutUrl: "https://www.vibra.so", 
-    description: "This action is the bridge between vibra and you"
+    description: "This action is the bridge between /vibra and Warpcast. It also allows you to download the video from the actioned cast 👀."
   }
 );
 
@@ -139,13 +139,14 @@ vibraFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => 
     return c.res({
       title: "anky",
       image: (
-          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-          <div tw="w-full p-4 flex flex-col rounded-xl border-white bg-purple-600">
-            <div tw="mt-3 flex text-xl text-white">
-              download this video
-            </div>
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+
+        <div tw="w-full p-4 flex flex-col rounded-xl border-white bg-purple-600">
+          <div tw="mt-3 flex text-xl text-white">
+            dowload this video
           </div>
         </div>
+      </div>
       ),
       intents: [
           <Button.Link href={`https://www.vibra.so/post/${actionedCastHash}`}>Download Video</Button.Link>
@@ -334,7 +335,15 @@ vibraFrame.frame('/cast-gifs/:uuid/:castHash', async (c) => {
       <Button.Link href={`https://res.cloudinary.com/dzpugkpuz/image/upload/v1721251888/zurf/cast_gifs/${uuid}.gif`}>Download Gif</Button.Link>,
       <Button.Link href={`https://www.vibra.so/post/${castHash}`}>
         See on Vibra
-      </Button.Link>
+      </Button.Link>,
+        <Button.Link
+        href={addActionLink({
+          name: 'vibra',
+          postUrl: '/vibra/vibraction',
+        })}
+      >
+        Cast action
+      </Button.Link>,
   ],
   });
 });
