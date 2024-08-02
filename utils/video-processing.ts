@@ -482,8 +482,7 @@ export async function processVideoJob (cast: Cast, addedByFid: number) {
   
     // Publish a cast with the GIF
     const castOptions = {
-      text: `this video is now available on /vibra\n\nand here it is as a gift\n\nsorry, as a gif
-    \n\nyou can turn these replies off on the frame/n/nbut any video you share on warpcast will still be available on /vibra (because it is a farcaster client)`,
+      text: `this video is now available on /vibra\n\nand here it is as a gift\n\nsorry, as a gif\n\nyou can turn these replies off on the frame\n\nbut any video you share on warpcast will still be available on /vibra (because it is a farcaster client)`,
       embeds: [{url: `https://frames.vibra.so/vibra/cast-gifs/${uuid}/${cast.hash}`}],
       parent: cast.hash,
       signer_uuid: CHISPITA_OXIDA_SIGNER_UUID,
