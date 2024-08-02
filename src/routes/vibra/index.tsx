@@ -332,9 +332,9 @@ vibraFrame.frame('/cast-gifs/:uuid/:castHash', async (c) => {
       <Button action={`/turn-off-bot/${castHash}`}>
         Turn Off Bot
       </Button>,
-      <Button.Link href={`https://res.cloudinary.com/dzpugkpuz/image/upload/v1721251888/zurf/cast_gifs/${uuid}.gif`}>Download Gif</Button.Link>,
+      <Button.Link href={`https://res.cloudinary.com/dzpugkpuz/image/upload/v1721251888/zurf/cast_gifs/${uuid}.gif`}>DownloadGif</Button.Link>,
       <Button.Link href={`https://www.vibra.so/post/${castHash}`}>
-        See on Vibra
+        SeeOnVibra
       </Button.Link>,
         <Button.Link
         href={addActionLink({
@@ -342,7 +342,7 @@ vibraFrame.frame('/cast-gifs/:uuid/:castHash', async (c) => {
           postUrl: '/vibra/vibraction',
         })}
       >
-        Cast action
+        CastAction
       </Button.Link>,
   ],
   });
