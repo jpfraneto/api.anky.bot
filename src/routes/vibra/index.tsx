@@ -843,13 +843,13 @@ vibraFrame.frame('/notify-user/:handle', async (c) => {
   return c.res({
     title: "vibra",
     image: (
-      <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
-        <span tw="text-cyan-500 text-7xl mb-2">you will be DMed when @{handle} starts streaming. make sure you follow @vibraso.eth</span>
-        <span tw="text-yellow-500 text-4xl mb-2">share with your frens!</span>
+      <div tw="flex h-full w-full flex-col px-8 items-center py-8 justify-center bg-black text-white">
+        <span tw="text-cyan-500 text-3xl mb-2">you will be DMed when @{handle} starts streaming. make sure you follow @vibraso.eth</span>
+        <span tw="text-yellow-500 text-2xl mb-2">share with your frens!</span>
       </div>
     ),
     intents: [
-      <Button action={`/`}>disable notifications</Button>,
+      <Button action={`/`}>disable</Button>,
       <Button.Link href={`https://www.warpcast.com/vibraso.eth`}>follow</Button.Link>,
       <Button.Link href={warpcastRedirectLink}>share</Button.Link>,
     ],
