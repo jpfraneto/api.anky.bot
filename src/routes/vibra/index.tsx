@@ -824,3 +824,34 @@ vibraFrame.frame('/landing', async (c) => {
 })
 
 
+
+//// LIVESTREAMS
+
+vibraFrame.frame('/notify-user/:handle', async (c) => {
+  const { handle } = c.req.param();
+  const userToNotifyFid = c.frameData?.fid
+  console.log(`the user with fid ${userToNotifyFid} wants to be notified when ${handle} starts a stream`);
+  const qs = {
+    text: `i just subscribed to @${handle} on /vibra and will be notified when a livestream starts.\n\ndo the same here:`,
+    'embeds[]': [
+      `https://www.vibra.so/stream/${handle}`,
+    ],
+  };
+
+  const shareQs = queryString.stringify(qs);
+  const warpcastRedirectLink = `https://warpcast.com/~/compose?${shareQs}`;
+  return c.res({
+    title: "vibra",
+    image: (
+      <div tw="flex h-full w-full flex-col px-16 items-center py-8 justify-center bg-black text-white">
+        <span tw="text-cyan-500 text-7xl mb-2">you will be DMed when @{handle} starts streaming. make sure you follow @vibraso.eth</span>
+        <span tw="text-yellow-500 text-4xl mb-2">share with your frens!</span>
+      </div>
+    ),
+    intents: [
+      <Button action={`/`}>disable notifications</Button>,
+      <Button.Link href={`https://www.warpcast.com/vibraso.eth`}>follow</Button.Link>,
+      <Button.Link href={warpcastRedirectLink}>share</Button.Link>,
+    ],
+  });
+});
