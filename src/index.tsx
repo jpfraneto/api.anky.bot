@@ -222,6 +222,17 @@ async function retryFailedCasts() {
 // Run the retry process every 5 minutes
 cron.schedule('*/5 * * * *', retryFailedCasts);
 
+app.post("/notify-user/:handle", async (c) => {
+  try {
+    console.log('INSIDE THE NOTIFY USER FUNCTION')
+    const { handle } = c.req.param();
+    const body = await c.req.json()
+    console.log("inside the notify user function", handle, body)
+  } catch (error) {
+    console.log('there was an error on the notify user function', error)
+  }
+})
+
 app.post("/video-posted", async (c) => {
   try {
     console.log('inside the video posted webhook');
