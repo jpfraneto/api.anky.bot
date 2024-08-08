@@ -849,9 +849,27 @@ vibraFrame.frame('/notify-user/:handle', async (c) => {
       </div>
     ),
     intents: [
-      <Button action={`/`}>disable</Button>,
+      <Button action={`/disable-notification/${handle}`}>disable</Button>,
       <Button.Link href={`https://www.warpcast.com/vibraso.eth`}>follow</Button.Link>,
       <Button.Link href={warpcastRedirectLink}>share</Button.Link>,
     ],
   });
 });
+
+vibraFrame.frame('/disable-notification/:handle', async (c) => {
+  const { handle } = c.req.param();
+  const userToNotifyFid = c.frameData?.fid
+  console.log("disable the notification for ", userToNotifyFid, handle)
+  return c.res({
+    title: "vibra",
+    image: (
+      <div tw="flex h-full w-full flex-col px-8 items-center py-8 justify-center bg-black text-white">
+        <span tw="text-purple-500 text-3xl mb-2">your notifications for when @{handle} starts streaming were disabled</span>
+      </div>
+    ),
+    intents: [
+      <Button action={`/notify-user/${handle}`}>activate again</Button>,
+    ],
+  });
+});
+
