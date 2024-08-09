@@ -31,6 +31,7 @@ const envSchema = object({
     BASE_RPC_URL: string("BASE_RPC_URL is required"),
     CHISPITA_OXIDA_SIGNER_UUID: string("CHISPITA_OXIDA_SIGNER_UUID is required"),
     AIRSTACK_API_KEY: string("AIRSTACK_API_KEY is required"),
+    VIBRA_SO_WARPCAST_API_KEY: string("VIBRA_SO_WARPCAST_API_KEY is required"),
   });
   
   export const {
@@ -60,5 +61,6 @@ const envSchema = object({
     REDIS_URL,
     BASE_RPC_URL,
     CHISPITA_OXIDA_SIGNER_UUID,
-    AIRSTACK_API_KEY
+    AIRSTACK_API_KEY,
+    VIBRA_SO_WARPCAST_API_KEY
   } = parse(envSchema, process.env);

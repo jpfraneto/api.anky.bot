@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { Frog } from "frog";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "frog/serve-static";
-import { SECRET, CLOUDINARY_CLOUD_NAME ,REDIS_URL, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, NEYNAR_API_KEY, CHISPITA_OXIDA_SIGNER_UUID, AIRSTACK_API_KEY } from '../env/server-env';
+import { SECRET, CLOUDINARY_CLOUD_NAME ,REDIS_URL,VIBRA_SO_WARPCAST_API_KEY, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, NEYNAR_API_KEY, CHISPITA_OXIDA_SIGNER_UUID, AIRSTACK_API_KEY } from '../env/server-env';
 import { Logger } from '../utils/Logger';
 import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
@@ -38,6 +38,7 @@ import { enterFrame } from './routes/enter';
 import { moxiefolioFrame } from './routes/moxiefolio';
 import { replyToDanFrame } from './routes/replyToDan';
 import { vibraTvFrame } from './routes/vibratv';
+import { app as livestreamsRoute } from './routes/livestreams';
 dotenv.config();
 // **** ROUTE IMPORTS ****
 
@@ -178,6 +179,10 @@ app.route('/enter', enterFrame)
 app.route('/moxiefolio', moxiefolioFrame)
 app.route('/replytodan', replyToDanFrame)
 app.route('/vibratv', vibraTvFrame)
+
+
+/// LIVESTREAMS ROUTE
+app.route('/livestreams', livestreamsRoute)
 
 app.get("/aloja", (c) => {
   return c.json({
@@ -794,3 +799,36 @@ serve({
 })
 
 console.log(`Server is running on port ${port}`)
+
+async function sendProgramaticDmToSubscribers(subscribers: any) {
+  try {
+    console.log("sending programatic dcs to subscribers: ", subscribers)
+    for (let subscriber of subscribers) {
+      const uuid = uuidv4();
+      const directCastData = {
+        recipientFid: subscriber,
+        message: `${uuid}\n\nwena wena, este DC fue creado programaticamente y basicamente estamos cachando el mote de si funciona o no. Si te llego, porfa mandame un mensaje diciendo que te llego. Gracias! \n\nhttps://www.vibra.so/stream/jpfraneto`,
+        idempotencyKey: uuid
+      };
+      axios.put('https://api.warpcast.com/v2/ext-send-direct-cast', directCastData, {
+        headers: {
+          'Authorization': `Bearer ${VIBRA_SO_WARPCAST_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        console.log(`The response after sending the DC to ${subscriber} is: `, response.data);
+      })
+      .catch(error => {
+        console.log("There was an error sending the programmatic DC")
+        console.error('Error:', error);
+        console.log("the error is: ", error.response.data)
+      });
+    }
+  } catch (error) {
+    
+  }
+}
+
+//sendProgramaticDmToSubscribers([16098, 18350, 19696, 12785, 198258])
+// sendProgramaticDmToSubscribers([18350])

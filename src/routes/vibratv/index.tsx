@@ -21,7 +21,7 @@ import * as chains from 'viem/chains';
 import { getUserMoxieFantokens, updateMoxieFantokenEntry } from './utils';
 import { fetchCastInformationFromHash } from '../../../utils/cast';
 import prisma from '../../../utils/prismaClient';
-import { checkVideoProcessingStatus, processCastVideo, queueCastVideoProcessing } from '../../../utils/video-processing';
+import { checkVideoProcessingStatus, queueCastVideoProcessing } from '../../../utils/video-processing';
 
 type VibraState = {
   // profiles
@@ -255,26 +255,44 @@ vibraTvFrame.frame('/invalid-video', async (c) => {
 });
 
 vibraTvFrame.frame('/', async (c) => {
-  const allVideos = await prisma.castWithVideo.findMany({})
-  const randomVideo = allVideos[Math.floor(allVideos.length * Math.random())]
-  if(randomVideo) {
+  return c.res({
+    title: 'moxie aidrop',
+    image: "https://github.com/jpfraneto/images/blob/main/vibratv.png?raw=true",
+    intents: [
+      <TextInput placeholder='enter channel number'/>,
+      <Button action={`/tune-in`}>tune in</Button>,
+  ],
+});
+})
+
+const channels: { [key: string]: string } = {
+  '8': 'replyguys',
+  '17': 'airstack',
+  '20': 'base',
+  '23': 'zora',
+  '25': 'vibra',
+  '28': 'success',
+  '30': 'dev',
+  '33': 'ethereum',
+  '34': 'food'    
+};
+
+vibraTvFrame.frame('/tune-in', async (c) => {
+  const channelNumber = c.frameData?.inputText!;
+  console.log("in here, channel number is: ", channelNumber)
+  const channelName = channels[channelNumber];
+  if (channelNumber in channels) {
     return c.res({
-      title: 'moxie aidrop',
-      image: randomVideo?.gifUrl!,
+      title: 'vibra tv',
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+          <span tw="text-purple-500 text-5xl mb-2">you don't own the /{channelName} fan token</span>
+          <span tw="text-purple-500 text-2xl mb-2">you can't add videos to it</span>
+      </div>
+     ),
       intents: [
-        <Button action={`/`}>🔄</Button>,
-        <Button.Link href={randomVideo?.gifUrl!}>download</Button.Link>,
-        <Button.Link
-        href={addActionLink({
-          name: 'vibra tv',
-          postUrl: '/vibratv/install',
-        })}
-      >
-        cast action
-      </Button.Link>,
-        <Button.Link href={`https://warpcast.com/~/conversations/${randomVideo.castHash}`}>
-          cast video
-        </Button.Link>
+        <Button action={`/`}>back</Button>,
+        <Button action={`/buy-fantoken/${channelName}`}>buy fantoken</Button>,
     ],
     });
   } else {
@@ -282,21 +300,19 @@ vibraTvFrame.frame('/', async (c) => {
       title: 'vibra tv',
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
-          <span tw="text-purple-500 text-2xl mb-2">there are no videos</span>
+          <span tw="text-purple-500 text-4xl mb-2">this channel doesn't exist on vibra tv yet</span>
+          <span tw="text-purple-500 text-4xl mb-2">do you want to create it for 20 usd/mo?</span>
+          <span tw="text-purple-500 text-4xl mb-2">there are only 10 slots</span>
       </div>
      ),
       intents: [
+        <Button action={`/`}>back</Button>,
         <Button.Link
-        href={addActionLink({
-          name: 'vibra tv',
-          postUrl: '/vibratv/install',
-        })}
+        href="https://www.youtube.com/watch?v=xvFZjo5PgG0"
       >
-        install
+        contact sales
       </Button.Link>,
     ],
     });
   }
-
-});
-
+})
