@@ -41,13 +41,7 @@ app.frame("/mobile-app/:streamer", async (c) => {
   
   return c.res({
       title: "anky",
-      image: (
-        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-          <div tw="mt-10 flex text-xl text-white">
-            You can only edit your own Moxie Fantokens
-          </div>
-        </div>
-      ),
+      image: "https://github.com/jpfraneto/images/blob/main/vibra-square.png?raw=true",
       intents: [
          <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
          <Button.Link href="https://www.vibra.so/android">android</Button.Link>
