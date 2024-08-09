@@ -325,3 +325,19 @@ vibraTvFrame.frame('/tune-in', async (c) => {
     });
   }
 })
+
+vibraTvFrame.frame('/buy-fantoken/:channelName', async (c) => {
+  const { channelName } = c.req.param();
+  return c.res({
+    title: 'vibra tv',
+    image: (
+      <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+        <span tw="text-purple-500 text-5xl mb-2">this is where we should show you the frame to buy {channelName}'s fantoken</span>
+        <span tw="text-purple-500 text-2xl mb-2">if you are reading this, it is because you understood the idea behind this. its just a prototype. tell @jpfraneto to build it</span>
+    </div>
+   ),
+    intents: [
+      <Button action={`/`}>back</Button>,
+  ],
+  });
+})
