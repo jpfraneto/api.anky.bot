@@ -281,7 +281,16 @@ vibraTvFrame.frame('/tune-in', async (c) => {
   const channelNumber = c.frameData?.inputText!;
   console.log("in here, channel number is: ", channelNumber)
   const channelName = channels[channelNumber];
-  if (channelNumber in channels) {
+  if(!Number(channelNumber)){
+    return c.res({
+      title: 'moxie aidrop',
+      image: "https://github.com/jpfraneto/images/blob/main/vibratv.png?raw=true",
+      intents: [
+        <TextInput placeholder='enter channel number'/>,
+        <Button action={`/tune-in`}>tune in</Button>,
+    ],
+  });
+  } else if (channelNumber in channels) {
     return c.res({
       title: 'vibra tv',
       image: (
