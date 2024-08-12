@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,215 +11,52 @@ datasource db {
 }
 
 model User {
-  id                Int                    @id
-  username          String                 @unique
-  casts             Cast[]
-  interactions      Interaction[]
-  dailyPerformances DailyUserPerformance[]
-  sadhana           Sadhana[]
-  moxieAirdropAmount Int                   @default(0)
-  ownedMoxieFantoken MoxieFantoken?
-  inMoxieFantoken   MoxieFantokenEntry[]
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  fid           String   @unique
+  username      String?
+  displayName   String?
+  pfpUrl        String?
+  gifPfpUrl     String?
+
+  // Relationships
+  streams       Stream[]
+  subscriptions Subscription[] @relation("Subscriber")
+  subscribers   Subscription[] @relation("Streamer")
 }
 
-model Cast {
-  id          String                 @id @default(uuid())
-  hash        String                 @unique
-  authorFid   Int
-  text        String
-  timestamp   DateTime
-  parentHash  String?
-  replies     ReplyFromAnky[]
-  User        User?                  @relation(fields: [userId], references: [id])
-  userId      Int?
-  Interaction Interaction[]
+model Stream {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  startedAt DateTime?
+  endedAt   DateTime?
+  title     String
+  status    StreamStatus @default(SCHEDULED)
+
+  // Relationships
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
 }
 
-model Interaction {
-  id        String          @id @default(uuid())
-  user      User            @relation(fields: [userId], references: [id])
-  userId    Int
-  cast      Cast            @relation(fields: [castHash], references: [hash])
-  castHash  String
-  type      InteractionType
-  timestamp DateTime        @default(now())
+model Subscription {
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relationships
+  subscriber    User     @relation("Subscriber", fields: [subscriberId], references: [id])
+  subscriberId  String
+  streamer      User     @relation("Streamer", fields: [streamerId], references: [id])
+  streamerId    String
+
+  @@unique([subscriberId, streamerId])
+  @@index([streamerId])
 }
 
-enum InteractionType {
-  LIKE
-  RECAST
-  REPLY
-  QUOTE
-}
-
-model DailyUserPerformance {
-  id                   Int      @id @default(autoincrement())
-  user                 User     @relation(fields: [userId], references: [id])
-  userId               Int
-  date                 DateTime
-  totalCasts           Int      @default(0)
-  totalReplies         Int      @default(0)
-  totalEngagementScore Float    @default(0)
-  likes                Int      @default(0)
-  recasts              Int      @default(0)
-  replies              Int      @default(0)
-  quotes               Int      @default(0)
-
-  @@unique([userId, date])
-}
-
-model ReplyFromAnky {
-  id                                Int      @id @default(autoincrement())
-  momentOfReply                     DateTime @default(now())
-  chronologicalDayNumber            Int?
-  sojourn                           String?
-  kingdom                           String?
-  replyingToCast                    Cast     @relation(fields: [replyingToCastHash], references: [hash])
-  replyingToCastHash                String
-  replyCastHash                     String?  @unique
-  replyText                         String?
-  replyReasoning                    String?
-  humanTrainerFeedback              String?
-  quoteCasts                        Int      @default(0)
-  recasts                           Int      @default(0)
-  comments                          Int      @default(0)
-  likes                             Int      @default(0)
-  engagementScore                   Float    @default(0.0)
-  deletedFromFarcaster              Boolean  @default(false)
-}
-
-model ReplyForTrainingAnky {
-  id              String   @id @default(uuid())
-  addedTimestamp  DateTime @default(now())
-  dayOfStorage    Int
-  rootCastHash    String
-  rootCastText    String
-  goodReplyHash   String
-  goodReplyText   String
-  badReplyHash    String
-  badReplyText    String
-  comments        String?
-  collectorFid     Int?
-  collectedFrom   String // e.g., "save_reply_action", "manual_entry", etc.
-}
-
-model ZurfUser {
-  fid          Int       @id
-  username     String
-  pfp          String?
-  bio          String?
-  craft        String
-  zurfVideos    ZurfVideo[]
-}
-
-model ZurfVideo {
-  id             String   @id @default(uuid())
-  originalName   String
-  gifLink        String
-  videoLink      String?
-  castHash       String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  ZurfUser       ZurfUser?                  @relation(fields: [zurfUserFid], references: [fid])
-  zurfUserFid    Int?
-}
-
-model Sadhana {
-  id                     String            @id @default(uuid())
-  parentCastHash         String
-  sadhanaCastHash        String            @unique
-  userId                 Int?
-  User                   User?             @relation(fields: [userId], references: [id])
-  createdAt              DateTime          @default(now())
-  durationInDays         Int
-  betInDegen             Int
-  sessionsAccomplished   SadhanaSessions[]
-  success                Boolean           @default(false)
-  description            String
-  replyToAcknowledgeSadhanaHash  String?
-  userAccepted           Boolean       @default(false)
-  userRejected           Boolean       @default(false)
-}
-
-model SadhanaSessions {
-  id                   String            @id @default(uuid())
-  parentSadhanaId      String
-  parentSadhana        Sadhana           @relation(fields: [parentSadhanaId], references: [id])
-  completedAt          DateTime
-  dmed                 Boolean
-  createdAt            DateTime          @default(now())
-  streakAlive          Boolean           @default(true)
-}
-
-model MoxieFantoken {
-  id            Int                 @id @default(autoincrement())
-  user          User                @relation(fields: [userId], references: [id])
-  userId        Int                 @unique
-  entries       MoxieFantokenEntry[]
-  totalAllocated Float              @default(0)
-  lastUpdated   DateTime            @updatedAt
-}
-
-model MoxieFantokenEntry {
-  id                Int             @id @default(autoincrement())
-  moxieFantoken    MoxieFantoken  @relation(fields: [moxieFantokenId], references: [id])
-  moxieFantokenId  Int
-  targetUser        User            @relation(fields: [targetUserId], references: [id])
-  targetUserId      Int
-  allocation        Float
-  lastUpdated       DateTime        @updatedAt
-
-  @@unique([moxieFantokenId, targetUserId])
-}
-
-model Dummy {
-  id Int @id @default(autoincrement())
-}
-
-model CastWithVideo {
-  id              Int      @id @default(autoincrement())
-  castHash        String   @unique
-  uuid            String?
-  gifUrl          String?
-  addedByFid      Int?
-  videoDuration   Float?
-  gifDuration     Float?
-  fps             Float?
-  warpcastVideoUrl String?
-  authorFid       Int?
-  authorUsername  String?
-  castChannel     String?
-  scale           Int?
-  status          VideoProcessingStatus @default(PENDING)
-  errorMessage    String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-enum VideoProcessingStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  ERROR
-}
-
-model FailedCast {
-  id          String   @id @default(uuid())
-  castOptions Json
-  error       String
-  attempts    Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([attempts])
-}
-
-model AndroidTesters {
-  fid        Int   @id
-  email      String
-}
-
-model OptedOutVideoPublishers {
-  fid                       Int   @id
-  doesntWantReply           Boolean   @default(false)      
+enum StreamStatus {
+  SCHEDULED
+  LIVE
+  ENDED
 }

@@ -80,17 +80,11 @@ app.get("/frame-image/:streamer", async (c) => {
 });
 
 app.frame("/:streamer", async (c) => {
-  const params = c.req.param()
-  const aloja = c.req.query()
-  console.log("this is the entry point to the frames world of this streamer", params, aloja)
   const { streamer } = c.req.param();
-  console.log("inside the streamer route", streamer)
-  // console.log("IN HERE, THE STREAM ID IS: ", streamId)
-  // this comes from the frontend
+  const { streamId } = c.req.query()
+  console.log("inside the streamer route", streamer, streamId)
   const buttonIndex = c?.frameData?.buttonIndex
   if(buttonIndex == 1) {
-    console.log("inside the button index 1, show the last clip from the stream")
-    console.log('CHECK IF THE STREAM IS LIVE')
 
     const response = await axios.get(
       `${VIBRA_LIVESTREAMS_API}/livestreams/info?handle=${streamer}`,
@@ -152,7 +146,7 @@ app.frame("/:streamer", async (c) => {
       title: "anky",
       image: "https://github.com/jpfraneto/images/blob/main/vibra-square.png?raw=true",
       intents: [
-         <Button action={`/${streamer}/clips/start`}>Watch Stream</Button>,
+         <Button action={`/${streamer}`}>Watch Stream</Button>,
          <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
          <Button.Link href="https://www.vibra.so/android">android</Button.Link>
         ],
@@ -269,9 +263,6 @@ app.frame("/:streamer/unsubscribe", async (c) => {
   })
   }
 })
-
-
-
 
 app.frame("/download-app/:streamer", async (c) => {
   const { streamer } = c.req.param();

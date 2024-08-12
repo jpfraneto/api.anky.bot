@@ -134,7 +134,7 @@ async function combineFrames(inputDir, outputGif, fps) {
   console.log('GIF created:', outputGif);
 }
 
-async function maiiinn(staticImageUrl, streamerName, outputPath) {
+export async function maiiinn(staticImageUrl, streamerName, outputPath) {
   let tempDir;
   try {
     console.log('Starting GIF processing');

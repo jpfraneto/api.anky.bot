@@ -23,21 +23,15 @@ import ffmpeg from 'fluent-ffmpeg';
 import { v2 as cloudinary } from 'cloudinary';
 import { uploadVideoToTheCloud, uploadGifToTheCloud } from '../utils/cloudinary';
 import { fetchCastInformationFromHash, publishCastToTheProtocol } from '../utils/cast';
-import { scrollFeedAndReply } from '../utils/anky';
 
+//maiiinn("https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_gif,w_112,h_112/https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/11e5479f-e479-4ba0-2221-97a086f65b00/original", "jpfraneto", "output_gif.gif")
 
 // **** ROUTE IMPORTS ****
 import { app as landing } from './routes/landing'
 import { tvFrame as stream } from './routes/stream'
-import { ankyGenesis } from './routes/anky-genesis'
-import { ankyFrames } from './routes/ankyFrame'
 import { vibraFrame } from './routes/vibra'
 import { extractWordBeforeWaveEmoji } from '../utils/zurf';
-import { sadhanaFrame } from './routes/sadhana';
-import { gamesFrame } from './routes/games';
-import { enterFrame } from './routes/enter';
 import { moxiefolioFrame } from './routes/moxiefolio';
-import { replyToDanFrame } from './routes/replyToDan';
 import { vibraTvFrame } from './routes/vibratv';
 import { app as livestreamsRoute } from './routes/livestreams';
 dotenv.config();
@@ -68,8 +62,7 @@ import { Redis } from 'ioredis';
 import { processData } from '../utils/moxie';
 import { checkIfCastHasVideo } from '../utils/farcaster';
 import { isOptedOut } from '../utils/local-storage';
-
-
+import { maiiinn } from '../utils/gif';
 
 async function updateVideos() {
   try {
@@ -170,15 +163,10 @@ app.use(async (c, next) => {
 });
 
 app.route('/', landing);
-app.route('/anky', ankyFrames)
-app.route('/anky-genesis', ankyGenesis)
+
 app.route('/vibra', vibraFrame)
 app.route('/stream', stream)
-app.route('/sadhana', sadhanaFrame)
-app.route('/gamecaster', gamesFrame)
-app.route('/enter', enterFrame)
 app.route('/moxiefolio', moxiefolioFrame)
-app.route('/replytodan', replyToDanFrame)
 app.route('/vibratv', vibraTvFrame)
 
 
@@ -798,6 +786,7 @@ serve({
   fetch: app.fetch,
   port: Number(port),
 })
+
 
 console.log(`Server is running on port ${port}`)
 
