@@ -199,23 +199,11 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
          <Button action={`/stream/${streamer}/${+index-1}`}>◀️</Button>,
          <Button action={`/stream/${streamer}/${+index+1}`}>▶️</Button>,
          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
-         <Button action={`/mobile-app/${streamer}`}>Mobile App</Button>
+         <Button action={`/download-app/${streamer}`}>Mobile App</Button>
         ],
   })
 })
 
-app.frame("/mobile-app/:streamer", async (c) => {
-  const { streamer } = c.req.param();
-  
-  return c.res({
-      title: "anky",
-      image: "https://github.com/jpfraneto/images/blob/main/vibra-square.png?raw=true",
-      intents: [
-         <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
-         <Button.Link href="https://www.vibra.so/android">android</Button.Link>
-        ],
-  })
-})
 
 app.get("/static/create-stream", async (c) => {
   console.log('Received request to create a new stream.');
