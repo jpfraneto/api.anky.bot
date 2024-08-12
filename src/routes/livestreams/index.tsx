@@ -8,6 +8,8 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
+import { fileURLToPath } from 'url';
+
 
 const execAsync = promisify(exec);
 
@@ -15,6 +17,8 @@ console.log('Initializing Livepeer client...');
 const livepeer = new Livepeer({
   apiKey: process.env.LIVEPEER_API_KEY,
 });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 console.log('Livepeer client initialized.');
 const GIF_DIRECTORY = path.join(__dirname, 'generated_gifs');
 
