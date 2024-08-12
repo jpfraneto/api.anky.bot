@@ -124,35 +124,46 @@ app.frame("/download-app/:streamer", async (c) => {
   })
 })
 
+async function checkIfUserSubscribed(streamer, viewerFid) {
+  // TODO: ADD LOGIC TO CHECK IF THE USER IS SUBSCRIBED
+  return true
+}
+
+async function getLatestClipFromStream(streamer) {
+  // TODO: ADD LOGIC TO GET LATEST CLIP FROM THIS STREAMER
+  return `https://github.com/jpfraneto/images/blob/main/3.gif?raw=true`
+}
+
 
 app.frame("/:streamer/clips/start", async (c) => {
   console.log("get the first clip of this streamer")
   const { streamer } = c.req.param();
+  const isUserSubscribed = await checkIfUserSubscribed(streamer, c.frameData?.fid)
+  const nextClipIndex = await getLatestClipFromStream(streamer)
   console.log("inside the streamer route", streamer)
   const index = 3
   return c.res({
       title: "vibra",
-      image: `https://github.com/jpfraneto/images/blob/main/${index}.gif?raw=true`,
+      image: ,
       intents: [
          <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
-         <Button action={`/${streamer}/clips/start`}>▶️</Button>,
-         <Button action={`/mobile-app/${streamer}`}>Mobile App</Button>,
+         <Button action={`/stream/${streamer}/${index + 1}`}>▶️</Button>,
          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
+         <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
         ],
   })
 })
 
 app.frame("/stream/:streamer/:index", async (c) => {
   const { streamer, index } = c.req.param();
-  console.log("inside the streamer route", streamer, index)
   return c.res({
       title: "vibra",
       image: `https://github.com/jpfraneto/images/blob/main/${index}.gif?raw=true`,
       intents: [
          <Button action={`/stream/${streamer}/${+index-1}`}>◀️</Button>,
          <Button action={`/stream/${streamer}/${+index+1}`}>▶️</Button>,
-         <Button action={`/mobile-app/${streamer}`}>mobile app</Button>,
          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
+         <Button action={`/mobile-app/${streamer}`}>Mobile App</Button>
         ],
   })
 })
