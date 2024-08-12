@@ -1,10 +1,13 @@
 import { Button, FrameContext, Frog, TextInput } from 'frog';
 import { SECRET } from '../../../env/server-env';
+import { NEYNAR_API_KEY } from '../../../env/server-env';
 import { Livepeer } from "livepeer";
 import fs from 'fs/promises';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { processAndSaveGif } from '../../gif';
+import axios from 'axios';
 
 const execAsync = promisify(exec);
 
@@ -13,6 +16,7 @@ const livepeer = new Livepeer({
   apiKey: process.env.LIVEPEER_API_KEY,
 });
 console.log('Livepeer client initialized.');
+const GIF_DIRECTORY = path.join(__dirname, 'generated_gifs');
 
 export const app = new Frog({
   assetsPath: '/',
@@ -21,13 +25,48 @@ export const app = new Frog({
   secret: process.env.NODE_ENV === 'production' ? SECRET : undefined,
 });
 
+async function getFarcasterUserData(username) {
+  try {
+    const response = await axios.get(`https://api.neynar.com/v1/farcaster/user-by-username?username=${username}&viewerFid=16098`, {
+      headers: {
+        'api_key': NEYNAR_API_KEY
+      }
+    });
+    return response.data.users[0]; // Assuming the first result is the correct user
+  } catch (error) {
+    console.error('Error fetching Farcaster user data:', error);
+    return null;
+  }
+}
+
 app.get("/frame-image/:streamer", async (c) => {
   const { streamer } = c.req.param();
-  console.log("inside the get image for streamer route", streamer)
-  return c.json({
-    success: true,
-  });
-})
+  console.log("Generating/retrieving GIF for streamer:", streamer);
+
+  const gifPath = path.join(GIF_DIRECTORY, `${streamer}.gif`);
+
+  try {
+    // Check if the GIF already exists
+    await fs.access(gifPath);
+    console.log("GIF already exists for", streamer);
+    return c.json({ imageUrl: `/generated_gifs/${streamer}.gif` });
+  } catch (error) {
+    // GIF doesn't exist, need to generate it
+    console.log("Generating new GIF for", streamer);
+
+    // Fetch user data from Farcaster
+    const userData = await getFarcasterUserData(streamer);
+    if (!userData) {
+      return c.json({ error: "User not found on Farcaster" }, 404);
+    }
+
+    // Generate the GIF
+    const staticImageUrl = userData.pfp_url; // Use the user's profile picture from Farcaster
+    const outputPath = await processAndSaveGif(staticImageUrl, streamer, gifPath);
+
+    return c.json({ imageUrl: `/generated_gifs/${streamer}.gif` });
+  }
+});
 
 app.frame("/:streamer", async (c) => {
   console.log("this is the entry point to the frames world of this streamer")

@@ -15,7 +15,6 @@ const execPromise = util.promisify(exec);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const gifPath = path.join(__dirname, 'gif-base.gif');
-const staticImageUrl = 'https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_gif,w_112,h_112/https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/11e5479f-e479-4ba0-2221-97a086f65b00/original';
 
 async function createTempDir() {
   const tempDir = path.join(os.tmpdir(), 'gif-processing-' + crypto.randomBytes(4).toString('hex'));
@@ -41,7 +40,7 @@ async function extractFrames(inputGif, outputDir) {
   console.log('Frames extracted to:', outputDir);
 }
 
-async function processFrame(framePath, staticImagePath, outputPath) {
+async function processFrame(framePath, staticImagePath, outputPath, streamerName) {
   console.log('Processing frame:', framePath);
   try {
     const frame = sharp(await fs.readFile(framePath));
@@ -106,9 +105,9 @@ async function processFrame(framePath, staticImagePath, outputPath) {
             font-family: Arial, sans-serif;
           }
         </style>
-        <g transform="translate(${screenX}, ${1.2 * screenY })">
+        <g transform="translate(${screenX}, ${1.2 * screenY})">
           <rect class="title-bg" x="-10" y="-10" width="${screenWidth + 20}" height="100" rx="2" ry="2" />
-          <text x="${screenWidth / 2}" y="60" text-anchor="middle" class="title">@jpfraneto is live on vibra!</text>
+          <text x="${screenWidth / 2}" y="60" text-anchor="middle" class="title">@${streamerName} is live on vibra!</text>
         </g>
       </svg>`;
 
@@ -134,7 +133,7 @@ async function combineFrames(inputDir, outputGif, fps) {
   console.log('GIF created:', outputGif);
 }
 
-export async function maiiinn() {
+async function maiiinn(staticImageUrl, streamerName, outputPath) {
   let tempDir;
   try {
     console.log('Starting GIF processing');
@@ -150,7 +149,6 @@ export async function maiiinn() {
 
     tempDir = await createTempDir();
     const staticImagePath = path.join(tempDir, 'static_image.png');
-    const outputGif = path.join(__dirname, 'output.gif');
 
     await downloadImage(staticImageUrl, staticImagePath);
     console.log('Static image downloaded');
@@ -163,16 +161,16 @@ export async function maiiinn() {
     for (const frame of frames.filter(file => file.startsWith('frame'))) {
       const inputFrame = path.join(tempDir, frame);
       const outputFrame = path.join(tempDir, `processed_${frame}`);
-      await processFrame(inputFrame, staticImagePath, outputFrame);
+      await processFrame(inputFrame, staticImagePath, outputFrame, streamerName);
     }
     console.log('All frames processed');
 
-    await combineFrames(tempDir, outputGif, 10);
+    await combineFrames(tempDir, outputPath, 10);
     console.log('Frames combined into new GIF');
 
-    console.log('Processing complete. Output saved as:', outputGif);
+    console.log('Processing complete. Output saved as:', outputPath);
 
-    return outputGif;
+    return outputPath;
   } catch (error) {
     console.error('An error occurred:', error);
     throw error;
@@ -185,12 +183,12 @@ export async function maiiinn() {
   }
 }
 
-export async function processAndSaveGif() {
+export async function processAndSaveGif(staticImageUrl, streamerName, outputPath) {
   try {
     console.log('Starting processAndSaveGif');
-    const outputPath = await maiiinn();
-    console.log('GIF processing completed. Output path:', outputPath);
-    return outputPath;
+    const finalOutputPath = await maiiinn(staticImageUrl, streamerName, outputPath);
+    console.log('GIF processing completed. Output path:', finalOutputPath);
+    return finalOutputPath;
   } catch (error) {
     console.error('Error in processAndSaveGif:', error);
     throw error;
