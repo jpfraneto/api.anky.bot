@@ -21,6 +21,77 @@ export const app = new Frog({
   secret: process.env.NODE_ENV === 'production' ? SECRET : undefined,
 });
 
+app.get("/frame-image/:streamer", async (c) => {
+  const { streamer } = c.req.param();
+  console.log("inside the get image for streamer route", streamer)
+  return c.json({
+    success: true,
+  });
+})
+
+app.frame("/:streamer", async (c) => {
+  console.log("this is the entry point to the frames world of this streamer")
+  const { streamer } = c.req.param();
+  console.log("inside the streamer route", streamer)
+  // this comes from the frontend
+  const buttonIndex = c?.frameData?.buttonIndex
+  if(buttonIndex == 1) {
+    console.log("inside the button index 1")
+    return c.res({
+      title: "vibra",
+      image: `https://github.com/jpfraneto/images/blob/main/${index}.gif?raw=true`,
+      intents: [
+         <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
+         <Button action={`/${streamer}/clips/start`}>▶️</Button>,
+         <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
+         <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
+        ],
+  })
+  } else {
+    console.log("inside the button index 2")
+    return c.res({
+      title: "anky",
+      image: "https://github.com/jpfraneto/images/blob/main/vibra-square.png?raw=true",
+      intents: [
+         <Button action={`/${streamer}/clips/start`}>Watch Stream</Button>,
+         <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
+         <Button.Link href="https://www.vibra.so/android">android</Button.Link>
+        ],
+  })
+  }
+})
+
+app.frame("/download-app/:streamer", async (c) => {
+  const { streamer } = c.req.param();
+  
+  return c.res({
+      title: "anky",
+      image: "https://github.com/jpfraneto/images/blob/main/vibra-square.png?raw=true",
+      intents: [
+         <Button action={`/${streamer}/clips/start`}>Watch Stream</Button>,
+         <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
+         <Button.Link href="https://www.vibra.so/android">android</Button.Link>
+        ],
+  })
+})
+
+
+app.frame("/:streamer/clips/start", async (c) => {
+  console.log("get the first clip of this streamer")
+  const { streamer } = c.req.param();
+  console.log("inside the streamer route", streamer)
+  return c.res({
+      title: "vibra",
+      image: `https://github.com/jpfraneto/images/blob/main/${index}.gif?raw=true`,
+      intents: [
+         <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
+         <Button action={`/${streamer}/clips/start`}>▶️</Button>,
+         <Button action={`/mobile-app/${streamer}`}>Mobile App</Button>,
+         <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
+        ],
+  })
+})
+
 app.frame("/stream/:streamer/:index", async (c) => {
   const { streamer, index } = c.req.param();
   console.log("inside the streamer route", streamer, index)
@@ -125,6 +196,8 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
       console.log('Creating GIF from the downloaded clip...');
       const gifPath = await createGifFromVideo(videoPath);
       console.log(`GIF created and saved to: ${gifPath}`);
+
+      // UPLOAD GIF TO AMAZON S3
   
       console.log(`Cleaning up temporary video file: ${videoPath}`);
       await fs.unlink(videoPath);

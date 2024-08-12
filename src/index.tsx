@@ -24,6 +24,8 @@ import { v2 as cloudinary } from 'cloudinary';
 import { uploadVideoToTheCloud, uploadGifToTheCloud } from '../utils/cloudinary';
 import { fetchCastInformationFromHash, publishCastToTheProtocol } from '../utils/cast';
 import { scrollFeedAndReply } from '../utils/anky';
+import { maiiinn } from './gif';
+maiiinn()
 
 // **** ROUTE IMPORTS ****
 import { app as landing } from './routes/landing'
@@ -832,3 +834,5 @@ async function sendProgramaticDmToSubscribers(subscribers: any) {
 
 //sendProgramaticDmToSubscribers([16098, 18350, 19696, 12785, 198258])
 // sendProgramaticDmToSubscribers([18350])
+
+
