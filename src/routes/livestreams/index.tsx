@@ -1,6 +1,6 @@
 import { Button, FrameContext, Frog, TextInput } from 'frog';
 import { SECRET } from '../../../env/server-env';
-import { NEYNAR_API_KEY } from '../../../env/server-env';
+import { NEYNAR_API_KEY, VIBRA_LIVESTREAMS_API, VIBRA_LIVESTREAMS_API_KEY } from '../../../env/server-env';
 import { Livepeer } from "livepeer";
 import fs from 'fs/promises';
 import path from 'path';
@@ -80,16 +80,32 @@ app.get("/frame-image/:streamer", async (c) => {
 });
 
 app.frame("/:streamer", async (c) => {
-  console.log("this is the entry point to the frames world of this streamer")
+  console.log("this is the entry point to the frames world of this streamer", c.req)
   const { streamer } = c.req.param();
   console.log("inside the streamer route", streamer)
+  // console.log("IN HERE, THE STREAM ID IS: ", streamId)
   // this comes from the frontend
   const buttonIndex = c?.frameData?.buttonIndex
   if(buttonIndex == 1) {
     console.log("inside the button index 1, show the last clip from the stream")
     console.log('CHECK IF THE STREAM IS LIVE')
+
+    const response = await axios.get(
+      `${VIBRA_LIVESTREAMS_API}/livestreams/info?handle=${streamer}`,
+      {
+        headers: {
+          "api-key": VIBRA_LIVESTREAMS_API_KEY!,
+          "User-Agent": `vibra-web-development`,
+        },
+      }
+    );
+    const streamData = response.data;
+    const isStreamLive = streamData.status == "live"
+    console.log("The is stream live is: ", isStreamLive)
+    // TODO: CHECK IF THE USER HAS THEIR PROFILE GIF CREATED
+
     console.log("CHECK IF THE USER IS SUBSCRIBED TO THIS STREAMER")
-    const isStreamLive = true
+    
     const isUserSubscribed = true
     if (isStreamLive) {
       console.log('THE STREAM IS LIVE')
@@ -183,7 +199,7 @@ app.frame("/:streamer/subscribe", async (c) => {
     ),
       intents: [
         <Button action={`/${streamer}/unsubscribe`}>Unsubscribe</Button>,
-         <Button.Link href={`https://www.warpcast.com/vibraso.eth`}>Follow Vibra</Button.Link>,
+        <Button.Link href={`https://www.warpcast.com/vibraso.eth`}>Follow Vibra</Button.Link>,
         <Button.Link href={warpcastRedirectLink}>Share</Button.Link>,
         ],
   })
@@ -229,6 +245,7 @@ app.frame("/:streamer/unsubscribe", async (c) => {
     ),
       intents: [
         <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
+        <Button action={`/${streamer}`}>@{streamer}</Button>,
          <Button.Link href={`https://www.warpcast.com/${streamer}`}>DM {streamer}</Button.Link>,
         ],
   })

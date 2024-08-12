@@ -32,6 +32,8 @@ const envSchema = object({
     CHISPITA_OXIDA_SIGNER_UUID: string("CHISPITA_OXIDA_SIGNER_UUID is required"),
     AIRSTACK_API_KEY: string("AIRSTACK_API_KEY is required"),
     VIBRA_SO_WARPCAST_API_KEY: string("VIBRA_SO_WARPCAST_API_KEY is required"),
+    VIBRA_LIVESTREAMS_API: string("VIBRA_LIVESTREAMS_API is required"),
+    VIBRA_LIVESTREAMS_API_KEY: string("VIBRA_LIVESTREAMS_API_KEY is required")
   });
   
   export const {
@@ -62,5 +64,7 @@ const envSchema = object({
     BASE_RPC_URL,
     CHISPITA_OXIDA_SIGNER_UUID,
     AIRSTACK_API_KEY,
-    VIBRA_SO_WARPCAST_API_KEY
+    VIBRA_SO_WARPCAST_API_KEY,
+    VIBRA_LIVESTREAMS_API,
+    VIBRA_LIVESTREAMS_API_KEY
   } = parse(envSchema, process.env);
