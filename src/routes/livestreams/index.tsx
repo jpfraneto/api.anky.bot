@@ -81,7 +81,8 @@ app.get("/frame-image/:streamer", async (c) => {
 
 app.frame("/:streamer", async (c) => {
   const params = c.req.param()
-  console.log("this is the entry point to the frames world of this streamer", params)
+  const aloja = c.req.query()
+  console.log("this is the entry point to the frames world of this streamer", params, aloja)
   const { streamer } = c.req.param();
   console.log("inside the streamer route", streamer)
   // console.log("IN HERE, THE STREAM ID IS: ", streamId)
@@ -132,11 +133,9 @@ app.frame("/:streamer", async (c) => {
         <div tw="mb-20 flex text-6xl text-purple-400">
           @{streamer} is not live anymore
         </div>
-        <div tw="w-full p-4 flex flex-col rounded-xl border-white bg-purple-600">
-          <div tw="mt-3 flex text-xl text-white">
+        <div tw="mt-3 flex text-6xl text-white">
             but you can subscribe to get notified with a DM when they go live again
           </div>
-        </div>
       </div>
     ),
       intents: [
