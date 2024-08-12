@@ -1,4 +1,4 @@
-import { Logger } from '../utils/Logger';
+import { Logger } from '../utils/Logger.js';
 import fs from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
@@ -12,7 +12,8 @@ import { fileURLToPath } from 'url';
 const execPromise = util.promisify(exec);
 
 // Get the directory name of the current module
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const gifPath = path.join(__dirname, 'gif-base.gif');
 
