@@ -34,7 +34,8 @@ async function getFarcasterUserData(username) {
         'api_key': NEYNAR_API_KEY
       }
     });
-    return response.data.users[0]; // Assuming the first result is the correct user
+    console.log("THE RESPONSE IN HERE IS", response.data)
+    return response.data.result.user; // Assuming the first result is the correct user
   } catch (error) {
     console.error('Error fetching Farcaster user data:', error);
     return null;
@@ -65,7 +66,8 @@ app.get("/frame-image/:streamer", async (c) => {
       }
   
       // Generate the GIF
-      const staticImageUrl = userData.pfp_url; // Use the user's profile picture from Farcaster
+      const staticImageUrl = userData.pfp.url; // Use the user's profile picture from Farcaster
+      console.log("the static image url is: ", staticImageUrl)
       const outputPath = await processAndSaveGif(staticImageUrl, streamer, gifPath);
   
       return c.json({ imageUrl: `/generated_gifs/${streamer}.gif` });
