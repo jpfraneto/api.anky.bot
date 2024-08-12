@@ -148,7 +148,7 @@ app.frame("/download-app/:streamer", async (c) => {
       title: "anky",
       image: "https://github.com/jpfraneto/images/blob/main/vibra-square.png?raw=true",
       intents: [
-         <Button action={`/${streamer}/clips/start`}>Watch Stream</Button>,
+         <Button action={`/${streamer}`}>Watch Stream</Button>,
          <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
          <Button.Link href="https://www.vibra.so/android">android</Button.Link>
         ],
