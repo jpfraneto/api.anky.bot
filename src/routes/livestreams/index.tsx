@@ -102,7 +102,7 @@ app.frame("/:streamer", async (c) => {
 
     console.log("CHECK IF THE USER IS SUBSCRIBED TO THIS STREAMER")
     
-    const isUserSubscribed = true
+    const isUserSubscribed = false
     if (isStreamLive) {
       console.log('THE STREAM IS LIVE')
 
@@ -184,6 +184,9 @@ app.frame("/:streamer/subscribe", async (c) => {
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
         <div tw="mb-20 flex text-6xl text-purple-400">
+          PS: this is not connected to a database yet
+        </div>
+        <div tw="mb-20 flex text-6xl text-purple-400">
           You subscribed to @{streamer}
         </div>
         <div tw="mt-3 flex text-6xl text-white">
@@ -229,6 +232,9 @@ app.frame("/:streamer/unsubscribe", async (c) => {
       title: "vibra",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mb-20 flex text-6xl text-purple-400">
+          PS: this is not connected to a database yet
+        </div>
         <div tw="mb-20 flex text-6xl text-purple-400">
           You unsubscribed from @{streamer}
         </div>
