@@ -21,9 +21,25 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const GIF_DIRECTORY = path.join(__dirname, 'generated_gifs');
 
+const imageOptions = {
+  width: 600,
+  height: 600,
+  fonts: [
+    {
+      name: 'Poetsen One',
+      source: 'google',
+    },
+    {
+      name: 'Roboto',
+      source: 'google',
+    },
+  ] as any,
+};
+
 export const app = new Frog({
   assetsPath: '/',
   basePath: '/',
+  imageOptions,
   imageAspectRatio: "1:1",
   secret: process.env.NODE_ENV === 'production' ? SECRET : undefined,
 });
@@ -232,13 +248,13 @@ app.frame("/:streamer/unsubscribe", async (c) => {
       title: "vibra",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-          <div tw="mb-20 flex text-6xl text-purple-400">
+          <div tw="mb-20 flex text-3xl text-purple-400">
           PS: this is not connected to a database yet
         </div>
-        <div tw="mb-20 flex text-6xl text-purple-400">
+        <div tw="mb-20 flex text-3xl text-purple-400">
           You unsubscribed from @{streamer}
         </div>
-        <div tw="mt-3 flex text-6xl text-white">
+        <div tw="mt-3 flex text-3xl text-white">
             Go and tell them what they can do better the next time.
         </div>
       </div>
@@ -255,10 +271,10 @@ app.frame("/:streamer/unsubscribe", async (c) => {
       title: "vibra",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-        <div tw="mb-20 flex text-6xl text-purple-400">
+        <div tw="mb-20 flex text-3xl text-purple-400">
           There was an error unsubscribing you to this user
         </div>
-        <div tw="mt-3 flex text-xl text-white">
+        <div tw="mt-3 flex text-3xl text-white">
             Take a screenshot and contact @jpfraneto to fix this ASAP. Help needed.
         </div>
       </div>
