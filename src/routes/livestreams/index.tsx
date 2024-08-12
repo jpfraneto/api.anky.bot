@@ -140,10 +140,10 @@ app.frame("/:streamer", async (c) => {
       title: "vibra",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-        <div tw="mb-20 flex text-6xl text-purple-400">
+        <div tw="mb-20 flex text-xl text-purple-400">
           @{streamer} is not live anymore
         </div>
-        <div tw="mt-3 flex text-6xl text-white">
+        <div tw="mt-3 flex text-xl text-white">
             but you can subscribe to get notified with a DM when they go live again
           </div>
       </div>
@@ -199,13 +199,13 @@ app.frame("/:streamer/subscribe", async (c) => {
       title: "vibra",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-        <div tw="mb-20 flex text-6xl text-purple-400">
+        <div tw="mb-20 flex text-3xl text-purple-400">
           PS: this is not connected to a database yet
         </div>
-        <div tw="mb-20 flex text-6xl text-purple-400">
+        <div tw="mb-20 flex text-3xl text-purple-400">
           You subscribed to @{streamer}
         </div>
-        <div tw="mt-3 flex text-6xl text-white">
+        <div tw="mt-3 flex text-3xl text-white">
             You will receive a DM from @vibrabot.eth when they go live.
         </div>
       </div>
@@ -222,10 +222,10 @@ app.frame("/:streamer/subscribe", async (c) => {
       title: "vibra",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-        <div tw="mb-20 flex text-6xl text-purple-400">
+        <div tw="mb-20 flex text-3xl text-purple-400">
           There was an error subscribing you to this user
         </div>
-        <div tw="mt-3 flex text-6xl text-white">
+        <div tw="mt-3 flex text-3xl text-white">
             Take a screenshot and contact @jpfraneto to fix this ASAP. Help needed.
         </div>
       </div>
