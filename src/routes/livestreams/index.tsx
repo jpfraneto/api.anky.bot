@@ -92,9 +92,9 @@ app.frame("/:streamer", async (c) => {
       image: latestClipInfo.gifUrl,
       intents: [
          <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
-         <Button action={`/${streamer}/clips/start`}>▶️</Button>,
-         <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
+         <Button action={`/clips/${streamer}/${latestClipInfo.livepeerStreamId}/${latestClipInfo.index - 1}`}>▶️</Button>,
          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
+         <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
         ],
   })
   } else {
@@ -133,32 +133,35 @@ async function checkIfUserSubscribed(streamer, viewerFid) {
 async function getLatestClipFromStream(streamer) {
   // TODO: ADD LOGIC TO GET LATEST CLIP FROM THIS STREAMER
   return {
-    gifUrl: `https://github.com/jpfraneto/images/blob/main/3.gif?raw=true`,
-    index: 3
+    gifUrl: `https://github.com/jpfraneto/images/blob/main/10.gif?raw=true`,
+    index: 10,
+    livepeerStreamId: "bd58345d-a5da-4304-8b4d-7e2a7099a756"
   }
 }
 
 
-app.frame("/:streamer/clips/start", async (c) => {
-  console.log("get the first clip of this streamer")
-  const { streamer } = c.req.param();
-  const isUserSubscribed = await checkIfUserSubscribed(streamer, c.frameData?.fid)
-  const thisStreamerInfo = await getLatestClipFromStream(streamer)
-  const index = 3
-  return c.res({
-      title: "vibra",
-      image: thisStreamerInfo.gifUrl,
-      intents: [
-         <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
-         <Button action={`/stream/${streamer}/${thisStreamerInfo.index + 1}`}>▶️</Button>,
-         <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
-         <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
-        ],
-  })
-})
+// app.frame("/:streamer/clips/start", async (c) => {
+//   console.log("get the first clip of this streamer")
+//   const { streamer } = c.req.param();
+//   const isUserSubscribed = await checkIfUserSubscribed(streamer, c.frameData?.fid)
+//   const thisStreamerInfo = await getLatestClipFromStream(streamer)
+//   const index = 3
+//   return c.res({
+//       title: "vibra",
+//       image: thisStreamerInfo.gifUrl,
+//       intents: [
+//          <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
+//          <Button action={`/stream/${streamer}/${thisStreamerInfo.index + 1}`}>▶️</Button>,
+//          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
+//          <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
+//         ],
+//   })
+// })
 
-app.frame("/stream/:streamer/:index", async (c) => {
-  const { streamer, index } = c.req.param();
+app.frame("/clips/:streamer/:streamId/:index", async (c) => {
+  const { streamer, streamId, index } = c.req.param();
+  console.log("the index is: ", index)
+  // TODO: CHECK IF THIS INDEX EXISTS ON THE IMAGES
   return c.res({
       title: "vibra",
       image: `https://github.com/jpfraneto/images/blob/main/${index}.gif?raw=true`,
@@ -184,7 +187,7 @@ app.frame("/mobile-app/:streamer", async (c) => {
   })
 })
 
-app.get("/create-stream", async (c) => {
+app.get("/static/create-stream", async (c) => {
   console.log('Received request to create a new stream.');
   try {
     const timestamp = new Date().getTime();
