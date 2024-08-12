@@ -80,7 +80,8 @@ app.get("/frame-image/:streamer", async (c) => {
 });
 
 app.frame("/:streamer", async (c) => {
-  console.log("this is the entry point to the frames world of this streamer", c.req)
+  const params = c.req.param()
+  console.log("this is the entry point to the frames world of this streamer", params)
   const { streamer } = c.req.param();
   console.log("inside the streamer route", streamer)
   // console.log("IN HERE, THE STREAM ID IS: ", streamId)
