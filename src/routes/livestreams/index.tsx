@@ -86,17 +86,47 @@ app.frame("/:streamer", async (c) => {
   const buttonIndex = c?.frameData?.buttonIndex
   if(buttonIndex == 1) {
     console.log("inside the button index 1, show the last clip from the stream")
-    const latestClipInfo = await getLatestClipFromStream(streamer)
+    console.log('CHECK IF THE STREAM IS LIVE')
+    const isStreamLive = true
+    if (isStreamLive) {
+      console.log('THE STREAM IS LIVE')
+
+      const latestClipInfo = await getLatestClipFromStream(streamer)
+      return c.res({
+        title: "vibra",
+        image: latestClipInfo.gifUrl,
+        intents: [
+          <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
+          <Button action={`/clips/${streamer}/${latestClipInfo.livepeerStreamId}/${latestClipInfo.index - 1}`}>▶️</Button>,
+          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
+          <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
+          ],
+      }) 
+    } else {
+      console.log("THE STREAMER IS NOT LIVE ANYMORE")
+    // const latestClipInfo = await getLatestClipFromStream(streamer)
     return c.res({
       title: "vibra",
-      image: latestClipInfo.gifUrl,
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+        <div tw="mb-20 flex text-6xl text-purple-400">
+          @{streamer} is not live anymore
+        </div>
+        <div tw="w-full p-4 flex flex-col rounded-xl border-white bg-purple-600">
+          <div tw="mt-3 flex text-xl text-white">
+            but you can subscribe to get notified with a DM when they go live again
+          </div>
+        </div>
+      </div>
+    ),
       intents: [
          <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
-         <Button action={`/clips/${streamer}/${latestClipInfo.livepeerStreamId}/${latestClipInfo.index - 1}`}>▶️</Button>,
-         <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
+         <Button action={`/clips/${streamer}`}>Clips</Button>,
          <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
         ],
   })
+    }
+    
   } else {
     console.log("inside the button index 2")
     return c.res({
