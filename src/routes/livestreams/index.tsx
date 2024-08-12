@@ -176,7 +176,7 @@ app.frame("/:streamer/subscribe", async (c) => {
         <div tw="mb-20 flex text-6xl text-purple-400">
           You subscribed to @{streamer}
         </div>
-        <div tw="mt-3 flex text-xl text-white">
+        <div tw="mt-3 flex text-6xl text-white">
             You will receive a DM from @vibrabot.eth when they go live.
         </div>
       </div>
@@ -196,7 +196,7 @@ app.frame("/:streamer/subscribe", async (c) => {
         <div tw="mb-20 flex text-6xl text-purple-400">
           There was an error subscribing you to this user
         </div>
-        <div tw="mt-3 flex text-xl text-white">
+        <div tw="mt-3 flex text-6xl text-white">
             Take a screenshot and contact @jpfraneto to fix this ASAP. Help needed.
         </div>
       </div>
@@ -222,13 +222,13 @@ app.frame("/:streamer/unsubscribe", async (c) => {
         <div tw="mb-20 flex text-6xl text-purple-400">
           You unsubscribed from @{streamer}
         </div>
-        <div tw="mt-3 flex text-xl text-white">
+        <div tw="mt-3 flex text-6xl text-white">
             Go and tell them what they can do better the next time.
         </div>
       </div>
     ),
       intents: [
-        <Button action={`/${streamer}/unsubscribe`}>Subscribe</Button>,
+        <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
          <Button.Link href={`https://www.warpcast.com/${streamer}`}>DM {streamer}</Button.Link>,
         ],
   })
