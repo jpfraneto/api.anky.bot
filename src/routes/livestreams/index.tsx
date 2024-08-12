@@ -9,6 +9,7 @@ import { promisify } from 'util';
 import { processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
+import queryString from 'query-string';
 
 
 const execAsync = promisify(exec);
@@ -87,7 +88,9 @@ app.frame("/:streamer", async (c) => {
   if(buttonIndex == 1) {
     console.log("inside the button index 1, show the last clip from the stream")
     console.log('CHECK IF THE STREAM IS LIVE')
+    console.log("CHECK IF THE USER IS SUBSCRIBED TO THIS STREAMER")
     const isStreamLive = true
+    const isUserSubscribed = true
     if (isStreamLive) {
       console.log('THE STREAM IS LIVE')
 
@@ -96,7 +99,7 @@ app.frame("/:streamer", async (c) => {
         title: "vibra",
         image: latestClipInfo.gifUrl,
         intents: [
-          <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
+          <Button action={`/${streamer}/${isUserSubscribed? "unsubscribe" : "subscribe"}`}>{isUserSubscribed? "Unsubscribe" : "Subscribe"}</Button>,
           <Button action={`/clips/${streamer}/${latestClipInfo.livepeerStreamId}/${latestClipInfo.index - 1}`}>▶️</Button>,
           <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
           <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
@@ -120,8 +123,8 @@ app.frame("/:streamer", async (c) => {
       </div>
     ),
       intents: [
-         <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
-         <Button action={`/clips/${streamer}`}>Clips</Button>,
+        <Button action={`/${streamer}/${isUserSubscribed? "unsubscribe" : "subscribe"}`}>{isUserSubscribed? "Unsubscribe" : "Subscribe"}</Button>,
+        <Button action={`/clips/${streamer}`}>Clips</Button>,
          <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
         ],
   })
@@ -140,6 +143,118 @@ app.frame("/:streamer", async (c) => {
   })
   }
 })
+
+async function subscribeUserToStreamer (streamer: string, userFid: number) {
+    console.log("Subscribing user to streamer:", streamer, userFid);
+    return {success: true}  
+}
+
+async function unsubscribeUserToStreamer (streamer: string, userFid: number) {
+  console.log("Unsubscribing user to streamer:", streamer, userFid);
+  return {success: true}
+}
+
+app.frame("/:streamer/subscribe", async (c) => {
+  const { streamer } = c.req.param();
+  const userFid = c.frameData?.fid
+1
+  const response = await subscribeUserToStreamer(streamer, userFid!);
+  if(response.success) {
+    const qs = {
+      text: `i just subscribed to @${streamer} on /vibra and will be notified when a livestream starts.\n\ndo the same here:`,
+      'embeds[]': [
+        `https://www.vibra.so/stream/${streamer}`,
+      ],
+    };
+  
+    const shareQs = queryString.stringify(qs);
+    const warpcastRedirectLink = `https://warpcast.com/~/compose?${shareQs}`;
+    return c.res({
+      title: "vibra",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+        <div tw="mb-20 flex text-6xl text-purple-400">
+          You subscribed to @{streamer}
+        </div>
+        <div tw="mt-3 flex text-xl text-white">
+            You will receive a DM from @vibrabot.eth when they go live.
+        </div>
+      </div>
+    ),
+      intents: [
+        <Button action={`/${streamer}/unsubscribe`}>Unsubscribe</Button>,
+         <Button.Link href={`https://www.warpcast.com/vibraso.eth`}>Follow Vibra</Button.Link>,
+        <Button.Link href={warpcastRedirectLink}>Share</Button.Link>,
+        ],
+  })
+  } else {
+
+    return c.res({
+      title: "vibra",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+        <div tw="mb-20 flex text-6xl text-purple-400">
+          There was an error subscribing you to this user
+        </div>
+        <div tw="mt-3 flex text-xl text-white">
+            Take a screenshot and contact @jpfraneto to fix this ASAP. Help needed.
+        </div>
+      </div>
+    ),
+      intents: [
+         <Button.Link href={`https://www.warpcast.com/jpfraneto`}>Fix this bug</Button.Link>,
+        ],
+  })
+  }
+  
+})
+
+app.frame("/:streamer/unsubscribe", async (c) => {
+  const { streamer } = c.req.param();
+  const userFid = c.frameData?.fid
+1
+  const response = await unsubscribeUserToStreamer(streamer, userFid!);
+  if(response.success) {
+    return c.res({
+      title: "vibra",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+        <div tw="mb-20 flex text-6xl text-purple-400">
+          You unsubscribed from @{streamer}
+        </div>
+        <div tw="mt-3 flex text-xl text-white">
+            Go and tell them what they can do better the next time.
+        </div>
+      </div>
+    ),
+      intents: [
+        <Button action={`/${streamer}/unsubscribe`}>Subscribe</Button>,
+         <Button.Link href={`https://www.warpcast.com/${streamer}`}>DM {streamer}</Button.Link>,
+        ],
+  })
+  } else {
+
+    return c.res({
+      title: "vibra",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+        <div tw="mb-20 flex text-6xl text-purple-400">
+          There was an error unsubscribing you to this user
+        </div>
+        <div tw="mt-3 flex text-xl text-white">
+            Take a screenshot and contact @jpfraneto to fix this ASAP. Help needed.
+        </div>
+      </div>
+    ),
+      intents: [
+         <Button.Link href={`https://www.warpcast.com/jpfraneto`}>Fix this bug</Button.Link>,
+        ],
+  })
+  }
+})
+
+
+
 
 app.frame("/download-app/:streamer", async (c) => {
   const { streamer } = c.req.param();
@@ -168,25 +283,6 @@ async function getLatestClipFromStream(streamer) {
     livepeerStreamId: "bd58345d-a5da-4304-8b4d-7e2a7099a756"
   }
 }
-
-
-// app.frame("/:streamer/clips/start", async (c) => {
-//   console.log("get the first clip of this streamer")
-//   const { streamer } = c.req.param();
-//   const isUserSubscribed = await checkIfUserSubscribed(streamer, c.frameData?.fid)
-//   const thisStreamerInfo = await getLatestClipFromStream(streamer)
-//   const index = 3
-//   return c.res({
-//       title: "vibra",
-//       image: thisStreamerInfo.gifUrl,
-//       intents: [
-//          <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
-//          <Button action={`/stream/${streamer}/${thisStreamerInfo.index + 1}`}>▶️</Button>,
-//          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
-//          <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
-//         ],
-//   })
-// })
 
 app.frame("/clips/:streamer/:streamId/:index", async (c) => {
   const { streamer, streamId, index } = c.req.param();
