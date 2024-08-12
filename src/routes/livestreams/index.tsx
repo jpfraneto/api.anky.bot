@@ -13,13 +13,11 @@ import { fileURLToPath } from 'url';
 
 const execAsync = promisify(exec);
 
-console.log('Initializing Livepeer client...');
 const livepeer = new Livepeer({
   apiKey: process.env.LIVEPEER_API_KEY,
 });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-console.log('Livepeer client initialized.');
 const GIF_DIRECTORY = path.join(__dirname, 'generated_gifs');
 
 export const app = new Frog({
@@ -44,32 +42,38 @@ async function getFarcasterUserData(username) {
 }
 
 app.get("/frame-image/:streamer", async (c) => {
+  console.log("IIIIIN HERE")
   const { streamer } = c.req.param();
-  console.log("Generating/retrieving GIF for streamer:", streamer);
-
-  const gifPath = path.join(GIF_DIRECTORY, `${streamer}.gif`);
-
   try {
-    // Check if the GIF already exists
-    await fs.access(gifPath);
-    console.log("GIF already exists for", streamer);
-    return c.json({ imageUrl: `/generated_gifs/${streamer}.gif` });
-  } catch (error) {
-    // GIF doesn't exist, need to generate it
-    console.log("Generating new GIF for", streamer);
-
-    // Fetch user data from Farcaster
-    const userData = await getFarcasterUserData(streamer);
-    if (!userData) {
-      return c.json({ error: "User not found on Farcaster" }, 404);
+    console.log("Generating/retrieving GIF for streamer:", streamer);
+  
+    const gifPath = path.join(GIF_DIRECTORY, `${streamer}.gif`);
+  
+    try {
+      // Check if the GIF already exists
+      await fs.access(gifPath);
+      console.log("GIF already exists for", streamer);
+      return c.json({ imageUrl: `/generated_gifs/${streamer}.gif` });
+    } catch (error) {
+      // GIF doesn't exist, need to generate it
+      console.log("Generating new GIF for", streamer);
+  
+      // Fetch user data from Farcaster
+      const userData = await getFarcasterUserData(streamer);
+      if (!userData) {
+        return c.json({ error: "User not found on Farcaster" }, 404);
+      }
+  
+      // Generate the GIF
+      const staticImageUrl = userData.pfp_url; // Use the user's profile picture from Farcaster
+      const outputPath = await processAndSaveGif(staticImageUrl, streamer, gifPath);
+  
+      return c.json({ imageUrl: `/generated_gifs/${streamer}.gif` });
     }
-
-    // Generate the GIF
-    const staticImageUrl = userData.pfp_url; // Use the user's profile picture from Farcaster
-    const outputPath = await processAndSaveGif(staticImageUrl, streamer, gifPath);
-
+  } catch (error) {
     return c.json({ imageUrl: `/generated_gifs/${streamer}.gif` });
   }
+
 });
 
 app.frame("/:streamer", async (c) => {
