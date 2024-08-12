@@ -6,7 +6,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { processAndSaveGif } from '../../gif';
+import { processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
 
 const execAsync = promisify(exec);
