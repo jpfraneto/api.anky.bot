@@ -85,10 +85,11 @@ app.frame("/:streamer", async (c) => {
   // this comes from the frontend
   const buttonIndex = c?.frameData?.buttonIndex
   if(buttonIndex == 1) {
-    console.log("inside the button index 1")
+    console.log("inside the button index 1, show the last clip from the stream")
+    const latestClipInfo = await getLatestClipFromStream(streamer)
     return c.res({
       title: "vibra",
-      image: `https://github.com/jpfraneto/images/blob/main/${index}.gif?raw=true`,
+      image: latestClipInfo.gifUrl,
       intents: [
          <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
          <Button action={`/${streamer}/clips/start`}>▶️</Button>,
@@ -131,7 +132,10 @@ async function checkIfUserSubscribed(streamer, viewerFid) {
 
 async function getLatestClipFromStream(streamer) {
   // TODO: ADD LOGIC TO GET LATEST CLIP FROM THIS STREAMER
-  return `https://github.com/jpfraneto/images/blob/main/3.gif?raw=true`
+  return {
+    gifUrl: `https://github.com/jpfraneto/images/blob/main/3.gif?raw=true`,
+    index: 3
+  }
 }
 
 
@@ -139,15 +143,14 @@ app.frame("/:streamer/clips/start", async (c) => {
   console.log("get the first clip of this streamer")
   const { streamer } = c.req.param();
   const isUserSubscribed = await checkIfUserSubscribed(streamer, c.frameData?.fid)
-  const thisClipUrl = await getLatestClipFromStream(streamer)
-  console.log("inside the streamer route", streamer)
+  const thisStreamerInfo = await getLatestClipFromStream(streamer)
   const index = 3
   return c.res({
       title: "vibra",
-      image: thisClipUrl,
+      image: thisStreamerInfo.gifUrl,
       intents: [
          <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
-         <Button action={`/stream/${streamer}/${index + 1}`}>▶️</Button>,
+         <Button action={`/stream/${streamer}/${thisStreamerInfo.index + 1}`}>▶️</Button>,
          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
          <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
         ],
