@@ -139,12 +139,12 @@ app.frame("/:streamer/clips/start", async (c) => {
   console.log("get the first clip of this streamer")
   const { streamer } = c.req.param();
   const isUserSubscribed = await checkIfUserSubscribed(streamer, c.frameData?.fid)
-  const nextClipIndex = await getLatestClipFromStream(streamer)
+  const thisClipUrl = await getLatestClipFromStream(streamer)
   console.log("inside the streamer route", streamer)
   const index = 3
   return c.res({
       title: "vibra",
-      image: ,
+      image: thisClipUrl,
       intents: [
          <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
          <Button action={`/stream/${streamer}/${index + 1}`}>▶️</Button>,
