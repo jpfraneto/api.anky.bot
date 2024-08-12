@@ -129,6 +129,7 @@ app.frame("/:streamer/clips/start", async (c) => {
   console.log("get the first clip of this streamer")
   const { streamer } = c.req.param();
   console.log("inside the streamer route", streamer)
+  const index = 3
   return c.res({
       title: "vibra",
       image: `https://github.com/jpfraneto/images/blob/main/${index}.gif?raw=true`,
