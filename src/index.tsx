@@ -24,8 +24,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { uploadVideoToTheCloud, uploadGifToTheCloud } from '../utils/cloudinary';
 import { fetchCastInformationFromHash, publishCastToTheProtocol } from '../utils/cast';
 import { scrollFeedAndReply } from '../utils/anky';
-import { maiiinn } from './gif';
-maiiinn()
+
 
 // **** ROUTE IMPORTS ****
 import { app as landing } from './routes/landing'
