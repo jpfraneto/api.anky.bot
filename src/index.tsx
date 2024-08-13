@@ -823,7 +823,7 @@ async function sendProgramaticDmToSubscribers(subscribers: any) {
 //sendProgramaticDmToSubscribers([16098, 18350, 19696, 12785, 198258])
 // sendProgramaticDmToSubscribers([18350])
 
-const usersAloja = ["jpfranet", "bvdaniel"]
+const usersAloja = ["jpfraneto", "bvdaniel"]
 async function addUsersToDb(users: any){
   console.log("the users are: ", users)
   for (let user of users) {
