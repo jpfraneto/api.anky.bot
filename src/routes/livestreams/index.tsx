@@ -124,7 +124,7 @@ app.frame("/:streamer", async (c) => {
     if (isStreamLive) {
       console.log('THE STREAM IS LIVE');
       const latestClipInfo = await getLatestClipFromStream(streamer);
-
+      console.log("The latest clip info is: ", latestClipInfo)
       if (!latestClipInfo) {
         return c.res({
           title: "vibra",
@@ -143,7 +143,7 @@ app.frame("/:streamer", async (c) => {
           ],
         });
       }
-
+      
       if (!latestClipInfo.hasClips) {
         return c.res({
           title: "vibra",
