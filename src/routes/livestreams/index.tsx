@@ -212,7 +212,7 @@ app.frame("/:streamer", async (c) => {
             {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
           </Button>,
           <Button action={`/clips/${streamer}/${latestClipInfo.livepeerStreamId}/${latestClipInfo.index}`}>▶️</Button>,
-          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Watch Live 📺</Button.Link>,
+          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
           <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
         ],
       });
@@ -305,7 +305,7 @@ app.frame("/create-first-clip/:streamer/:streamId", async (c) => {
       ),
       intents: [
         <Button action={`/create-first-clip/${streamer}/${streamId}`}>Refresh</Button>,
-        <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Watch Live 📺</Button.Link>,
+        <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
         <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
       ],
     });
@@ -565,7 +565,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
         prevClip ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>◀️</Button> : null,
         nextClip ? <Button action={`/clips/${streamer}/${streamId}/${nextClip.clipIndex}`}>▶️</Button> : null,
         clip.stream.status === 'LIVE' 
-          ? <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Watch Live 📺</Button.Link>
+          ? <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>
           : <Button action={`/${streamer}`}>View Stream</Button>,
         <Button action={`/download-app/${streamer}`}>Mobile App</Button>
       ],
