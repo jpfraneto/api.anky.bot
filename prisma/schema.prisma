@@ -34,7 +34,6 @@ model Stream {
   title     String
   status    StreamStatus @default(SCHEDULED)
   playbackId String?    // Livepeer playback ID
-  streamId   String?    // Livepeer stream ID
   clipCreationIntervalId String?
 
   // Relationships
