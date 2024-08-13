@@ -790,40 +790,40 @@ serve({
 
 console.log(`Server is running on port ${port}`)
 
-async function sendProgramaticDmToSubscribers(subscribers: any) {
-  try {
-    console.log("sending programatic dcs to subscribers: ", subscribers)
-    for (let subscriber of subscribers) {
-      const uuid = uuidv4();
-      const directCastData = {
-        recipientFid: subscriber,
-        message: `${uuid}\n\nwena wena, este DC fue creado programaticamente y basicamente estamos cachando el mote de si funciona o no. Si te llego, porfa mandame un mensaje diciendo que te llego. Gracias! \n\nhttps://www.vibra.so/stream/jpfraneto`,
-        idempotencyKey: uuid
-      };
-      axios.put('https://api.warpcast.com/v2/ext-send-direct-cast', directCastData, {
-        headers: {
-          'Authorization': `Bearer ${VIBRA_SO_WARPCAST_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      .then(response => {
-        console.log(`The response after sending the DC to ${subscriber} is: `, response.data);
-      })
-      .catch(error => {
-        console.log("There was an error sending the programmatic DC")
-        console.error('Error:', error);
-        console.log("the error is: ", error.response.data)
-      });
-    }
-  } catch (error) {
+// async function sendProgramaticDmToSubscribers(subscribers: any) {
+//   try {
+//     console.log("sending programatic dcs to subscribers: ", subscribers)
+//     for (let subscriber of subscribers) {
+//       const uuid = uuidv4();
+//       const directCastData = {
+//         recipientFid: subscriber,
+//         message: `${uuid}\n\nwena wena, este DC fue creado programaticamente y basicamente estamos cachando el mote de si funciona o no. Si te llego, porfa mandame un mensaje diciendo que te llego. Gracias! \n\nhttps://www.vibra.so/stream/jpfraneto`,
+//         idempotencyKey: uuid
+//       };
+//       axios.put('https://api.warpcast.com/v2/ext-send-direct-cast', directCastData, {
+//         headers: {
+//           'Authorization': `Bearer ${VIBRA_SO_WARPCAST_API_KEY}`,
+//           'Content-Type': 'application/json'
+//         }
+//       })
+//       .then(response => {
+//         console.log(`The response after sending the DC to ${subscriber} is: `, response.data);
+//       })
+//       .catch(error => {
+//         console.log("There was an error sending the programmatic DC")
+//         console.error('Error:', error);
+//         console.log("the error is: ", error.response.data)
+//       });
+//     }
+//   } catch (error) {
     
-  }
-}
+//   }
+// }
 
 //sendProgramaticDmToSubscribers([16098, 18350, 19696, 12785, 198258])
 // sendProgramaticDmToSubscribers([18350])
 
-// const usersAloja = ["kevinmfer"]
+// const usersAloja = ["woj.eth"]
 // async function addUsersToDb(users: any){
 //   console.log("the users are: ", users)
 //   for (let user of users) {
