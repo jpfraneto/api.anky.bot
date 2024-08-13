@@ -489,40 +489,47 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
   console.log(`Fetching clip ${clipIndex} for streamer: ${streamer}, stream: ${streamId}`);
 
   try {
+    const stream = await prisma.stream.findUnique({
+      where: { streamId: streamId },
+      include: { clips: { orderBy: { clipIndex: 'desc' }, take: 1 } }
+    });
+
+    if (!stream) {
+      return c.res({
+        title: "Vibra - Stream Not Found",
+        image: (
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+            <div tw="mb-20 flex text-3xl text-purple-400">
+              Stream not found
+            </div>
+            <div tw="mt-3 flex text-3xl text-white">
+              This stream doesn't exist or has been deleted.
+            </div>
+          </div>
+        ),
+        intents: [
+          <Button action={`/${streamer}`}>Back to Streamer</Button>,
+        ],
+      });
+    }
+
+    // Check if it's been more than 5 minutes since the last clip was created
+    const lastClip = stream.clips[0];
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    if (stream.status === 'LIVE' && (!lastClip || lastClip.createdAt < fiveMinutesAgo)) {
+      // Start a new clip creation process without awaiting it
+      startClipCreationProcess(streamId);
+    }
+
     const clip = await prisma.clip.findFirst({
       where: { 
-        stream: { streamId: streamId },
+        streamId: streamId,
         clipIndex: clipIndex
       },
       include: { stream: true }
     });
 
     if (!clip) {
-      // Check if the stream exists and clips are being created
-      const stream = await prisma.stream.findUnique({
-        where: { streamId: streamId }
-      });
-
-      if (stream && stream.clipCreationIntervalId) {
-        return c.res({
-          title: "Vibra - Clip Being Created",
-          image: (
-            <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-              <div tw="mb-20 flex text-3xl text-purple-400">
-                Clip is being created
-              </div>
-              <div tw="mt-3 flex text-3xl text-white">
-                Please check back in a few minutes.
-              </div>
-            </div>
-          ),
-          intents: [
-            <Button action={`/clips/${streamer}/${streamId}/${clipIndex}`}>Refresh</Button>,
-            <Button action={`/${streamer}`}>Back to Stream</Button>,
-          ],
-        });
-      }
-
       return c.res({
         title: "Vibra - Clip Not Found",
         image: (
@@ -544,7 +551,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
 
     const prevClip = await prisma.clip.findFirst({
       where: { 
-        stream: { streamId: streamId },
+        streamId: streamId,
         clipIndex: { lt: clip.clipIndex }
       },
       orderBy: { clipIndex: 'desc' }
@@ -552,19 +559,29 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
 
     const nextClip = await prisma.clip.findFirst({
       where: { 
-        stream: { streamId: streamId },
+        streamId: streamId,
         clipIndex: { gt: clip.clipIndex }
       },
       orderBy: { clipIndex: 'asc' }
     });
 
+    let message = "";
+    if (!nextClip && stream.status === 'LIVE') {
+      message = "You're watching the latest clip. New clips are created every 5 minutes.";
+    }
+
     return c.res({
       title: `Vibra - ${streamer}'s Clip`,
-      image: clip.cloudinaryUrl,
+      image: (
+        <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
+          <img src={clip.cloudinaryUrl} tw="max-w-full max-h-[80%] object-contain" />
+          {message && <div tw="mt-4 text-xl text-center">{message}</div>}
+        </div>
+      ),
       intents: [
         prevClip ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>◀️</Button> : null,
         nextClip ? <Button action={`/clips/${streamer}/${streamId}/${nextClip.clipIndex}`}>▶️</Button> : null,
-        clip.stream.status === 'LIVE' 
+        stream.status === 'LIVE' 
           ? <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>
           : <Button action={`/${streamer}`}>View Stream</Button>,
         <Button action={`/download-app/${streamer}`}>Mobile App</Button>
