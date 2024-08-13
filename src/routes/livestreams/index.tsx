@@ -74,7 +74,6 @@ app.get("/generate-gif/:streamer", apiKeyAuth, async (c) => {
 });
 
 app.get("/frame-image/:streamer", async (c) => {
-  console.log("IIIIIN HERE")
   const { streamer } = c.req.param();
   try {
     console.log("Generating/retrieving GIF for streamer:", streamer);
@@ -111,7 +110,8 @@ app.get("/frame-image/:streamer", async (c) => {
 
 app.frame("/:streamer", async (c) => {
   const { streamer } = c.req.param();
-  console.log("inside the streamer route", streamer);
+  const { streamId } = c.req.query()
+  console.log("inside the streamer route", streamer, streamId);
   const buttonIndex = c?.frameData?.buttonIndex;
   const userFid = c.frameData?.fid;
 
@@ -126,7 +126,7 @@ app.frame("/:streamer", async (c) => {
       }
     );
     const streamData = response.data;
-    const isStreamLive = streamData.status == "live";
+    const isStreamLive = streamData?.status == "live";
     console.log("The stream is live:", isStreamLive);
 
     const isUserSubscribed = await checkIfUserSubscribed(streamer, userFid!);
@@ -134,7 +134,7 @@ app.frame("/:streamer", async (c) => {
 
     if (isStreamLive) {
       console.log('THE STREAM IS LIVE');
-      const latestClipInfo = await getLatestClipFromStream(streamer);
+      const latestClipInfo = await getLatestClipFromStream(streamer, streamId);
       console.log("The latest clip info is: ", latestClipInfo)
       if (!latestClipInfo) {
         return c.res({
@@ -160,10 +160,10 @@ app.frame("/:streamer", async (c) => {
           title: "vibra",
           image: (
             <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-              <div tw="mb-20 flex text-3xl text-purple-400">
+              <div tw="mb-20 flex text-5xl text-purple-400">
                 @{streamer} is live!
               </div>
-              <div tw="mt-3 flex text-3xl text-white">
+              <div tw="mt-3 flex text-5xl text-white">
                 Be the first to create a clip!
               </div>
             </div>
@@ -382,19 +382,45 @@ app.frame("/download-app/:streamer", async (c) => {
 
 app.frame("/clips/:streamer/:streamId/:index", async (c) => {
   const { streamer, streamId, index } = c.req.param();
-  console.log("Fetching clip for streamer:", streamer, "stream:", streamId, "index:", index);
+  const clipIndex = parseInt(index);
+
+  console.log(`Fetching clip ${clipIndex} for streamer: ${streamer}, stream: ${streamId}`);
 
   try {
     const clip = await prisma.clip.findFirst({
       where: { 
-        stream: { id: streamId },
-        clipIndex: parseInt(index)
+        stream: { streamId: streamId },
+        clipIndex: clipIndex
       },
-      orderBy: { clipIndex: 'desc' }
+      include: { stream: true }
     });
 
     if (!clip) {
-      console.log("No clip found for the given index");
+      // Check if the stream exists and clips are being created
+      const stream = await prisma.stream.findUnique({
+        where: { streamId: streamId }
+      });
+
+      if (stream && stream.clipCreationIntervalId) {
+        return c.res({
+          title: "Vibra - Clip Being Created",
+          image: (
+            <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+              <div tw="mb-20 flex text-3xl text-purple-400">
+                Clip is being created
+              </div>
+              <div tw="mt-3 flex text-3xl text-white">
+                Please check back in a few minutes.
+              </div>
+            </div>
+          ),
+          intents: [
+            <Button action={`/clips/${streamer}/${streamId}/${clipIndex}`}>Refresh</Button>,
+            <Button action={`/${streamer}`}>Back to Stream</Button>,
+          ],
+        });
+      }
+
       return c.res({
         title: "Vibra - Clip Not Found",
         image: (
@@ -408,7 +434,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
           </div>
         ),
         intents: [
-          <Button action={`/clips/${streamer}/${streamId}/${parseInt(index) - 1}`}>Previous Clip</Button>,
+          <Button action={`/clips/${streamer}/${streamId}/${clipIndex - 1}`}>Previous Clip</Button>,
           <Button action={`/${streamer}`}>Back to Stream</Button>,
         ],
       });
@@ -416,7 +442,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
 
     const prevClip = await prisma.clip.findFirst({
       where: { 
-        stream: { id: streamId },
+        stream: { streamId: streamId },
         clipIndex: { lt: clip.clipIndex }
       },
       orderBy: { clipIndex: 'desc' }
@@ -424,7 +450,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
 
     const nextClip = await prisma.clip.findFirst({
       where: { 
-        stream: { id: streamId },
+        stream: { streamId: streamId },
         clipIndex: { gt: clip.clipIndex }
       },
       orderBy: { clipIndex: 'asc' }
@@ -436,7 +462,9 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
       intents: [
         prevClip ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>◀️</Button> : null,
         nextClip ? <Button action={`/clips/${streamer}/${streamId}/${nextClip.clipIndex}`}>▶️</Button> : null,
-        <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
+        clip.stream.status === 'LIVE' 
+          ? <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Watch Live 📺</Button.Link>
+          : <Button action={`/${streamer}`}>View Stream</Button>,
         <Button action={`/download-app/${streamer}`}>Mobile App</Button>
       ],
     });

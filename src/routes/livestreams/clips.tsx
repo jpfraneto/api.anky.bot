@@ -179,43 +179,101 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
     }, 60000); // Run every 60 seconds
   }
 
-  export async function getLatestClipFromStream(streamer: string) {
+  export async function getLatestClipFromStream(streamer: string, streamId: string) {
     try {
-      // First, find the latest stream for this streamer
-      const latestStream = await prisma.stream.findFirst({
-        where: { user: { username: streamer } },
-        orderBy: { startedAt: 'desc' },
+      // Find or create the stream
+      const thisStream = await prisma.stream.upsert({
+        where: { streamId: streamId },
+        update: {},
+        create: {
+          streamId: streamId,
+          user: { connect: { username: streamer } },
+          status: 'LIVE'
+        },
         include: { clips: { orderBy: { clipIndex: 'desc' }, take: 1 } }
       });
   
-      if (!latestStream) {
-        console.log(`No streams found for streamer: ${streamer}`);
-        return  {
-          hasClips: false,
-          streamId: "streamid",
-          playbackId: "hello world"
-        };
-      }
-  
-      if (latestStream.clips.length === 0) {
-        console.log(`No clips found for the latest stream of ${streamer}`);
+      if (thisStream.clips.length === 0) {
+        console.log(`No clips found for the stream of ${streamer}. Starting clip creation process.`);
+        startClipCreationProcess(streamId);
         return {
           hasClips: false,
-          streamId: latestStream.id,
-          playbackId: latestStream.playbackId
+          streamId: streamId,
         };
       }
   
-      const latestClip = latestStream.clips[0];
+      const latestClip = thisStream.clips[0];
       return {
         hasClips: true,
         gifUrl: latestClip.cloudinaryUrl,
         index: latestClip.clipIndex,
-        livepeerStreamId: latestStream.id,
-        playbackId: latestStream.playbackId
+        livepeerStreamId: streamId
       };
     } catch (error) {
       console.error("Error in getLatestClipFromStream:", error);
       return null;
+    }
+  }
+
+  export async function startClipCreationProcess(streamId: string) {
+    console.log(`Starting clip creation process for stream ${streamId}`);
+  
+    const createClip = async () => {
+      try {
+        const stream = await prisma.stream.findUnique({
+          where: { streamId: streamId },
+          include: { clips: { orderBy: { clipIndex: 'desc' } } }
+        });
+  
+        if (!stream) {
+          console.log(`Stream ${streamId} not found. Stopping clip creation process.`);
+          clearInterval(intervalId);
+          return;
+        }
+  
+        if (stream.status !== 'LIVE') {
+          console.log(`Stream ${streamId} is no longer live. Stopping clip creation process.`);
+          clearInterval(intervalId);
+          return;
+        }
+  
+        await createClipAndStoreLocally(stream.playbackId, streamId);
+  
+        // If there are more than 8 clips, delete the oldest one
+        if (stream.clips.length >= 8) {
+          const oldestClip = stream.clips[stream.clips.length - 1];
+          await prisma.clip.delete({ where: { id: oldestClip.id } });
+          console.log(`Deleted oldest clip for stream ${streamId}`);
+        }
+      } catch (error) {
+        console.error(`Error in clip creation process for stream ${streamId}:`, error);
+      }
+    };
+  
+    // Create a clip immediately
+    await createClip();
+  
+    // Then create a clip every 5 minutes
+    const intervalId = setInterval(createClip, 5 * 60 * 1000);
+  
+    // Store the interval ID so we can clear it later if needed
+    await prisma.stream.update({
+      where: { streamId: streamId },
+      data: { clipCreationIntervalId: intervalId.toString() }
+    });
+  }
+  
+  export async function stopClipCreationProcess(streamId: string) {
+    const stream = await prisma.stream.findUnique({
+      where: { streamId: streamId }
+    });
+  
+    if (stream && stream.clipCreationIntervalId) {
+      clearInterval(parseInt(stream.clipCreationIntervalId));
+      await prisma.stream.update({
+        where: { streamId: streamId },
+        data: { clipCreationIntervalId: null }
+      });
+      console.log(`Stopped clip creation process for stream ${streamId}`);
     }
   }
