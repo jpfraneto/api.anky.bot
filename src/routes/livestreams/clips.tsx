@@ -190,7 +190,11 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
   
       if (!latestStream) {
         console.log(`No streams found for streamer: ${streamer}`);
-        return null;
+        return  {
+          hasClips: false,
+          streamId: "streamid",
+          playbackId: "hello world"
+        };
       }
   
       if (latestStream.clips.length === 0) {
