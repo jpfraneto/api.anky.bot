@@ -110,12 +110,12 @@ app.get("/frame-image/:streamer", async (c) => {
 
 app.frame("/:streamer", async (c) => {
   const { streamer } = c.req.param();
-  const { streamId } = c.req.query()
+  const { streamId, root } = c.req.query()
   console.log("inside the streamer route", streamer, streamId);
   const buttonIndex = c?.frameData?.buttonIndex;
   const userFid = c.frameData?.fid;
 
-  if (buttonIndex == 1) {
+  if (buttonIndex == 1 || root) {
     const response = await axios.get(
       `${VIBRA_LIVESTREAMS_API}/livestreams/info?handle=${streamer}`,
       {
@@ -266,12 +266,12 @@ app.frame("/:streamer/subscribe", async (c) => {
     return c.res({
       title: "vibra",
       image: (
-        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+        <div tw="flex h-full w-full flex-col w-5/6 px-8 items-center justify-center bg-black text-white">
           <div tw="mb-20 flex text-3xl text-purple-400">
             You subscribed to @{streamer}
           </div>
           <div tw="mt-3 flex text-3xl text-white">
-            You will receive a DM from @vibrabot.eth when they go live.
+            You will receive a DM from @vibraso.eth when they go live.
           </div>
         </div>
       ),
@@ -341,7 +341,7 @@ app.frame("/:streamer/unsubscribe", async (c) => {
       ),
       intents: [
         <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
-        <Button action={`/${streamer}`}>@{streamer}</Button>,
+        <Button action={`/${streamer}?root=true`}>@{streamer}</Button>,
         <Button.Link href={`https://www.warpcast.com/${streamer}`}>DM {streamer}</Button.Link>,
       ],
     });
