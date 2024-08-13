@@ -26,7 +26,7 @@ model User {
 }
 
 model Stream {
-  id        String   @id @default(uuid())
+  streamId        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   startedAt DateTime?
