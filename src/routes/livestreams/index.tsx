@@ -13,6 +13,7 @@ import queryString from 'query-string';
 import { getLatestClipFromStream, startClippingProcess } from './clips';
 import prisma from '../../../utils/prismaClient';
 import { checkIfUserSubscribed, subscribeUserToStreamer, unsubscribeUserFromStreamer } from './subscriptions';
+import { apiKeyAuth } from '../../middleware/auth';
 
 
 const execAsync = promisify(exec);
@@ -61,6 +62,16 @@ async function getFarcasterUserData(username) {
     return null;
   }
 }
+
+app.get("/generate-gif/:streamer", apiKeyAuth, async (c) => {
+  console.log("IIIIIN HERE")
+  const { streamer } = c.req.param();
+  try {
+    return c.json({ message: `received the message to create the account of ${streamer}` });
+  } catch (error) {
+    return c.json({ message: `there was an error with the streamer` });
+  }
+});
 
 app.get("/frame-image/:streamer", async (c) => {
   console.log("IIIIIN HERE")
