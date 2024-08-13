@@ -10,6 +10,9 @@ import { processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
 import queryString from 'query-string';
+import { getLatestClipFromStream, startClippingProcess } from './clips';
+import prisma from '../../../utils/prismaClient';
+import { checkIfUserSubscribed, subscribeUserToStreamer, unsubscribeUserFromStreamer } from './subscriptions';
 
 
 const execAsync = promisify(exec);
@@ -97,11 +100,11 @@ app.get("/frame-image/:streamer", async (c) => {
 
 app.frame("/:streamer", async (c) => {
   const { streamer } = c.req.param();
-  const { streamId } = c.req.query()
-  console.log("inside the streamer route", streamer, streamId)
-  const buttonIndex = c?.frameData?.buttonIndex
-  if(buttonIndex == 1) {
+  console.log("inside the streamer route", streamer);
+  const buttonIndex = c?.frameData?.buttonIndex;
+  const userFid = c.frameData?.fid;
 
+  if (buttonIndex == 1) {
     const response = await axios.get(
       `${VIBRA_LIVESTREAMS_API}/livestreams/info?handle=${streamer}`,
       {
@@ -112,80 +115,134 @@ app.frame("/:streamer", async (c) => {
       }
     );
     const streamData = response.data;
-    const isStreamLive = streamData.status == "live"
-    console.log("The is stream live is: ", isStreamLive)
-    // TODO: CHECK IF THE USER HAS THEIR PROFILE GIF CREATED
+    const isStreamLive = streamData.status == "live";
+    console.log("The stream is live:", isStreamLive);
 
-    console.log("CHECK IF THE USER IS SUBSCRIBED TO THIS STREAMER")
-    
-    const isUserSubscribed = false
+    const isUserSubscribed = await checkIfUserSubscribed(streamer, userFid!);
+    console.log("Is user subscribed:", isUserSubscribed);
+
     if (isStreamLive) {
-      console.log('THE STREAM IS LIVE')
+      console.log('THE STREAM IS LIVE');
+      const latestClipInfo = await getLatestClipFromStream(streamer);
 
-      const latestClipInfo = await getLatestClipFromStream(streamer)
+      if (!latestClipInfo) {
+        return c.res({
+          title: "vibra",
+          image: (
+            <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+              <div tw="mb-20 flex text-3xl text-purple-400">
+                Error fetching stream data
+              </div>
+              <div tw="mt-3 flex text-3xl text-white">
+                Please try again later
+              </div>
+            </div>
+          ),
+          intents: [
+            <Button action={`/${streamer}`}>Retry</Button>,
+          ],
+        });
+      }
+
+      if (!latestClipInfo.hasClips) {
+        return c.res({
+          title: "vibra",
+          image: (
+            <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+              <div tw="mb-20 flex text-3xl text-purple-400">
+                @{streamer} is live!
+              </div>
+              <div tw="mt-3 flex text-3xl text-white">
+                Be the first to create a clip!
+              </div>
+            </div>
+          ),
+          intents: [
+            <Button action={`/${streamer}/${isUserSubscribed ? "unsubscribe" : "subscribe"}`}>
+              {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
+            </Button>,
+            <Button action={`/create-first-clip/${streamer}/${latestClipInfo.streamId}`}>🎬</Button>,
+            <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
+            <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
+          ],
+        });
+      }
+
       return c.res({
         title: "vibra",
         image: latestClipInfo.gifUrl,
         intents: [
-          <Button action={`/${streamer}/${isUserSubscribed? "unsubscribe" : "subscribe"}`}>{isUserSubscribed? "Unsubscribe" : "Subscribe"}</Button>,
-          <Button action={`/clips/${streamer}/${latestClipInfo.livepeerStreamId}/${latestClipInfo.index - 1}`}>▶️</Button>,
-          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
+          <Button action={`/${streamer}/${isUserSubscribed ? "unsubscribe" : "subscribe"}`}>
+            {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
+          </Button>,
+          <Button action={`/clips/${streamer}/${latestClipInfo.livepeerStreamId}/${latestClipInfo.index}`}>▶️</Button>,
+          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Watch Live 📺</Button.Link>,
           <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
-          ],
-      }) 
-    } else {
-      console.log("THE STREAMER IS NOT LIVE ANYMORE")
-    // const latestClipInfo = await getLatestClipFromStream(streamer)
-    return c.res({
-      title: "vibra",
-      image: (
-        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-        <div tw="mb-20 flex text-xl text-purple-400">
-          @{streamer} is not live anymore
-        </div>
-        <div tw="mt-3 flex text-xl text-white">
-            but you can subscribe to get notified with a DM when they go live again
-          </div>
-      </div>
-    ),
-      intents: [
-        <Button action={`/${streamer}/${isUserSubscribed? "unsubscribe" : "subscribe"}`}>{isUserSubscribed? "Unsubscribe" : "Subscribe"}</Button>,
-        <Button action={`/clips/${streamer}`}>Clips</Button>,
-         <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
         ],
-  })
+      });
+    } else {
+      console.log("THE STREAMER IS NOT LIVE ANYMORE");
+      return c.res({
+        title: "vibra",
+        image: (
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+            <div tw="mb-20 flex text-xl text-purple-400">
+              @{streamer} is not live anymore
+            </div>
+            <div tw="mt-3 flex text-xl text-white">
+              Subscribe to get notified when they go live again
+            </div>
+          </div>
+        ),
+        intents: [
+          <Button action={`/${streamer}/${isUserSubscribed ? "unsubscribe" : "subscribe"}`}>
+            {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
+          </Button>,
+          <Button action={`/clips/${streamer}`}>View Clips</Button>,
+          <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
+        ],
+      });
     }
-    
   } else {
-    console.log("inside the button index 2")
+    console.log("inside the button index 2");
     return c.res({
       title: "anky",
       image: "https://github.com/jpfraneto/images/blob/main/vibra-square.png?raw=true",
       intents: [
-         <Button action={`/${streamer}`}>Watch Stream</Button>,
-         <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
-         <Button.Link href="https://www.vibra.so/android">android</Button.Link>
-        ],
-  })
+        <Button action={`/${streamer}`}>Watch Stream</Button>,
+        <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
+        <Button.Link href="https://www.vibra.so/android">Android</Button.Link>,
+      ],
+    });
   }
-})
+});
 
-async function subscribeUserToStreamer (streamer: string, userFid: number) {
-    console.log("Subscribing user to streamer:", streamer, userFid);
-    return {success: true}  
-}
-
-async function unsubscribeUserToStreamer (streamer: string, userFid: number) {
-  console.log("Unsubscribing user to streamer:", streamer, userFid);
-  return {success: true}
-}
 
 app.frame("/:streamer/subscribe", async (c) => {
   const { streamer } = c.req.param();
-  const userFid = c.frameData?.fid
-1
-  const response = await subscribeUserToStreamer(streamer, userFid!);
-  if(response.success) {
+  const userFid = c.frameData?.fid;
+
+  if (!userFid) {
+    return c.res({
+      title: "Error",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mb-20 flex text-3xl text-purple-400">
+            Unable to identify user
+          </div>
+          <div tw="mt-3 flex text-3xl text-white">
+            Please try again or contact support
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/${streamer}`}>Back to Stream</Button>,
+      ],
+    });
+  }
+
+  const response = await subscribeUserToStreamer(streamer, userFid);
+  if (response.success) {
     const qs = {
       text: `i just subscribed to @${streamer} on /vibra and will be notified when a livestream starts.\n\ndo the same here:`,
       'embeds[]': [
@@ -199,92 +256,104 @@ app.frame("/:streamer/subscribe", async (c) => {
       title: "vibra",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-        <div tw="mb-20 flex text-3xl text-purple-400">
-          PS: this is not connected to a database yet
-        </div>
-        <div tw="mb-20 flex text-3xl text-purple-400">
-          You subscribed to @{streamer}
-        </div>
-        <div tw="mt-3 flex text-3xl text-white">
+          <div tw="mb-20 flex text-3xl text-purple-400">
+            You subscribed to @{streamer}
+          </div>
+          <div tw="mt-3 flex text-3xl text-white">
             You will receive a DM from @vibrabot.eth when they go live.
+          </div>
         </div>
-      </div>
-    ),
+      ),
       intents: [
         <Button action={`/${streamer}/unsubscribe`}>Unsubscribe</Button>,
         <Button.Link href={`https://www.warpcast.com/vibraso.eth`}>Follow Vibra</Button.Link>,
         <Button.Link href={warpcastRedirectLink}>Share</Button.Link>,
-        ],
-  })
+      ],
+    });
   } else {
-
-    return c.res({
-      title: "vibra",
-      image: (
-        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-        <div tw="mb-20 flex text-3xl text-purple-400">
-          There was an error subscribing you to this user
-        </div>
-        <div tw="mt-3 flex text-3xl text-white">
-            Take a screenshot and contact @jpfraneto to fix this ASAP. Help needed.
-        </div>
-      </div>
-    ),
-      intents: [
-         <Button.Link href={`https://www.warpcast.com/jpfraneto`}>Fix this bug</Button.Link>,
-        ],
-  })
-  }
-  
-})
-
-app.frame("/:streamer/unsubscribe", async (c) => {
-  const { streamer } = c.req.param();
-  const userFid = c.frameData?.fid
-1
-  const response = await unsubscribeUserToStreamer(streamer, userFid!);
-  if(response.success) {
     return c.res({
       title: "vibra",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
           <div tw="mb-20 flex text-3xl text-purple-400">
-          PS: this is not connected to a database yet
+            There was an error subscribing you to this user
+          </div>
+          <div tw="mt-3 flex text-3xl text-white">
+            Please try again or contact support if the issue persists.
+          </div>
         </div>
-        <div tw="mb-20 flex text-3xl text-purple-400">
-          You unsubscribed from @{streamer}
-        </div>
-        <div tw="mt-3 flex text-3xl text-white">
-            Go and tell them what they can do better the next time.
-        </div>
-      </div>
-    ),
+      ),
       intents: [
-        <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
-        <Button action={`/${streamer}`}>@{streamer}</Button>,
-         <Button.Link href={`https://www.warpcast.com/${streamer}`}>DM {streamer}</Button.Link>,
-        ],
-  })
-  } else {
+        <Button action={`/${streamer}`}>Back to Stream</Button>,
+        <Button.Link href={`https://www.warpcast.com/jpfraneto`}>Contact Support</Button.Link>,
+      ],
+    });
+  }
+});
 
+app.frame("/:streamer/unsubscribe", async (c) => {
+  const { streamer } = c.req.param();
+  const userFid = c.frameData?.fid;
+
+  if (!userFid) {
+    return c.res({
+      title: "Error",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mb-20 flex text-3xl text-purple-400">
+            Unable to identify user
+          </div>
+          <div tw="mt-3 flex text-3xl text-white">
+            Please try again or contact support
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/${streamer}`}>Back to Stream</Button>,
+      ],
+    });
+  }
+
+  const response = await unsubscribeUserFromStreamer(streamer, userFid);
+  if (response.success) {
     return c.res({
       title: "vibra",
       image: (
         <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-        <div tw="mb-20 flex text-3xl text-purple-400">
-          There was an error unsubscribing you to this user
+          <div tw="mb-20 flex text-3xl text-purple-400">
+            You unsubscribed from @{streamer}
+          </div>
+          <div tw="mt-3 flex text-3xl text-white">
+            You will no longer receive notifications when they go live.
+          </div>
         </div>
-        <div tw="mt-3 flex text-3xl text-white">
-            Take a screenshot and contact @jpfraneto to fix this ASAP. Help needed.
-        </div>
-      </div>
-    ),
+      ),
       intents: [
-         <Button.Link href={`https://www.warpcast.com/jpfraneto`}>Fix this bug</Button.Link>,
-        ],
-  })
+        <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
+        <Button action={`/${streamer}`}>@{streamer}</Button>,
+        <Button.Link href={`https://www.warpcast.com/${streamer}`}>DM {streamer}</Button.Link>,
+      ],
+    });
+  } else {
+    return c.res({
+      title: "vibra",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mb-20 flex text-3xl text-purple-400">
+            There was an error unsubscribing you from this user
+          </div>
+          <div tw="mt-3 flex text-3xl text-white">
+            Please try again or contact support if the issue persists.
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/${streamer}`}>Back to Stream</Button>,
+        <Button.Link href={`https://www.warpcast.com/jpfraneto`}>Contact Support</Button.Link>,
+      ],
+    });
   }
-})
+});
 
 app.frame("/download-app/:streamer", async (c) => {
   const { streamer } = c.req.param();
@@ -300,35 +369,86 @@ app.frame("/download-app/:streamer", async (c) => {
   })
 })
 
-async function checkIfUserSubscribed(streamer, viewerFid) {
-  // TODO: ADD LOGIC TO CHECK IF THE USER IS SUBSCRIBED
-  return true
-}
-
-async function getLatestClipFromStream(streamer) {
-  // TODO: ADD LOGIC TO GET LATEST CLIP FROM THIS STREAMER
-  return {
-    gifUrl: `https://github.com/jpfraneto/images/blob/main/10.gif?raw=true`,
-    index: 10,
-    livepeerStreamId: "bd58345d-a5da-4304-8b4d-7e2a7099a756"
-  }
-}
-
 app.frame("/clips/:streamer/:streamId/:index", async (c) => {
   const { streamer, streamId, index } = c.req.param();
-  console.log("the index is: ", index)
-  // TODO: CHECK IF THIS INDEX EXISTS ON THE IMAGES
-  return c.res({
-      title: "vibra",
-      image: `https://github.com/jpfraneto/images/blob/main/${index}.gif?raw=true`,
-      intents: [
-         <Button action={`/stream/${streamer}/${+index-1}`}>◀️</Button>,
-         <Button action={`/stream/${streamer}/${+index+1}`}>▶️</Button>,
-         <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>live 📺</Button.Link>,
-         <Button action={`/download-app/${streamer}`}>Mobile App</Button>
+  console.log("Fetching clip for streamer:", streamer, "stream:", streamId, "index:", index);
+
+  try {
+    const clip = await prisma.clip.findFirst({
+      where: { 
+        stream: { id: streamId },
+        clipIndex: parseInt(index)
+      },
+      orderBy: { clipIndex: 'desc' }
+    });
+
+    if (!clip) {
+      console.log("No clip found for the given index");
+      return c.res({
+        title: "Vibra - Clip Not Found",
+        image: (
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+            <div tw="mb-20 flex text-3xl text-purple-400">
+              Clip not found
+            </div>
+            <div tw="mt-3 flex text-3xl text-white">
+              This clip doesn't exist or hasn't been processed yet.
+            </div>
+          </div>
+        ),
+        intents: [
+          <Button action={`/clips/${streamer}/${streamId}/${parseInt(index) - 1}`}>Previous Clip</Button>,
+          <Button action={`/${streamer}`}>Back to Stream</Button>,
         ],
-  })
-})
+      });
+    }
+
+    const prevClip = await prisma.clip.findFirst({
+      where: { 
+        stream: { id: streamId },
+        clipIndex: { lt: clip.clipIndex }
+      },
+      orderBy: { clipIndex: 'desc' }
+    });
+
+    const nextClip = await prisma.clip.findFirst({
+      where: { 
+        stream: { id: streamId },
+        clipIndex: { gt: clip.clipIndex }
+      },
+      orderBy: { clipIndex: 'asc' }
+    });
+
+    return c.res({
+      title: `Vibra - ${streamer}'s Clip`,
+      image: clip.cloudinaryUrl,
+      intents: [
+        prevClip ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>◀️</Button> : null,
+        nextClip ? <Button action={`/clips/${streamer}/${streamId}/${nextClip.clipIndex}`}>▶️</Button> : null,
+        <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
+        <Button action={`/download-app/${streamer}`}>Mobile App</Button>
+      ],
+    });
+  } catch (error) {
+    console.error("Error fetching clip:", error);
+    return c.res({
+      title: "Vibra - Error",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mb-20 flex text-3xl text-purple-400">
+            Error fetching clip
+          </div>
+          <div tw="mt-3 flex text-3xl text-white">
+            An error occurred while fetching the clip. Please try again later.
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/${streamer}`}>Back to Stream</Button>,
+      ],
+    });
+  }
+});
 
 
 app.get("/static/create-stream", async (c) => {
@@ -345,16 +465,16 @@ app.get("/static/create-stream", async (c) => {
     const stream = response.stream
     console.log(`Stream created successfully:`, stream);
 
-    console.log(`Stream created successfully. Stream ID: ${stream.id}, Playback ID: ${stream.playbackId}`);
+    console.log(`Stream created successfully. Stream ID: ${stream?.id}, Playback ID: ${stream?.playbackId}`);
 
     console.log('Starting the clipping process...');
-    startClippingProcess(stream.playbackId, stream.id);
+    startClippingProcess(stream?.playbackId!, stream?.id!);
 
     console.log('Sending response to client.');
     return c.json({
       success: true,
-      streamId: stream.id,
-      playbackId: stream.playbackId,
+      streamId: stream?.id,
+      playbackId: stream?.playbackId,
     });
   } catch (error) {
     console.error("Error creating stream:", error);
@@ -365,127 +485,3 @@ app.get("/static/create-stream", async (c) => {
   }
 });
 
-async function startClippingProcess(playbackId: string, streamId: string) {
-  console.log(`Setting up interval for clipping process. Playback ID: ${playbackId}`);
-  setInterval(async () => {
-    console.log('Interval triggered. Creating new clip...');
-    try {
-      await createClipAndStoreLocally(playbackId, streamId);
-    } catch (error) {
-      console.error("Error in clipping process:", error);
-    }
-  }, 60000); // Run every 60 seconds
-}
-
-async function createClipAndStoreLocally(playbackId: string, streamId: string) {
-    console.log(`Starting clip creation process for stream ID: ${streamId}`);
-    try {
-      const endTime = Date.now();
-      const startTime = endTime - 30000; // 30 seconds before
-      console.log(`Clip time range: ${new Date(startTime).toISOString()} to ${new Date(endTime).toISOString()}`);
-      const streamResult = await livepeer.stream.get(streamId);
-        console.log('Stream result:', streamResult);
-      console.log('Calling Livepeer API to create clip...', endTime, startTime);
-      const clipResult = await livepeer.stream.createClip({
-        playbackId,
-        startTime,
-        endTime: startTime + 30000, // 30 seconds
-        name: `Clip_${endTime}`,
-      });
-      console.log("The clip was created clip", clipResult)
-      const clipData = clipResult.data
-      console.log(`Clip created. Clip asset ID: ${clipData?.asset.id}`);
-  
-      console.log('Waiting for asset to be ready...');
-      const asset = await waitForAssetReady(clipData?.asset.id!);
-      console.log('Asset is ready for download.');
-  
-      console.log(`Downloading clip from URL: ${asset.downloadUrl}`);
-      const videoPath = await downloadClip(asset.downloadUrl);
-      console.log(`Clip downloaded and saved to: ${videoPath}`);
-  
-      console.log('Creating GIF from the downloaded clip...');
-      const gifPath = await createGifFromVideo(videoPath);
-      console.log(`GIF created and saved to: ${gifPath}`);
-
-      // UPLOAD GIF TO AMAZON S3
-  
-      console.log(`Cleaning up temporary video file: ${videoPath}`);
-      await fs.unlink(videoPath);
-      console.log('Temporary video file deleted.');
-  
-      console.log(`GIF creation process completed for clip from ${new Date(startTime).toISOString()} to ${new Date(endTime).toISOString()}`);
-    } catch (error) {
-      console.error("Error in createClipAndStoreLocally:", error);
-    }
-  }
-
-async function waitForAssetReady(assetId: string): Promise<any> {
-  console.log(`Waiting for asset ${assetId} to be ready...`);
-  let attempts = 0;
-  while (true) {
-    attempts++;
-    console.log(`Checking asset status. Attempt ${attempts}...`);
-    const response = await livepeer.asset.get(assetId);
-    const asset = response.asset
-    console.log("IN HEREEEEEE, the asset is: ", asset)
-    if (asset?.status?.phase === "ready") {
-      console.log(`Asset ${assetId} is ready after ${attempts} attempts.`);
-      return asset;
-    }
-    console.log(`Asset not ready. Current status: ${asset?.status?.phase}. Waiting 5 seconds before next check.`);
-    await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds before checking again
-  }
-}
-
-async function downloadClip(url: string): Promise<string> {
-  console.log(`Starting download of clip from URL: ${url}`);
-  const response = await fetch(url);
-  const arrayBuffer = await response.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-
-  const tempDir = path.join(process.cwd(), 'temp');
-  console.log(`Ensuring temporary directory exists: ${tempDir}`);
-  await fs.mkdir(tempDir, { recursive: true });
-
-  const filePath = path.join(tempDir, `clip_${Date.now()}.mp4`);
-  console.log(`Saving downloaded clip to: ${filePath}`);
-  await fs.writeFile(filePath, buffer);
-
-  console.log(`Clip downloaded and saved successfully.`);
-  return filePath;
-}
-
-async function createGifFromVideo(videoPath: string): Promise<string> {
-  console.log(`Starting square GIF creation process for video: ${videoPath}`);
-  const outputDir = path.join(process.cwd(), 'clip-gifs');
-  console.log(`Ensuring output directory exists: ${outputDir}`);
-  await fs.mkdir(outputDir, { recursive: true });
-
-  const outputPath = path.join(outputDir, `square_gif_${Date.now()}.gif`);
-  console.log(`Output square GIF will be saved to: ${outputPath}`);
-
-  console.log('Executing ffmpeg command to create square GIF...');
-  const ffmpegCommand = `
-    ffmpeg -i ${videoPath} -vf "
-      fps=10,
-      scale=iw*min(320/iw\\,320/ih):ih*min(320/iw\\,320/ih),
-      pad=320:320:(320-iw*min(320/iw\\,320/ih))/2:(320-ih*min(320/iw\\,320/ih))/2:black,
-      setsar=1:1
-    " -c:v gif ${outputPath}
-  `.replace(/\s+/g, ' ').trim();
-  
-  console.log(`FFmpeg command: ${ffmpegCommand}`);
-  
-  try {
-    const { stdout, stderr } = await execAsync(ffmpegCommand);
-    console.log('FFmpeg stdout:', stdout);
-    console.log('FFmpeg stderr:', stderr);
-  } catch (error) {
-    console.error('Error executing ffmpeg command:', error);
-    throw error;
-  }
-
-  console.log(`Square GIF created successfully: ${outputPath}`);
-  return outputPath;
-}

@@ -20,12 +20,12 @@ export async function uploadVideoToTheCloud(filePath: string, publicId: string):
     return cloudinaryResponse
   }
 
-export async function uploadGifToTheCloud(filePath: string, publicId: string): Promise<any> {
+export async function uploadGifToTheCloud(filePath: string, publicId: string, folderName: string = "vibra"): Promise<any> {
     cloudinary.config(cloudinaryConfig)
     const cloudinaryResponse = await cloudinary.uploader.upload(filePath, {
         resource_type: "image",
         public_id: publicId,
-        folder: "zurf",
+        folder: folderName,
         overwrite: true
       })
     return cloudinaryResponse

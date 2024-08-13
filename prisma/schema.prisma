@@ -18,7 +18,6 @@ model User {
   username      String?
   displayName   String?
   pfpUrl        String?
-  gifPfpUrl     String?
 
   // Relationships
   streams       Stream[]
@@ -34,10 +33,13 @@ model Stream {
   endedAt   DateTime?
   title     String
   status    StreamStatus @default(SCHEDULED)
+  playbackId String?    // Livepeer playback ID
+  streamId   String?    // Livepeer stream ID
 
   // Relationships
   user      User     @relation(fields: [userId], references: [id])
   userId    String
+  clips     Clip[]
 }
 
 model Subscription {
@@ -55,8 +57,32 @@ model Subscription {
   @@index([streamerId])
 }
 
+model Clip {
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  startTime     DateTime
+  endTime       DateTime
+  assetId       String   // Livepeer asset ID
+  downloadUrl   String?
+  gifUrl        String?
+  cloudinaryUrl String?  // New field for Cloudinary URL
+  clipIndex     Int      // New field to track the clip index
+  status        ClipStatus @default(PROCESSING)
+
+  // Relationships
+  stream        Stream   @relation(fields: [streamId], references: [id])
+  streamId      String
+}
+
 enum StreamStatus {
   SCHEDULED
   LIVE
   ENDED
+}
+
+enum ClipStatus {
+  PROCESSING
+  READY
+  FAILED
 }
