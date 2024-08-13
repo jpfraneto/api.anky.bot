@@ -10,7 +10,7 @@ import { processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
 import queryString from 'query-string';
-import { getLatestClipFromStream, startClippingProcess } from './clips';
+import { getLatestClipFromStream, startClipCreationProcess, startClippingProcess } from './clips';
 import prisma from '../../../utils/prismaClient';
 import { checkIfUserSubscribed, subscribeUserToStreamer, unsubscribeUserFromStreamer } from './subscriptions';
 import { apiKeyAuth } from '../../middleware/auth';
@@ -248,6 +248,83 @@ app.frame("/:streamer", async (c) => {
         <Button action={`/${streamer}`}>Watch Stream</Button>,
         <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
         <Button.Link href="https://www.vibra.so/android">Android</Button.Link>,
+      ],
+    });
+  }
+});
+
+app.frame("/create-first-clip/:streamer/:streamId", async (c) => {
+  const { streamer, streamId } = c.req.param();
+  
+  try {
+    // Check if a clip is already being processed
+    const existingClip = await prisma.clip.findFirst({
+      where: {
+        streamId: streamId,
+        status: 'PROCESSING'
+      }
+    });
+
+    if (existingClip) {
+      // A clip is already being processed, show the waiting screen
+      return c.res({
+        title: "vibra - Clip in Progress",
+        image: (
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+            <div tw="mb-20 flex text-5xl text-purple-400">
+              Clip is being created...
+            </div>
+            <div tw="mt-3 flex text-4xl text-white">
+              This may take a few minutes.
+            </div>
+          </div>
+        ),
+        intents: [
+          <Button action={`/create-first-clip/${streamer}/${streamId}`}>Refresh</Button>,
+          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Watch Live 📺</Button.Link>,
+          <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
+        ],
+      });
+    }
+
+    // Start the clip creation process
+    startClipCreationProcess(streamId);
+
+    // Show the initial creation message
+    return c.res({
+      title: "vibra - Creating Clip",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mb-20 flex text-5xl text-purple-400">
+            Creating first clip...
+          </div>
+          <div tw="mt-3 flex text-4xl text-white">
+            This may take a few minutes.
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/create-first-clip/${streamer}/${streamId}`}>Refresh</Button>,
+        <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Watch Live 📺</Button.Link>,
+        <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
+      ],
+    });
+  } catch (error) {
+    console.error("Error creating first clip:", error);
+    return c.res({
+      title: "vibra - Error",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mb-20 flex text-5xl text-purple-400">
+            Error creating clip
+          </div>
+          <div tw="mt-3 flex text-4xl text-white">
+            Please try again later.
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/${streamer}`}>Back to Stream</Button>,
       ],
     });
   }

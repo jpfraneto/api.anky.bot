@@ -283,7 +283,7 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
         }
   
         // If there are more than 8 clips, delete the oldest one
-        if (stream.clips.length >= 8) {
+        if (stream?.clips?.length >= 8) {
           const oldestClip = stream.clips[stream.clips.length - 1];
           await prisma.clip.delete({ where: { id: oldestClip.id } });
           console.log(`Deleted oldest clip for stream ${streamId}`);
