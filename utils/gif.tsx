@@ -8,6 +8,11 @@ import util from 'util';
 import os from 'os';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import prisma from './prismaClient.js';
+import { uploadGifToTheCloud } from './cloudinary.js';
+import { getUserFromUsername } from './farcaster.js';
+const GIF_DIRECTORY = path.join(process.cwd(), 'temp_gifs')
+
 
 const execPromise = util.promisify(exec);
 
@@ -129,7 +134,7 @@ async function processFrame(framePath, staticImagePath, outputPath, streamerName
 }
 
 async function combineFrames(inputDir, outputGif, fps) {
-  console.log('Combining frames into GIF');
+  console.log('Combining frames into GIF', inputDir, outputGif,fps);
   await execPromise(`ffmpeg -framerate ${fps} -i "${path.join(inputDir, 'processed_frame%03d.png')}" "${outputGif}"`);
   console.log('GIF created:', outputGif);
 }
@@ -193,5 +198,61 @@ export async function processAndSaveGif(staticImageUrl, streamerName, outputPath
   } catch (error) {
     console.error('Error in processAndSaveGif:', error);
     throw error;
+  }
+}
+
+export async function createUserAndUploadGif(streamer: string): Promise<string | null> {
+  try {
+    console.log("Creating user and generating/uploading GIF for streamer:", streamer);
+
+    // Fetch user data from Farcaster
+    const userData = await getUserFromUsername(streamer);
+    if (!userData) {
+      console.error("User not found on Farcaster:", streamer);
+      return null;
+    }
+
+    // Create or update user in the database
+    const user = await prisma.user.upsert({
+      where: { fid: userData.fid.toString() },
+      update: {
+        username: userData.username,
+        displayName: userData.displayName,
+        pfpUrl: userData.pfp.url
+      },
+      create: {
+        fid: userData.fid.toString(),
+        username: userData.username,
+        displayName: userData.displayName,
+        pfpUrl: userData.pfp.url
+      }
+    });
+
+    // Generate and save the GIF locally
+    const gifPath = path.join(GIF_DIRECTORY, `${streamer}.gif`);
+    await fs.mkdir(GIF_DIRECTORY, { recursive: true });
+    await processAndSaveGif(userData.pfp.url, streamer, gifPath);
+
+    // Upload the GIF to Cloudinary
+    const cloudinaryResponse = await uploadGifToTheCloud(
+      gifPath,
+      `user_gif_${streamer}`,
+      'user_gifs'
+    );
+
+    // Update user with Cloudinary GIF URL
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { gifUrl: cloudinaryResponse.secure_url }
+    });
+
+    // Clean up the local GIF file
+    await fs.unlink(gifPath);
+
+    console.log("User created/updated and GIF uploaded for:", streamer);
+    return cloudinaryResponse.secure_url;
+  } catch (error) {
+    console.error("Error in createUserAndUploadGif:", error);
+    return null;
   }
 }

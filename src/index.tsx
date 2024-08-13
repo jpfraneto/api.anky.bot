@@ -60,9 +60,9 @@ dotenv.config();
 
 import { Redis } from 'ioredis';
 import { processData } from '../utils/moxie';
-import { checkIfCastHasVideo } from '../utils/farcaster';
+import { checkIfCastHasVideo, getUserFromUsername } from '../utils/farcaster';
 import { isOptedOut } from '../utils/local-storage';
-import { maiiinn } from '../utils/gif';
+import { createUserAndUploadGif, maiiinn } from '../utils/gif';
 
 async function updateVideos() {
   try {
@@ -823,4 +823,14 @@ async function sendProgramaticDmToSubscribers(subscribers: any) {
 //sendProgramaticDmToSubscribers([16098, 18350, 19696, 12785, 198258])
 // sendProgramaticDmToSubscribers([18350])
 
+// const usersAloja = ["pfista", "v", "horsefacts.eth"]
+// async function addUsersToDb(users: any){
+//   console.log("the users are: ", users)
+//   for (let user of users) {
+//     console.log("before with the user", user)
+//     const cloudinaryurl = await createUserAndUploadGif(user)
+//     console.log("the cloudinary url is: ", cloudinaryurl)
+//   }
+// }
 
+// addUsersToDb(usersAloja)

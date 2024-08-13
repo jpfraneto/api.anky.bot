@@ -18,6 +18,7 @@ model User {
   username      String?
   displayName   String?
   pfpUrl        String?
+  gifUrl        String?
 
   // Relationships
   streams       Stream[]
