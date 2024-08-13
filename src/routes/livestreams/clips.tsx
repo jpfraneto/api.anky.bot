@@ -229,12 +229,24 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
         return {
           hasClips: false,
           streamId: streamId,
+          isProcessing: false
         };
       }
   
       const latestClip = thisStream.clips[0];
+      
+      if (latestClip.status === 'PROCESSING') {
+        return {
+          hasClips: true,
+          isProcessing: true,
+          streamId: streamId,
+          index: latestClip.clipIndex
+        };
+      }
+  
       return {
         hasClips: true,
+        isProcessing: false,
         gifUrl: latestClip.cloudinaryUrl,
         index: latestClip.clipIndex,
         livepeerStreamId: streamId

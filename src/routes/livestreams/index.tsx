@@ -136,6 +136,7 @@ app.frame("/:streamer", async (c) => {
       console.log('THE STREAM IS LIVE');
       const latestClipInfo = await getLatestClipFromStream(streamer, streamId);
       console.log("The latest clip info is: ", latestClipInfo)
+      
       if (!latestClipInfo) {
         return c.res({
           title: "vibra",
@@ -174,6 +175,30 @@ app.frame("/:streamer", async (c) => {
             </Button>,
             <Button action={`/create-first-clip/${streamer}/${latestClipInfo.streamId}`}>🎬</Button>,
             <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
+            <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
+          ],
+        });
+      }
+
+      if (latestClipInfo.isProcessing) {
+        return c.res({
+          title: "vibra",
+          image: (
+            <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+              <div tw="mb-20 flex text-5xl text-purple-400">
+                @{streamer} is live!
+              </div>
+              <div tw="mt-3 flex text-5xl text-white">
+                Clip #{latestClipInfo.index} is being created...
+              </div>
+            </div>
+          ),
+          intents: [
+            <Button action={`/${streamer}/${isUserSubscribed ? "unsubscribe" : "subscribe"}`}>
+              {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
+            </Button>,
+            <Button action={`/${streamer}`}>Refresh</Button>,
+            <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Watch Live 📺</Button.Link>,
             <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
           ],
         });
