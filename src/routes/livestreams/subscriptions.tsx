@@ -1,3 +1,4 @@
+import { getUserFromFid, getUserFromUsername } from "../../../utils/farcaster";
 import prisma from "../../../utils/prismaClient";
 
 export async function checkIfUserSubscribed(streamer: string, userFid: string | number) {
@@ -17,17 +18,42 @@ export async function checkIfUserSubscribed(streamer: string, userFid: string | 
 
   export async function subscribeUserToStreamer(streamer: string, userFid: string | number) {
     try {
-      const user = await prisma.user.findUnique({ where: { fid: userFid.toString() } });
-      const streamerUser = await prisma.user.findUnique({ where: { username: streamer } });
+      let user = await prisma.user.findUnique({ where: { fid: userFid.toString() } });
+      if (!user) {
+        const userData = await getUserFromFid(+userFid);
+        if (!userData) {
+          throw new Error("User not found on Farcaster");
+        }
+        user = await prisma.user.create({
+          data: {
+            fid: userData.fid.toString(),
+            username: userData.username,
+            displayName: userData.displayName,
+            pfpUrl: userData.pfp.url
+          }
+        });
+      }
   
-      if (!user || !streamerUser) {
-        throw new Error("User or streamer not found");
+      let streamerUser = await prisma.user.findUnique({ where: { username: streamer } });
+      if (!streamerUser) {
+        const streamerData = await getUserFromUsername(streamer);
+        if (!streamerData) {
+          throw new Error("Streamer not found on Farcaster");
+        }
+        streamerUser = await prisma.user.create({
+          data: {
+            fid: streamerData.fid.toString(),
+            username: streamerData.username,
+            displayName: streamerData.displayName,
+            pfpUrl: streamerData.pfp.url
+          }
+        });
       }
   
       const subscription = await prisma.subscription.create({
         data: {
-          subscriber: { connect: { id: user.id } },
-          streamer: { connect: { id: streamerUser.id } }
+          subscriber: { connect: { fid: user.fid } },
+          streamer: { connect: { fid: streamerUser.fid } }
         }
       });
   
@@ -41,16 +67,19 @@ export async function checkIfUserSubscribed(streamer: string, userFid: string | 
   export async function unsubscribeUserFromStreamer(streamer: string, userFid: string | number) {
     try {
       const user = await prisma.user.findUnique({ where: { fid: userFid.toString() } });
-      const streamerUser = await prisma.user.findUnique({ where: { username: streamer } });
+      if (!user) {
+        throw new Error("User not found");
+      }
   
-      if (!user || !streamerUser) {
-        throw new Error("User or streamer not found");
+      const streamerUser = await prisma.user.findUnique({ where: { username: streamer } });
+      if (!streamerUser) {
+        throw new Error("Streamer not found");
       }
   
       const deletedSubscription = await prisma.subscription.deleteMany({
         where: {
-          subscriberId: user.id,
-          streamerId: streamerUser.id
+          subscriberFid: user.fid,
+          streamerFid: streamerUser.fid
         }
       });
   

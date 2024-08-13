@@ -197,10 +197,10 @@ app.frame("/:streamer", async (c) => {
         title: "vibra",
         image: (
           <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-            <div tw="mb-20 flex text-xl text-purple-400">
+            <div tw="mb-20 flex text-4xl text-purple-400">
               @{streamer} is not live anymore
             </div>
-            <div tw="mt-3 flex text-xl text-white">
+            <div tw="mt-3 flex text-4xl text-white">
               Subscribe to get notified when they go live again
             </div>
           </div>
