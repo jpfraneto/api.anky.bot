@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { uploadGifToTheCloud } from '../../../utils/cloudinary'
 import { Button, FrameContext, Frog, TextInput } from 'frog';
 import { SECRET } from '../../../env/server-env';
-import { NEYNAR_API_KEY, VIBRA_LIVESTREAMS_API, VIBRA_LIVESTREAMS_API_KEY } from '../../../env/server-env';
+import { NEYNAR_API_KEY, VIBRA_LIVESTREAMS_API, VIBRA_LIVESTREAMS_API_KEY, LIVEPEER_API_KEY } from '../../../env/server-env';
 import { Livepeer } from "livepeer";
 import fs from 'fs/promises';
 import path from 'path';
@@ -17,7 +17,7 @@ import queryString from 'query-string';
 const execAsync = promisify(exec);
 
 const livepeer = new Livepeer({
-  apiKey: process.env.LIVEPEER_API_KEY,
+  apiKey: LIVEPEER_API_KEY,
 });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -254,10 +254,18 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
   
     const createClip = async () => {
       try {
-        const stream = await prisma.stream.findUnique({
+        let stream = await prisma.stream.findUnique({
           where: { streamId: streamId },
           include: { clips: { orderBy: { clipIndex: 'desc' } } }
         });
+        if(!stream.playbackId){
+          const result = await livepeer.stream.get(streamId);
+          const thisStream = result.stream
+          stream = await prisma.stream.update({
+            where: { streamId: streamId },
+            data: { playbackId: thisStream?.playbackId }
+          })
+        }
   
         if (!stream) {
           console.log(`Stream ${streamId} not found. Stopping clip creation process.`);
@@ -270,8 +278,9 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
           clearInterval(intervalId);
           return;
         }
-  
-        await createClipAndStoreLocally(stream.playbackId, streamId);
+        if(stream.playbackId && stream.streamId){
+          await createClipAndStoreLocally(stream.playbackId, streamId);
+        }
   
         // If there are more than 8 clips, delete the oldest one
         if (stream.clips.length >= 8) {

@@ -34,7 +34,8 @@ const envSchema = object({
     VIBRA_SO_WARPCAST_API_KEY: string("VIBRA_SO_WARPCAST_API_KEY is required"),
     VIBRA_LIVESTREAMS_API: string("VIBRA_LIVESTREAMS_API is required"),
     VIBRA_LIVESTREAMS_API_KEY: string("VIBRA_LIVESTREAMS_API_KEY is required"),
-    VIBRA_API_KEY: string("VIBRA_API_KEY is required")
+    VIBRA_API_KEY: string("VIBRA_API_KEY is required"),
+    LIVEPEER_API_KEY: string("LIVEPEER_API_KEY is required"),
   });
   
   export const {
@@ -68,5 +69,6 @@ const envSchema = object({
     VIBRA_SO_WARPCAST_API_KEY,
     VIBRA_LIVESTREAMS_API,
     VIBRA_LIVESTREAMS_API_KEY,
-    VIBRA_API_KEY
+    VIBRA_API_KEY,
+    LIVEPEER_API_KEY
   } = parse(envSchema, process.env);
