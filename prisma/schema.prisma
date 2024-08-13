@@ -50,7 +50,7 @@ model Subscription {
   // Relationships
   subscriber    User     @relation("Subscriber", fields: [subscriberId], references: [id])
   subscriberId  String
-  streamer      User     @relation("Streamer", fields: [streamerId], references: [id])
+  streamer      User     @relation("Streamer", fields: [streamerId], references: [streamId])
   streamerId    String
 
   @@unique([subscriberId, streamerId])
