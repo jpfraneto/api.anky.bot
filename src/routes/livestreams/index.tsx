@@ -151,7 +151,7 @@ app.frame("/:streamer", async (c) => {
             </div>
           ),
           intents: [
-            <Button action={`/${streamer}`}>Retry</Button>,
+            <Button action={`/${streamer}?streamId=${streamId}`}>Retry</Button>,
           ],
         });
       }
@@ -197,8 +197,8 @@ app.frame("/:streamer", async (c) => {
             <Button action={`/${streamer}/${isUserSubscribed ? "unsubscribe" : "subscribe"}`}>
               {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
             </Button>,
-            <Button action={`/${streamer}`}>Refresh</Button>,
-            <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Watch Live 📺</Button.Link>,
+            <Button action={`/${streamer}?root=true&streamId=${streamId}`}>Refresh</Button>,
+            <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
             <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
           ],
         });
