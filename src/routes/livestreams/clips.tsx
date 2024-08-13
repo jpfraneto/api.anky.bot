@@ -25,14 +25,6 @@ const GIF_DIRECTORY = path.join(__dirname, 'generated_gifs');
 
 import prisma from '../../../utils/prismaClient';
 
-import { PrismaClient } from '@prisma/client'
-import { livepeer } from './livepeerConfig'
-import { uploadGifToTheCloud } from './cloudinaryUtils'
-import { waitForAssetReady, downloadClip, createGifFromVideo } from './clipUtils'
-import fs from 'fs/promises'
-
-const prisma = new PrismaClient()
-
 async function createClipAndStoreLocally(playbackId: string, streamId: string) {
   console.log(`Starting clip creation process for stream ID: ${streamId}`);
   try {
