@@ -28,8 +28,8 @@ export async function checkIfUserSubscribed(streamer: string, userFid: string | 
           data: {
             fid: userData.fid.toString(),
             username: userData.username,
-            displayName: userData.displayName,
-            pfpUrl: userData.pfp.url
+            displayName: userData.display_name,
+            pfpUrl: userData.pfp_url
           }
         });
       }
