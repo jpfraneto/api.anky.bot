@@ -246,7 +246,7 @@ app.frame("/:streamer", async (c) => {
               @{streamer} is not live anymore
             </div>
             <div tw="mt-3 flex text-4xl text-white">
-              Subscribe to get notified when they go live again
+              {isUserSubscribed ? "You will be notified when they go live again" : "Subscribe to get notified when they go live again"}
             </div>
           </div>
         ),
@@ -463,8 +463,8 @@ app.frame("/:streamer/unsubscribe", async (c) => {
       ),
       intents: [
         <Button action={`/${streamer}/subscribe`}>Subscribe</Button>,
-        <Button action={`/${streamer}?root=true`}>@{streamer}</Button>,
-        <Button.Link href={`https://www.warpcast.com/${streamer}`}>DM {streamer}</Button.Link>,
+        // <Button action={`/${streamer}?root=true`}>@{streamer}</Button>,
+        <Button.Link href={`https://www.warpcast.com/${streamer}`}>@{streamer}</Button.Link>,
       ],
     });
   } else {
