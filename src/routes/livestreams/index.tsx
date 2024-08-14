@@ -253,7 +253,7 @@ app.frame("/:streamer", async (c) => {
           <Button action={`/${streamer}/${isUserSubscribed ? "unsubscribe" : "subscribe"}`}>
             {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
           </Button>,
-          <Button action={`/clips/${streamer}`}>View Clips</Button>,
+          // <Button action={`/clips/${streamer}`}>View Clips</Button>,
           <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
         ],
       });
@@ -264,7 +264,7 @@ app.frame("/:streamer", async (c) => {
       title: "anky",
       image: "https://github.com/jpfraneto/images/blob/main/vibra-square.png?raw=true",
       intents: [
-        <Button action={`/${streamer}`}>Watch Stream</Button>,
+        // <Button action={`/${streamer}`}>Watch Stream</Button>,
         <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
         <Button.Link href="https://www.vibra.so/android">Android</Button.Link>,
       ],
@@ -387,7 +387,7 @@ app.frame("/:streamer/subscribe", async (c) => {
     return c.res({
       title: "vibra",
       image: (
-        <div tw="flex h-full w-full flex-col w-5/6 px-8 items-center justify-center bg-black text-white">
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
           <div tw="mb-20 flex text-3xl text-purple-400">
             You subscribed to @{streamer}
           </div>
