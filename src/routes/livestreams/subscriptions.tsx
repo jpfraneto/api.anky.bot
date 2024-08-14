@@ -7,7 +7,7 @@ export async function checkIfUserSubscribed(streamer: string, userFid: string | 
       const subscription = await prisma.subscription.findFirst({
         where: {
           subscriberFid: userFid.toString(),
-          streamerFid: streamerData.fid
+          streamerFid: streamerData.fid.toString()
         }
       });
       return !!subscription;
@@ -53,8 +53,8 @@ export async function checkIfUserSubscribed(streamer: string, userFid: string | 
   
       const subscription = await prisma.subscription.create({
         data: {
-          subscriber: { connect: { fid: user.fid } },
-          streamer: { connect: { fid: streamerUser.fid } }
+          subscriber: { connect: { fid: user.fid.toString() } },
+          streamer: { connect: { fid: streamerUser.fid.toString() } }
         }
       });
   
@@ -79,8 +79,8 @@ export async function checkIfUserSubscribed(streamer: string, userFid: string | 
   
       const deletedSubscription = await prisma.subscription.deleteMany({
         where: {
-          subscriberFid: user.fid,
-          streamerFid: streamerUser.fid
+          subscriberFid: user.fid.toString(),
+          streamerFid: streamerUser.fid.toString()
         }
       });
   
