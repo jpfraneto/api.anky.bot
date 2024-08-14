@@ -13,19 +13,21 @@ import { fileURLToPath } from 'url';
 import queryString from 'query-string';
 import { getLatestClipFromStream, startClipCreationProcess, startClippingProcess } from './clips';
 import prisma from '../../../utils/prismaClient';
-import { checkIfUserSubscribed, subscribeUserToStreamer, unsubscribeUserFromStreamer } from './subscriptions';
+import { checkIfUserSubscribed, getSubscribersOfStreamer, subscribeUserToStreamer, unsubscribeUserFromStreamer } from './subscriptions';
 import { apiKeyAuth } from '../../middleware/auth';
+import { sendProgrammaticDmToSubscribers } from './farcaster';
 
 
 const execAsync = promisify(exec);
 
-const CreateLivestreamSchema = z.object({
-  castHash: z.string(),
+const StreamStartedSchema = z.object({
   streamerFid: z.string(),
   nameOfLivestream: z.string().min(1).max(100),
-  description: z.string().max(888).optional(),
+  description: z.string().max(500).optional(),
   streamId: z.string().uuid(),
+  castHash: z.string(),
 });
+
 
 const livepeer = new Livepeer({
   apiKey: process.env.LIVEPEER_API_KEY,
@@ -92,45 +94,57 @@ app.frame("/stream-not-found", async (c) => {
 });
 
 app.post("/stream-started", apiKeyAuth, async (c) => {
-  console.log("Received request to create a new livestream");
+  console.log("Received request for stream started");
 
   try {
     const body = await c.req.json();
     console.log("Request body:", body);
 
     // Validate input
-    const validatedData = CreateLivestreamSchema.parse(body);
+    const validatedData = StreamStartedSchema.parse(body);
 
-    // Create new stream in database
-    const newStream = await prisma.stream.create({
-      data: {
+    // Create or update stream in database
+    const stream = await prisma.stream.upsert({
+      where: { streamId: validatedData.streamId },
+      update: {
         castHash: validatedData.castHash,
-        streamId: validatedData.streamId,
         title: validatedData.nameOfLivestream,
         description: validatedData.description,
         status: "LIVE",
+        startedAt: new Date(),
+      },
+      create: {
+        streamId: validatedData.streamId,
+        castHash: validatedData.castHash,
+        title: validatedData.nameOfLivestream,
+        description: validatedData.description,
+        status: "LIVE",
+        startedAt: new Date(),
         user: {
           connect: { fid: validatedData.streamerFid }
         }
-      }
+      },
     });
 
-    console.log("New stream created:", newStream);
+    console.log("Stream started:", stream);
+
+    // Start the clip creation process
+    startClipCreationProcess(validatedData.streamId);
+    const subscribers = await getSubscribersOfStreamer(validatedData.streamerFid);
+    await sendProgrammaticDmToSubscribers(subscribers, validatedData.streamerFid, validatedData.nameOfLivestream);
+
+    // add a call here to get all the subscribers of the user that just started streaming and send them a programmatic DC
 
     return c.json({ 
-      message: `Livestream created successfully for streamer ${validatedData.streamerFid}`,
-      data: newStream
-    }, 201);
+      message: `Clipping process started successfully for streamer ${validatedData.streamerFid}, and all the DCs were sent to their subscribers`,
+      data: stream
+    }, 200);
 
   } catch (error) {
-    console.error("Error creating livestream:", error);
+    console.error("Error handling stream start:", error);
 
     if (error instanceof z.ZodError) {
       return c.json({ error: "Invalid input", details: error.errors }, 400);
-    }
-
-    if (error.code === 'P2002') {
-      return c.json({ error: "A stream with this ID already exists" }, 409);
     }
 
     if (error.code === 'P2025') {

@@ -1,6 +1,14 @@
 import { getUserFromFid, getUserFromUsername } from "../../../utils/farcaster";
 import prisma from "../../../utils/prismaClient";
 
+export async function getSubscribersOfStreamer(streamerFid: string): Promise<string[]> {
+  const subscriptions = await prisma.subscription.findMany({
+    where: { streamerFid: streamerFid },
+    select: { subscriberFid: true }
+  });
+  return subscriptions.map(sub => sub.subscriberFid);
+}
+
 export async function checkIfUserSubscribed(streamer: string, userFid: string | number) {
     try {
       const streamerData = await getUserFromUsername(streamer)
