@@ -20,6 +20,7 @@ import { apiKeyAuth } from '../../middleware/auth';
 const execAsync = promisify(exec);
 
 const CreateLivestreamSchema = z.object({
+  castHash: z.string(),
   streamerFid: z.string(),
   nameOfLivestream: z.string().min(1).max(100),
   description: z.string().max(888).optional(),
@@ -90,7 +91,7 @@ app.frame("/stream-not-found", async (c) => {
   });
 });
 
-app.post("/new", apiKeyAuth, async (c) => {
+app.post("/stream-started", apiKeyAuth, async (c) => {
   console.log("Received request to create a new livestream");
 
   try {
@@ -103,6 +104,7 @@ app.post("/new", apiKeyAuth, async (c) => {
     // Create new stream in database
     const newStream = await prisma.stream.create({
       data: {
+        castHash: validatedData.castHash,
         streamId: validatedData.streamId,
         title: validatedData.nameOfLivestream,
         description: validatedData.description,

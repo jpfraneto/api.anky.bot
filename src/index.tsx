@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { Frog } from "frog";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "frog/serve-static";
-import { SECRET, CLOUDINARY_CLOUD_NAME ,REDIS_URL,VIBRA_SO_WARPCAST_API_KEY, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, NEYNAR_API_KEY, CHISPITA_OXIDA_SIGNER_UUID, AIRSTACK_API_KEY } from '../env/server-env';
+import { SECRET, CLOUDINARY_CLOUD_NAME ,REDIS_URL,VIBRA_SO_WARPCAST_API_KEY, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, NEYNAR_API_KEY, CHISPITA_OXIDA_SIGNER_UUID, AIRSTACK_API_KEY, JPFRANETO_WARPCAST_API_KEY } from '../env/server-env';
 import { Logger } from '../utils/Logger';
 import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
@@ -178,43 +178,6 @@ app.get("/aloja", (c) => {
     134: 124,
   });
 });
-
-async function retryFailedCasts() {
-  const failedCasts = await prisma.failedCast.findMany({
-    where: {
-      attempts: {
-        lt: 3 // Only retry casts that have been attempted less than 3 times
-      }
-    },
-    orderBy: {
-      createdAt: 'asc'
-    },
-    take: 10 // Process 10 at a time to avoid overloading the system
-  });
-
-  for (const failedCast of failedCasts) {
-    try {
-      await publishCastToTheProtocol(failedCast.castOptions);
-      
-      // If successful, remove the failed cast record
-      await prisma.failedCast.delete({
-        where: { id: failedCast.id }
-      });
-    } catch (error) {
-      // If it fails again, increment the attempts
-      await prisma.failedCast.update({
-        where: { id: failedCast.id },
-        data: {
-          attempts: failedCast.attempts + 1,
-          error: error.message
-        }
-      });
-    }
-  }
-}
-
-// Run the retry process every 5 minutes
-cron.schedule('*/5 * * * *', retryFailedCasts);
 
 app.post("/notify-user/:handle", async (c) => {
   try {
@@ -800,28 +763,25 @@ console.log(`Server is running on port ${port}`)
 //         message: `${uuid}\n\nwena wena, este DC fue creado programaticamente y basicamente estamos cachando el mote de si funciona o no. Si te llego, porfa mandame un mensaje diciendo que te llego. Gracias! \n\nhttps://www.vibra.so/stream/jpfraneto`,
 //         idempotencyKey: uuid
 //       };
-//       axios.put('https://api.warpcast.com/v2/ext-send-direct-cast', directCastData, {
+//       const response = await axios.put('https://api.warpcast.com/v2/ext-send-direct-cast', directCastData, {
 //         headers: {
-//           'Authorization': `Bearer ${VIBRA_SO_WARPCAST_API_KEY}`,
+//           'Authorization': `Bearer ${JPFRANETO_WARPCAST_API_KEY}`,
 //           'Content-Type': 'application/json'
 //         }
 //       })
-//       .then(response => {
-//         console.log(`The response after sending the DC to ${subscriber} is: `, response.data);
-//       })
-//       .catch(error => {
-//         console.log("There was an error sending the programmatic DC")
-//         console.error('Error:', error);
-//         console.log("the error is: ", error.response.data)
-//       });
+//       console.log("the response is: ", response.data)
+//       if(response.data.result.success) {
+//         console.log("the message was sent successfully to", subscriber)
+//       }
 //     }
 //   } catch (error) {
+//     console.log("there was an error sending the cast to the user", error)
     
 //   }
 // }
 
 //sendProgramaticDmToSubscribers([16098, 18350, 19696, 12785, 198258])
-// sendProgramaticDmToSubscribers([18350])
+// sendProgramaticDmToSubscribers([803665])
 
 // const usersAloja = ["woj.eth"]
 // async function addUsersToDb(users: any){

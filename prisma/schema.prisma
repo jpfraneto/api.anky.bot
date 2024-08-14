@@ -30,11 +30,12 @@ model Stream {
   streamId      String   @id @default(uuid())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  castHash      String?
   startedAt     DateTime?
   endedAt       DateTime?
   title         String?
   description   String?
-  status        StreamStatus @default(SCHEDULED)
+  status        StreamStatus @default(LIVE)
   playbackId    String?    // Livepeer playback ID
   clipCreationIntervalId String?
 
