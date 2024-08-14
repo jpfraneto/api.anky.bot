@@ -5,6 +5,7 @@ import { Livepeer } from "livepeer";
 import fs from 'fs/promises';
 import path from 'path';
 import { exec } from 'child_process';
+import { z } from 'zod';
 import { promisify } from 'util';
 import { processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
@@ -17,6 +18,13 @@ import { apiKeyAuth } from '../../middleware/auth';
 
 
 const execAsync = promisify(exec);
+
+const CreateLivestreamSchema = z.object({
+  streamerFid: z.string(),
+  nameOfLivestream: z.string().min(1).max(100),
+  description: z.string().max(888).optional(),
+  streamId: z.string().uuid(),
+});
 
 const livepeer = new Livepeer({
   apiKey: process.env.LIVEPEER_API_KEY,
@@ -80,6 +88,55 @@ app.frame("/stream-not-found", async (c) => {
       <Button action={`/download-app/kevinmfer`}>Mobile App</Button>,
     ],
   });
+});
+
+app.post("/new", apiKeyAuth, async (c) => {
+  console.log("Received request to create a new livestream");
+
+  try {
+    const body = await c.req.json();
+    console.log("Request body:", body);
+
+    // Validate input
+    const validatedData = CreateLivestreamSchema.parse(body);
+
+    // Create new stream in database
+    const newStream = await prisma.stream.create({
+      data: {
+        streamId: validatedData.streamId,
+        title: validatedData.nameOfLivestream,
+        description: validatedData.description,
+        status: "LIVE",
+        user: {
+          connect: { fid: validatedData.streamerFid }
+        }
+      }
+    });
+
+    console.log("New stream created:", newStream);
+
+    return c.json({ 
+      message: `Livestream created successfully for streamer ${validatedData.streamerFid}`,
+      data: newStream
+    }, 201);
+
+  } catch (error) {
+    console.error("Error creating livestream:", error);
+
+    if (error instanceof z.ZodError) {
+      return c.json({ error: "Invalid input", details: error.errors }, 400);
+    }
+
+    if (error.code === 'P2002') {
+      return c.json({ error: "A stream with this ID already exists" }, 409);
+    }
+
+    if (error.code === 'P2025') {
+      return c.json({ error: "Streamer not found" }, 404);
+    }
+
+    return c.json({ error: "Internal server error" }, 500);
+  }
 });
 
 app.get("/generate-gif/:streamer", apiKeyAuth, async (c) => {
