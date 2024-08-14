@@ -149,7 +149,7 @@ vibraFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => 
       </div>
       ),
       intents: [
-          <Button.Link href={`https://www.vibra.so/post/${actionedCastHash}`}>Download Video</Button.Link>
+          <Button.Link href={`https://vibra.so/post/${actionedCastHash}`}>Download Video</Button.Link>
         ],
   })} else {
     return c.res({

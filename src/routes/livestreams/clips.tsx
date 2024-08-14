@@ -24,6 +24,7 @@ const __dirname = path.dirname(__filename);
 const GIF_DIRECTORY = path.join(__dirname, 'generated_gifs');
 
 import prisma from '../../../utils/prismaClient';
+import { sleep } from '../../../utils/time';
 
 async function createClipAndStoreLocally(playbackId: string, streamId: string) {
   console.log(`Starting clip creation process for stream ID: ${streamId}`);
@@ -133,7 +134,7 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
         return asset;
       }
       console.log(`Asset not ready. Current status: ${asset?.status?.phase}. Waiting 5 seconds before next check.`);
-      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds before checking again
+      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 5 seconds before checking again
     }
   }
   
@@ -258,6 +259,7 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
           where: { streamId: streamId },
           include: { clips: { orderBy: { clipIndex: 'desc' } } }
         });
+       
         if(!stream.playbackId){
           const result = await livepeer.stream.get(streamId);
           const thisStream = result.stream
@@ -279,6 +281,10 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
           return;
         }
         if(stream.playbackId && stream.streamId){
+          if(!stream.clips || stream?.clips?.length === 0){
+            console.log("sleeping for 40 seconds to make time for the stream to work")
+            await sleep(40000)
+          }
           await createClipAndStoreLocally(stream.playbackId, streamId);
         }
   
