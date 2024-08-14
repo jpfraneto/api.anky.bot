@@ -586,17 +586,12 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
 
     let message = "";
     if (!nextClip && stream.status === 'LIVE') {
-      message = "You're watching the latest clip. New clips are created every 5 minutes.";
+      message = "This is the latest clip. New clips are created every 5 minutes.";
     }
 
     return c.res({
       title: `Vibra - ${streamer}'s Clip`,
-      image: (
-        <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
-          <img src={clip.cloudinaryUrl} tw="max-w-full max-h-[80%] object-contain" />
-          {message && <div tw="mt-4 text-xl text-center">{message}</div>}
-        </div>
-      ),
+      image: clip.cloudinaryUrl,
       intents: [
         prevClip ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>◀️</Button> : null,
         nextClip ? <Button action={`/clips/${streamer}/${streamId}/${nextClip.clipIndex}`}>▶️</Button> : null,
