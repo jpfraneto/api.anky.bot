@@ -3,10 +3,11 @@ import prisma from "../../../utils/prismaClient";
 
 export async function checkIfUserSubscribed(streamer: string, userFid: string | number) {
     try {
+      const streamerData = await getUserFromUsername(streamer)
       const subscription = await prisma.subscription.findFirst({
         where: {
-          subscriber: { fid: userFid.toString() },
-          streamer: { username: streamer }
+          subscriberFid: userFid.toString(),
+          streamerFid: streamerData.fid
         }
       });
       return !!subscription;

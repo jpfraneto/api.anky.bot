@@ -1,0 +1,1 @@
+async function getStreamDataFromHash (hash: string) {}
