@@ -337,11 +337,16 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
       if (!livepeerStream || !livepeerStream.isActive) {
         console.log(`Stream ${streamId} is no longer active. Ending stream and removing job from queue.`);
         await handleStreamEnd(streamId);
-        await job.remove();
+        
+        try {
+          await clipQueue.removeRepeatableByKey(job.repeatJobKey);
+        } catch (removeError) {
+          console.warn(`Failed to remove job ${job.id}. It may have already been removed or locked: ${removeError.message}`);
+        }
+        
         return;
       }
   
-      // If the stream is active, proceed with clip creation
       console.log(`Creating clip for stream ${streamId}`);
       
       const now = Date.now();
@@ -407,7 +412,12 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
       
       if (error?.message?.includes('not found')) {
         await handleStreamEnd(streamId);
-        await job.remove();
+        
+        try {
+          await clipQueue.removeRepeatableByKey(job.repeatJobKey);
+        } catch (removeError) {
+          console.warn(`Failed to remove job ${job.id}. It may have already been removed or locked: ${removeError.message}`);
+        }
       } else {
         // Update any clips in PROCESSING state to FAILED
         await prisma.clip.updateMany({
