@@ -179,27 +179,27 @@ app.get("/aloja", (c) => {
   });
 });
 
-app.post("/notify-user/:handle", async (c) => {
-  try {
-    console.log('INSIDE THE NOTIFY USER FUNCTION')
-    const { handle } = c.req.param();
-    const body = await c.req.json()
-    console.log("inside the notify user function", handle, body)
-    const { fid } = body.untrustedData;
-    console.log(`the user with ${fid} wants to be notified when ${handle} starts a stream`);
-    return c.json({
-      status: 'success',
-      message: 'The user has been stored to be notified',
-    }, 200);
-  } catch (error) {
-    console.log('there was an error on the notify user function', error)
-    return c.json({
-      status: 'error',
-      message: 'Error processing video',
-      error: error! || 'Unknown error'
-    }, 500);
-  }
-})
+// app.post("/notify-user/:handle", async (c) => {
+//   try {
+//     console.log('INSIDE THE NOTIFY USER FUNCTION')
+//     const { handle } = c.req.param();
+//     const body = await c.req.json()
+//     console.log("inside the notify user function", handle, body)
+//     const { fid } = body.untrustedData;
+//     console.log(`the user with ${fid} wants to be notified when ${handle} starts a stream`);
+//     return c.json({
+//       status: 'success',
+//       message: 'The user has been stored to be notified',
+//     }, 200);
+//   } catch (error) {
+//     console.log('there was an error on the notify user function', error)
+//     return c.json({
+//       status: 'error',
+//       message: 'Error processing video',
+//       error: error! || 'Unknown error'
+//     }, 500);
+//   }
+// })
 
 app.post("/video-posted", async (c) => {
   try {
