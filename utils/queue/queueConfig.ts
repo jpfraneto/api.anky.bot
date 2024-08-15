@@ -2,6 +2,7 @@
 import { Queue, Worker, Job } from 'bullmq';
 import Redis from 'ioredis';
 import { REDIS_URL } from '../../env/server-env';
+import { processClipJob } from '../../src/routes/livestreams/clips';
 
 
 const connection = new Redis(REDIS_URL);
@@ -21,7 +22,3 @@ export const setupWorkers = () => {
     console.error(`Job ${job?.id} has failed with ${err.message}`);
   });
 };
-
-async function processClipJob (job: any){
-  return null
-}

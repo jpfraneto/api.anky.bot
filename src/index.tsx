@@ -23,6 +23,8 @@ import ffmpeg from 'fluent-ffmpeg';
 import { v2 as cloudinary } from 'cloudinary';
 import { uploadVideoToTheCloud, uploadGifToTheCloud } from '../utils/cloudinary';
 import { fetchCastInformationFromHash, publishCastToTheProtocol } from '../utils/cast';
+import { setupWorkers, clipQueue } from '../utils/queue/queueConfig';
+import { processClipJob } from './routes/livestreams/clips';
 
 //maiiinn("https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_gif,w_112,h_112/https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/11e5479f-e479-4ba0-2221-97a086f65b00/original", "jpfraneto", "output_gif.gif")
 
@@ -34,87 +36,21 @@ import { extractWordBeforeWaveEmoji } from '../utils/zurf';
 import { moxiefolioFrame } from './routes/moxiefolio';
 import { vibraTvFrame } from './routes/vibratv';
 import { app as livestreamsRoute } from './routes/livestreams';
-dotenv.config();
-// **** ROUTE IMPORTS ****
-
-// **** FAST SCRIPTS ****
-// deleteAllAnkyCasts();
-// scrollFeedAndReply();
-// checkAndUpdateRepliesScores();
-// downloadAllTrainingDataForToday()
-// checkAndUpdateRepliesScores();
-// **** FAST SCRIPTS ****
-
-// **** DAILY ACTIONS AT THE END OF THE DAY ****
-// calculate the daily user performance for all of the ones that participate on the system
-// 
-// fine tune anky (on poiesis)
-//
-// **** DAILY ACTIONS AT THE END OF THE DAY ****
-
-// **** PERIODIC ACTIONS THROUGHOUT THE DAY ****
-// cron.schedule("*/30 * * * *", () => {
-//   scrollFeedAndReply();
-// });
-// **** PERIODIC ACTIONS THROUGHOUT THE DAY ****
-
 import { Redis } from 'ioredis';
 import { processData } from '../utils/moxie';
 import { checkIfCastHasVideo, getUserFromUsername } from '../utils/farcaster';
 import { isOptedOut } from '../utils/local-storage';
 import { createUserAndUploadGif, maiiinn } from '../utils/gif';
 
-async function updateVideos() {
-  try {
-    console.log("the update videos are")
-    let output = []
-    let temp = {}
-    const videos = await prisma.castWithVideo.findMany();
-    console.log(videos.length);
-    for (let video of videos) {
-      console.log(video)
-      temp = {
-        hash: video.castHash,
-        channel: video.castChannel,
-        username: video.authorUsername,
-        fid: video.authorFid,
-        gifUrl: video.gifUrl,
-        videoUrl: video.warpcastVideoUrl,
-      }
-      output.push({...temp})
-      // const response = await fetchCastInformationFromHash(video.castHash);
-      // let channel = response?.parent_url?.split('/').pop() || ""; // Use pop() to get the last element
-      // await prisma.castWithVideo.update({
-      //   where: {
-      //     id: video.id
-      //   },
-      //   data: {
-      //     warpcastVideoUrl: response.embeds[0].url,
-      //     authorFid: response.author.fid,
-      //     authorUsername: response.author.username,
-      //     castChannel: channel
-      //   }
-      // });
-      // Removed return and break statements to process all videos
-    }
-    console.log("the casthashes are: ", output)
-  } catch (error) {
-    console.error('Error updating videos:', error);
-  }
-}
+dotenv.config();
+// **** ROUTE IMPORTS ****
 
-async function checkWhitelist () {
-  try {
-    const users = await prisma.androidTesters.findMany();
-    console.log("the users are", users)
-  } catch (error) {
-    console.log('there was an error')
-  }
-}
+console.log('right before setting up the workers')
+setupWorkers()
 
-// checkWhitelist()
-
-// updateVideos()
+clipQueue.on('error', (error) => {
+  console.error('Queue error:', error);
+});
 
 const redis = new Redis(REDIS_URL);
 
@@ -177,6 +113,23 @@ app.get("/aloja", (c) => {
   return c.json({
     134: 124,
   });
+});
+
+app.get("/queue-health", async (c) => {
+  try {
+    const queueCounts = await clipQueue.getJobCounts();
+    
+    return c.json({
+      jobCounts: queueCounts,
+      message: 'Queue is operational'
+    });
+  } catch (error) {
+    console.error("Error checking queue health:", error);
+    return c.json({
+      isConnected: false,
+      error: "Failed to check queue health",
+    }, 500);
+  }
 });
 
 // app.post("/notify-user/:handle", async (c) => {

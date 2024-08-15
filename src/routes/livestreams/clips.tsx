@@ -6,6 +6,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { Job } from 'bullmq';
 import { processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
@@ -325,7 +326,7 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
     });
   }
   
-  export async function processClipJob(job: any) {
+  export async function processClipJob(job: Job) {
     const { streamId, playbackId } = job.data;
   
     try {
@@ -334,22 +335,85 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
       const livepeerStream = livepeerResponse.stream;
   
       if (!livepeerStream || !livepeerStream.isActive) {
-        console.log(`Stream ${streamId} is no longer active according to Livepeer. Ending stream and removing job from queue.`);
+        console.log(`Stream ${streamId} is no longer active. Ending stream and removing job from queue.`);
         await handleStreamEnd(streamId);
         await job.remove();
         return;
       }
   
       // If the stream is active, proceed with clip creation
-      await createClipAndStoreLocally(playbackId, streamId);
+      console.log(`Creating clip for stream ${streamId}`);
+      
+      const now = Date.now();
+      const startTime = now - 30000; // 30 seconds ago
+      const endTime = now;
+  
+      // Create clip request to Livepeer
+      const clipResult = await livepeer.stream.createClip({
+        playbackId,
+        startTime,
+        endTime,
+        name: `Clip_${endTime}`,
+      });
+  
+      const clipData = clipResult.data;
+  
+      // Store initial clip information in database
+      const clip = await prisma.clip.create({
+        data: {
+          stream: { connect: { streamId: streamId } },
+          startTime: new Date(startTime),
+          endTime: new Date(endTime),
+          assetId: clipData?.asset.id,
+          status: 'PROCESSING'
+        }
+      });
+  
+      // Wait for asset to be ready
+      const asset = await waitForAssetReady(clipData?.asset.id!);
+  
+      // Download the clip
+      const videoPath = await downloadClip(asset.downloadUrl);
+  
+      // Create GIF
+      const gifPath = await createGifFromVideo(videoPath);
+  
+      // Upload GIF to Cloudinary
+      const cloudinaryResponse = await uploadGifToTheCloud(
+        gifPath,
+        `${streamId}_${clip.id}`,
+        `clip_gifs/${streamId}`
+      );
+  
+      // Update clip record in the database
+      await prisma.clip.update({
+        where: { id: clip.id },
+        data: {
+          downloadUrl: asset.downloadUrl,
+          gifUrl: gifPath,
+          cloudinaryUrl: cloudinaryResponse.secure_url,
+          status: 'READY'
+        }
+      });
+  
+      // Clean up
+      await fs.unlink(videoPath);
+      await fs.unlink(gifPath);
+  
+      console.log(`Clip creation completed for stream ${streamId}`);
+  
     } catch (error) {
       console.error(`Error processing clip for stream ${streamId}:`, error);
       
-      // If the error is due to the stream not existing, end the stream
       if (error?.message?.includes('not found')) {
         await handleStreamEnd(streamId);
         await job.remove();
       } else {
+        // Update any clips in PROCESSING state to FAILED
+        await prisma.clip.updateMany({
+          where: { streamId, status: 'PROCESSING' },
+          data: { status: 'FAILED' }
+        });
         throw error; // This will mark the job as failed for other types of errors
       }
     }

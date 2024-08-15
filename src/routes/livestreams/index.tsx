@@ -221,8 +221,8 @@ app.frame("/:streamer", async (c) => {
   const { streamer } = c.req.param();
   const { streamId, root } = c.req.query()
   console.log("inside the streamer route", streamer, streamId);
+  console.log('the frame data is: ', c.frameData)
   const buttonIndex = c?.frameData?.buttonIndex;
-  const frameCastHash = c?.frameData?.castId.hash;
   const userFid = c.frameData?.fid;
 
   if (buttonIndex == 1 || root) {
