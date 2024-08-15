@@ -22,7 +22,7 @@ import { StreamStatus } from '@prisma/client';
 const execAsync = promisify(exec);
 
 const StreamStartedSchema = z.object({
-  streamerFid: z.string(),
+  fid: z.string(),
   nameOfLivestream: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
   streamId: z.string().uuid(),
@@ -122,7 +122,7 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
         status: StreamStatus.LIVE,
         startedAt: new Date(),
         user: {
-          connect: { fid: validatedData.streamerFid }
+          connect: { fid: validatedData.fid }
         }
       },
     });
@@ -131,13 +131,13 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
 
     // Start the clip creation process
     startClipCreationProcess(validatedData.streamId);
-    const subscribers = await getSubscribersOfStreamer(validatedData.streamerFid);
-    await sendProgrammaticDmToSubscribers(subscribers, validatedData.streamerFid, validatedData.nameOfLivestream);
+    const subscribers = await getSubscribersOfStreamer(validatedData.fid);
+    await sendProgrammaticDmToSubscribers(subscribers, validatedData.fid, validatedData.nameOfLivestream);
 
     // add a call here to get all the subscribers of the user that just started streaming and send them a programmatic DC
 
     return c.json({ 
-      message: `Clipping process started successfully for streamer ${validatedData.streamerFid}, and all the DCs were sent to their subscribers`,
+      message: `Clipping process started successfully for streamer ${validatedData.fid}, and all the DCs were sent to their subscribers`,
       data: stream
     }, 200);
 
