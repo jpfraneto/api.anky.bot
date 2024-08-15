@@ -4,7 +4,7 @@ import prisma from "../../../utils/prismaClient";
 import { v4 as uuidv4 } from 'uuid';
 
 
-export async function sendProgrammaticDmToSubscribers(subscribers: string[], streamerFid: string, streamTitle: string) {
+export async function sendProgrammaticDmToSubscribers(subscribers: string[], streamerFid: string, streamTitle: string, streamCastHash: string) {
     try {
       console.log("Sending programmatic DCs to subscribers:", subscribers);
       const streamer = await prisma.user.findUnique({ where: { fid: streamerFid } });
@@ -18,7 +18,7 @@ export async function sendProgrammaticDmToSubscribers(subscribers: string[], str
         const uuid = uuidv4();
         const directCastData = {
           recipientFid: subscriberFid,
-          message: `🔴 Live Alert! 📺\n\n@${streamer.username} just went live on Vibra:\n"${streamTitle}"\n\nDon't miss out! Watch now:\nhttps://www.vibra.so/stream/${streamer.username}\n\nEnjoy the stream! 🎉`,
+          message: `🔴 Live Alert! 📺\n\n@${streamer.username} just went live on Vibra:\n"${streamTitle}"\n\nDon't miss out! Watch now:\nhttps://www.vibra.so/stream/${streamer.username}\n\nEnjoy the stream! 🎉\n\nhttps://www.warpcast.com/${streamer.username}/${streamCastHash.slice(0,10)}`,
           idempotencyKey: uuid
         };
   

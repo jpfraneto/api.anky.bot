@@ -107,49 +107,51 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
 
     // Check if user exists, if not create user and generate GIF
     let user = await prisma.user.findUnique({ where: { fid: validatedData.fid } });
+    console.log("IN HERE, THE USER IS: ", user)
     if (!user) {
       const gifUrl = await createUserFromFidAndUploadGif(validatedData.fid);
       if (!gifUrl) {
-        return c.json({ error: "Failed to create user and generate GIF" }, 500);
+        throw new Error("Failed to create user and generate GIF");
       }
       user = await prisma.user.findUnique({ where: { fid: validatedData.fid } });
       if (!user) {
-        return c.json({ error: "User creation failed" }, 500);
+        throw new Error("User creation failed");
       }
     }
+    const sanitizedTitle = validatedData.nameOfLivestream.split('-').slice(1).join('-').trim();
+    const sanitizedPlaybackId = validatedData.playbackId.split('hls/')[1].split('/index.m3u8')[0];
 
     // Create or update stream in database
     const stream = await prisma.stream.upsert({
       where: { streamId: validatedData.streamId },
       update: {
         castHash: validatedData.castHash,
-        title: validatedData.nameOfLivestream,
+        title: sanitizedTitle,
         description: validatedData.description,
         status: StreamStatus.LIVE,
         startedAt: new Date(),
-        playbackId: validatedData.playbackId,
+        playbackId: sanitizedPlaybackId,
       },
       create: {
         streamId: validatedData.streamId,
         castHash: validatedData.castHash,
-        title: validatedData.nameOfLivestream,
+        title: sanitizedTitle,
         description: validatedData.description,
         status: StreamStatus.LIVE,
         startedAt: new Date(),
-        playbackId: validatedData.playbackId,
+        playbackId: sanitizedPlaybackId,
         user: {
           connect: { fid: validatedData.fid }
         }
       },
     });
 
-    console.log("Stream started:", stream);
+    await startClipCreationProcess(validatedData.streamId);
 
-    // Start the clip creation process
-    startClipCreationProcess(validatedData.streamId);
     const subscribers = await getSubscribersOfStreamer(validatedData.fid);
-    await sendProgrammaticDmToSubscribers(subscribers, validatedData.fid, validatedData.nameOfLivestream);
-
+    console.log(`THe subscribers of the streamer ${validatedData.fid} are: `, subscribers)
+    await sendProgrammaticDmToSubscribers(subscribers, validatedData.fid, validatedData.nameOfLivestream, validatedData.castHash);
+    
     return c.json({ 
       message: `Clipping process started successfully for streamer ${validatedData.fid}, and all the DCs were sent to their subscribers`,
       data: stream

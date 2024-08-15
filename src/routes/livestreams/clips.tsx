@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client'
 import { uploadGifToTheCloud } from '../../../utils/cloudinary'
-import { Button, FrameContext, Frog, TextInput } from 'frog';
-import { SECRET } from '../../../env/server-env';
-import { NEYNAR_API_KEY, VIBRA_LIVESTREAMS_API, VIBRA_LIVESTREAMS_API_KEY, LIVEPEER_API_KEY } from '../../../env/server-env';
+import { clipQueue } from '../../../utils/queue/queueConfig';
+import {  LIVEPEER_API_KEY } from '../../../env/server-env';
 import { Livepeer } from "livepeer";
 import fs from 'fs/promises';
 import path from 'path';
@@ -12,6 +10,9 @@ import { processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
 import queryString from 'query-string';
+
+import prisma from '../../../utils/prismaClient';
+import { sleep } from '../../../utils/time';
 
 
 const execAsync = promisify(exec);
@@ -23,72 +24,140 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const GIF_DIRECTORY = path.join(__dirname, 'generated_gifs');
 
-import prisma from '../../../utils/prismaClient';
-import { sleep } from '../../../utils/time';
+
+// async function createClipAndStoreLocally(playbackId: string, streamId: string) {
+//   console.log(`Starting clip creation process for stream ID: ${streamId}`);
+//   try {
+//     const startTime = Date.now();
+//     const endTime = startTime + 30000;
+//     console.log(`Clip time range: ${new Date(startTime).toISOString()} to ${new Date(endTime).toISOString()}`);
+
+//     // Get the current clip count for this stream
+//     const clipCount = await prisma.clip.count({
+//       where: { streamId: streamId }
+//     });
+//     const clipIndex = clipCount + 1;
+
+//     // Create clip request to Livepeer
+//     console.log('Calling Livepeer API to create clip...');
+//     const clipResult = await livepeer.stream.createClip({
+//       playbackId,
+//       startTime,
+//       endTime,
+//       name: `Clip_${endTime}`,
+//     });
+//     console.log("Clip creation initiated:", clipResult);
+//     const clipData = clipResult.data;
+
+//     // Store initial clip information in database
+//     const clip = await prisma.clip.create({
+//       data: {
+//         stream: { connect: { streamId: streamId } },
+//         startTime: new Date(startTime),
+//         endTime: new Date(endTime),
+//         assetId: clipData?.asset.id,
+//         clipIndex: clipIndex,
+//         status: 'PROCESSING'
+//       }
+//     });
+//     console.log('Initial clip record created in database:', clip);
+
+//     // Wait for asset to be ready
+//     console.log('Waiting for asset to be ready...');
+//     const asset = await waitForAssetReady(clipData?.asset.id!);
+//     console.log('Asset is ready for download.');
+
+//     // Download the clip
+//     console.log(`Downloading clip from URL: ${asset.downloadUrl}`);
+//     const videoPath = await downloadClip(asset.downloadUrl);
+//     console.log(`Clip downloaded and saved to: ${videoPath}`);
+
+//     // Create GIF
+//     console.log('Creating GIF from the downloaded clip...');
+//     const gifPath = await createGifFromVideo(videoPath);
+//     console.log(`GIF created and saved to: ${gifPath}`);
+
+//     // Upload GIF to Cloudinary
+//     console.log('Uploading GIF to Cloudinary...');
+//     const cloudinaryResponse = await uploadGifToTheCloud(
+//       gifPath,
+//       `${streamId}_${clipIndex}`,
+//       `clip_gifs/${streamId}`
+//     );
+//     console.log('GIF uploaded to Cloudinary:', cloudinaryResponse.secure_url);
+
+//     // Update clip record in the database
+//     const updatedClip = await prisma.clip.update({
+//       where: { id: clip.id },
+//       data: {
+//         downloadUrl: asset.downloadUrl,
+//         gifUrl: gifPath,
+//         cloudinaryUrl: cloudinaryResponse.secure_url,
+//         status: 'READY'
+//       }
+//     });
+//     console.log('Clip record updated in database:', updatedClip);
+
+//     // Clean up
+//     console.log(`Cleaning up temporary video file: ${videoPath}`);
+//     await fs.unlink(videoPath);
+//     console.log('Temporary video file deleted.');
+
+//     console.log(`GIF creation process completed for clip from ${new Date(startTime).toISOString()} to ${new Date(endTime).toISOString()}`);
+    
+//     return updatedClip;
+//   } catch (error) {
+//     console.error("Error in createClipAndStoreLocally:", error);
+//     // If an error occurs after the initial clip creation, update the status to FAILED
+//     if (clip) {
+//       await prisma.clip.update({
+//         where: { id: clip.id },
+//         data: { status: 'FAILED' }
+//       });
+//     }
+//     throw error;
+//   }
+// }
 
 async function createClipAndStoreLocally(playbackId: string, streamId: string) {
   console.log(`Starting clip creation process for stream ID: ${streamId}`);
-  try {
-    const startTime = Date.now();
-    const endTime = startTime + 30000;
-    console.log(`Clip time range: ${new Date(startTime).toISOString()} to ${new Date(endTime).toISOString()}`);
+  const now = Date.now()
+  const startTime = now - 30000;
+  const endTime = now;
 
-    // Get the current clip count for this stream
-    const clipCount = await prisma.clip.count({
-      where: { streamId: streamId }
-    });
+  try {
+    const clipCount = await prisma.clip.count({ where: { streamId } });
     const clipIndex = clipCount + 1;
 
-    // Create clip request to Livepeer
-    console.log('Calling Livepeer API to create clip...');
     const clipResult = await livepeer.stream.createClip({
       playbackId,
       startTime,
       endTime,
       name: `Clip_${endTime}`,
     });
-    console.log("Clip creation initiated:", clipResult);
-    const clipData = clipResult.data;
 
-    // Store initial clip information in database
     const clip = await prisma.clip.create({
       data: {
-        stream: { connect: { streamId: streamId } },
+        stream: { connect: { streamId } },
         startTime: new Date(startTime),
         endTime: new Date(endTime),
-        assetId: clipData?.asset.id,
-        clipIndex: clipIndex,
+        assetId: clipResult.data?.asset?.id!,
+        clipIndex,
         status: 'PROCESSING'
       }
     });
-    console.log('Initial clip record created in database:', clip);
 
-    // Wait for asset to be ready
-    console.log('Waiting for asset to be ready...');
-    const asset = await waitForAssetReady(clipData?.asset.id!);
-    console.log('Asset is ready for download.');
-
-    // Download the clip
-    console.log(`Downloading clip from URL: ${asset.downloadUrl}`);
+    const asset = await waitForAssetReady(clipResult.data?.asset.id!);
     const videoPath = await downloadClip(asset.downloadUrl);
-    console.log(`Clip downloaded and saved to: ${videoPath}`);
-
-    // Create GIF
-    console.log('Creating GIF from the downloaded clip...');
     const gifPath = await createGifFromVideo(videoPath);
-    console.log(`GIF created and saved to: ${gifPath}`);
 
-    // Upload GIF to Cloudinary
-    console.log('Uploading GIF to Cloudinary...');
     const cloudinaryResponse = await uploadGifToTheCloud(
       gifPath,
       `${streamId}_${clipIndex}`,
       `clip_gifs/${streamId}`
     );
-    console.log('GIF uploaded to Cloudinary:', cloudinaryResponse.secure_url);
 
-    // Update clip record in the database
-    const updatedClip = await prisma.clip.update({
+    await prisma.clip.update({
       where: { id: clip.id },
       data: {
         downloadUrl: asset.downloadUrl,
@@ -97,25 +166,16 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
         status: 'READY'
       }
     });
-    console.log('Clip record updated in database:', updatedClip);
 
-    // Clean up
-    console.log(`Cleaning up temporary video file: ${videoPath}`);
     await fs.unlink(videoPath);
-    console.log('Temporary video file deleted.');
+    console.log(`Clip creation completed for stream ${streamId}, clip ${clipIndex}`);
 
-    console.log(`GIF creation process completed for clip from ${new Date(startTime).toISOString()} to ${new Date(endTime).toISOString()}`);
-    
-    return updatedClip;
   } catch (error) {
-    console.error("Error in createClipAndStoreLocally:", error);
-    // If an error occurs after the initial clip creation, update the status to FAILED
-    if (clip) {
-      await prisma.clip.update({
-        where: { id: clip.id },
-        data: { status: 'FAILED' }
-      });
-    }
+    console.error(`Error creating clip for stream ${streamId}:`, error);
+    await prisma.clip.updateMany({
+      where: { streamId, status: 'PROCESSING' },
+      data: { status: 'FAILED' }
+    });
     throw error;
   }
 }
@@ -251,65 +311,63 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
   }
 
   export async function startClipCreationProcess(streamId: string) {
-    console.log(`Starting clip creation process for stream ${streamId}`);
+    const stream = await prisma.stream.findUnique({ where: { streamId } });
+    if (!stream) {
+      throw new Error(`Stream ${streamId} not found`);
+    }
   
-    const createClip = async () => {
-      try {
-        let stream = await prisma.stream.findUnique({
-          where: { streamId: streamId },
-          include: { clips: { orderBy: { clipIndex: 'desc' } } }
-        });
-       
-        if(!stream.playbackId){
-          const result = await livepeer.stream.get(streamId);
-          const thisStream = result.stream
-          stream = await prisma.stream.update({
-            where: { streamId: streamId },
-            data: { playbackId: thisStream?.playbackId }
-          })
-        }
-  
-        if (!stream) {
-          console.log(`Stream ${streamId} not found. Stopping clip creation process.`);
-          clearInterval(intervalId);
-          return;
-        }
-  
-        if (stream.status !== 'LIVE') {
-          console.log(`Stream ${streamId} is no longer live. Stopping clip creation process.`);
-          clearInterval(intervalId);
-          return;
-        }
-        if(stream.playbackId && stream.streamId){
-          if(!stream.clips || stream?.clips?.length === 0){
-            console.log("sleeping for 40 seconds to make time for the stream to work")
-            await sleep(40000)
-          }
-          await createClipAndStoreLocally(stream.playbackId, streamId);
-        }
-  
-        // If there are more than 8 clips, delete the oldest one
-        if (stream?.clips?.length >= 8) {
-          const oldestClip = stream.clips[stream.clips.length - 1];
-          await prisma.clip.delete({ where: { id: oldestClip.id } });
-          console.log(`Deleted oldest clip for stream ${streamId}`);
-        }
-      } catch (error) {
-        console.error(`Error in clip creation process for stream ${streamId}:`, error);
-      }
-    };
-  
-    // Create a clip immediately
-    await createClip();
-  
-    // Then create a clip every 5 minutes
-    const intervalId = setInterval(createClip, 5 * 60 * 1000);
-  
-    // Store the interval ID so we can clear it later if needed
-    await prisma.stream.update({
-      where: { streamId: streamId },
-      data: { clipCreationIntervalId: intervalId.toString() }
+    // Add initial job to the queue
+    await clipQueue.add('create-clip', { streamId, playbackId: stream.playbackId }, {
+      repeat: {
+        every: 300000, // Repeat every 300 seconds - 5 minutes
+      },
+      jobId: `clip-${streamId}`, // Unique job ID for this stream
     });
+  }
+  
+  export async function processClipJob(job: any) {
+    const { streamId, playbackId } = job.data;
+  
+    try {
+      // Check stream status with Livepeer
+      const livepeerResponse = await livepeer.stream.get(streamId);
+      const livepeerStream = livepeerResponse.stream;
+  
+      if (!livepeerStream || !livepeerStream.isActive) {
+        console.log(`Stream ${streamId} is no longer active according to Livepeer. Ending stream and removing job from queue.`);
+        await handleStreamEnd(streamId);
+        await job.remove();
+        return;
+      }
+  
+      // If the stream is active, proceed with clip creation
+      await createClipAndStoreLocally(playbackId, streamId);
+    } catch (error) {
+      console.error(`Error processing clip for stream ${streamId}:`, error);
+      
+      // If the error is due to the stream not existing, end the stream
+      if (error?.message?.includes('not found')) {
+        await handleStreamEnd(streamId);
+        await job.remove();
+      } else {
+        throw error; // This will mark the job as failed for other types of errors
+      }
+    }
+  }
+
+  async function handleStreamEnd(streamId: string) {
+    try {
+      await prisma.stream.update({
+        where: { streamId },
+        data: { 
+          status: 'ENDED', 
+          endedAt: new Date() 
+        }
+      });
+      console.log(`Stream ${streamId} has been marked as ended in the database.`);
+    } catch (error) {
+      console.error(`Error updating stream status for ${streamId}:`, error);
+    }
   }
   
   export async function stopClipCreationProcess(streamId: string) {

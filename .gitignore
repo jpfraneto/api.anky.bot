@@ -4,3 +4,5 @@ node_modules
 public/gifs
 public/videos
 public/gifs_farcaster
+
+prisma/migrations
