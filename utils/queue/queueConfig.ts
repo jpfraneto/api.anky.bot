@@ -1,14 +1,22 @@
-// queueConfig.ts
 import { Queue, Worker, Job } from 'bullmq';
 import { REDIS_URL } from '../../env/server-env';
 import { processClipJob } from '../../src/routes/livestreams/clips';
-import  Redis from 'ioredis';
+import Redis from 'ioredis';
 
+// Parse the Redis URL
+const parsedRedisUrl = new URL(REDIS_URL);
 
-const redis = new Redis({
+const redisOptions = {
+  host: parsedRedisUrl.hostname,
+  port: parseInt(parsedRedisUrl.port, 10),
+  username: parsedRedisUrl.username,
+  password: parsedRedisUrl.password,
   maxRetriesPerRequest: null,
-  host: REDIS_URL
-});
+  enableReadyCheck: false,
+  tls: parsedRedisUrl.protocol === 'rediss:' ? {} : undefined,
+};
+
+const redis = new Redis(redisOptions);
 
 export const clipQueue = new Queue('clip-creation', { 
   connection: redis 
