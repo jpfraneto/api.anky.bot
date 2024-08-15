@@ -10,7 +10,7 @@ import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import prisma from './prismaClient.js';
 import { uploadGifToTheCloud } from './cloudinary.js';
-import { getUserFromUsername } from './farcaster.js';
+import { getUserFromFid, getUserFromUsername } from './farcaster.js';
 const GIF_DIRECTORY = path.join(process.cwd(), 'temp_gifs')
 
 
@@ -198,6 +198,63 @@ export async function processAndSaveGif(staticImageUrl, streamerName, outputPath
   } catch (error) {
     console.error('Error in processAndSaveGif:', error);
     throw error;
+  }
+}
+
+export async function createUserFromFidAndUploadGif(fid: string): Promise<string | null> {
+  try {
+    console.log("Creating user and generating/uploading GIF for user with FID:", fid);
+
+    // Fetch user data from Farcaster
+    const userData = await getUserFromFid(Number(fid));
+    console.log("IN HERE, THE USER DATA IS: ", userData)
+    if (!userData) {
+      console.error("User not found on Farcaster:", fid);
+      return null;
+    }
+
+    // Create or update user in the database
+    const user = await prisma.user.upsert({
+      where: { fid: fid },
+      update: {
+        username: userData.username,
+        displayName: userData.displayName,
+        pfpUrl: userData.pfpUrl
+      },
+      create: {
+        fid: fid,
+        username: userData.username,
+        displayName: userData.display_name,
+        pfpUrl: userData.pfp_url
+      }
+    });
+
+    // Generate and save the GIF locally
+    const gifPath = path.join(GIF_DIRECTORY, `${fid}.gif`);
+    await fs.mkdir(GIF_DIRECTORY, { recursive: true });
+    await processAndSaveGif(userData.pfp_url, userData.username, gifPath);
+
+    // Upload the GIF to Cloudinary
+    const cloudinaryResponse = await uploadGifToTheCloud(
+      gifPath,
+      `user_gif_${fid}`,
+      'user_gifs'
+    );
+
+    // Update user with Cloudinary GIF URL
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { gifUrl: cloudinaryResponse.secure_url }
+    });
+
+    // Clean up the local GIF file
+    await fs.unlink(gifPath);
+
+    console.log("User created/updated and GIF uploaded for FID:", fid);
+    return cloudinaryResponse.secure_url;
+  } catch (error) {
+    console.error("Error in createUserAndUploadGif:", error);
+    return null;
   }
 }
 

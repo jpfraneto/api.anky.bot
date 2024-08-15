@@ -7,7 +7,7 @@ import path from 'path';
 import { exec } from 'child_process';
 import { z } from 'zod';
 import { promisify } from 'util';
-import { processAndSaveGif } from '../../../utils/gif';
+import { createUserFromFidAndUploadGif, processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
 import queryString from 'query-string';
@@ -27,6 +27,7 @@ const StreamStartedSchema = z.object({
   description: z.string().max(500).optional(),
   streamId: z.string().uuid(),
   castHash: z.string(),
+  playbackId: z.string(),
 });
 
 
@@ -104,6 +105,19 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
     // Validate input
     const validatedData = StreamStartedSchema.parse(body);
 
+    // Check if user exists, if not create user and generate GIF
+    let user = await prisma.user.findUnique({ where: { fid: validatedData.fid } });
+    if (!user) {
+      const gifUrl = await createUserFromFidAndUploadGif(validatedData.fid);
+      if (!gifUrl) {
+        return c.json({ error: "Failed to create user and generate GIF" }, 500);
+      }
+      user = await prisma.user.findUnique({ where: { fid: validatedData.fid } });
+      if (!user) {
+        return c.json({ error: "User creation failed" }, 500);
+      }
+    }
+
     // Create or update stream in database
     const stream = await prisma.stream.upsert({
       where: { streamId: validatedData.streamId },
@@ -113,6 +127,7 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
         description: validatedData.description,
         status: StreamStatus.LIVE,
         startedAt: new Date(),
+        playbackId: validatedData.playbackId,
       },
       create: {
         streamId: validatedData.streamId,
@@ -121,6 +136,7 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
         description: validatedData.description,
         status: StreamStatus.LIVE,
         startedAt: new Date(),
+        playbackId: validatedData.playbackId,
         user: {
           connect: { fid: validatedData.fid }
         }
@@ -133,8 +149,6 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
     startClipCreationProcess(validatedData.streamId);
     const subscribers = await getSubscribersOfStreamer(validatedData.fid);
     await sendProgrammaticDmToSubscribers(subscribers, validatedData.fid, validatedData.nameOfLivestream);
-
-    // add a call here to get all the subscribers of the user that just started streaming and send them a programmatic DC
 
     return c.json({ 
       message: `Clipping process started successfully for streamer ${validatedData.fid}, and all the DCs were sent to their subscribers`,
