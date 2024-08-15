@@ -16,6 +16,7 @@ import prisma from '../../../utils/prismaClient';
 import { checkIfUserSubscribed, getSubscribersOfStreamer, subscribeUserToStreamer, unsubscribeUserFromStreamer } from './subscriptions';
 import { apiKeyAuth } from '../../middleware/auth';
 import { sendProgrammaticDmToSubscribers } from './farcaster';
+import { StreamStatus } from '@prisma/client';
 
 
 const execAsync = promisify(exec);
@@ -110,7 +111,7 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
         castHash: validatedData.castHash,
         title: validatedData.nameOfLivestream,
         description: validatedData.description,
-        status: "LIVE",
+        status: StreamStatus.LIVE,
         startedAt: new Date(),
       },
       create: {
@@ -118,7 +119,7 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
         castHash: validatedData.castHash,
         title: validatedData.nameOfLivestream,
         description: validatedData.description,
-        status: "LIVE",
+        status: StreamStatus.LIVE,
         startedAt: new Date(),
         user: {
           connect: { fid: validatedData.streamerFid }
