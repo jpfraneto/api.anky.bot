@@ -1,24 +1,31 @@
 // queueConfig.ts
 import { Queue, Worker, Job } from 'bullmq';
-import Redis from 'ioredis';
 import { REDIS_URL } from '../../env/server-env';
 import { processClipJob } from '../../src/routes/livestreams/clips';
+import  Redis from 'ioredis';
 
 
-const connection = new Redis(REDIS_URL);
+const redis = new Redis({
+  maxRetriesPerRequest: 1,
+  host: REDIS_URL
+});
 
-export const clipQueue = new Queue('clip-creation', { connection });
+export const clipQueue = new Queue('clip-creation', { 
+  connection: redis 
+});
 
 export const setupWorkers = () => {
-  const clipWorker = new Worker('clip-creation', async (job: Job) => {
-    await processClipJob(job);
-  }, { connection });
-
-  clipWorker.on('completed', (job) => {
-    console.log(`Job ${job.id} has completed`);
+  const worker = new Worker('clip-creation', processClipJob, { 
+    connection: redis 
   });
 
-  clipWorker.on('failed', (job, err) => {
+  worker.on('completed', job => {
+    console.log(`Job ${job.id} has completed.`);
+  });
+
+  worker.on('failed', (job, err) => {
     console.error(`Job ${job?.id} has failed with ${err.message}`);
   });
+
+  return worker;
 };
