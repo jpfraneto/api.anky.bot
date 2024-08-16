@@ -341,7 +341,7 @@ app.frame("/:streamer", async (c) => {
     
         const navigationButton = totalClips > 1 
           ? <Button action={`/clips/${streamer}/${streamId}/${latestProcessedClipInfo.index}`}>
-              ({(totalClips - 1).toString()})/{totalClips.toString()} ▶️
+              {(totalClips - 1).toString()}/{totalClips.toString()} ▶️
             </Button>
           : null;
     
@@ -711,12 +711,12 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
       intents: [
         prevClip 
           ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>
-              ◀️ ({(currentPosition - 1).toString()}/{totalClips.toString()})
+              ◀️ {(currentPosition - 1).toString()}/{totalClips.toString()}
             </Button> 
           : null,
         nextClip 
           ? <Button action={`/clips/${streamer}/${streamId}/${nextClip.clipIndex}`}>
-              ({(currentPosition + 1).toString()}/{totalClips.toString()}) ▶️
+              {(currentPosition + 1).toString()}/{totalClips.toString()} ▶️
             </Button> 
           : null,
         stream.status === 'LIVE' 
