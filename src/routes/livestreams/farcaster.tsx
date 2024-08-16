@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function sendProgrammaticDmToSubscribers(subscribers: string[], streamerFid: string, streamTitle: string, streamDescription: string, streamCastHash: string) {
     try {
+      const filteredSubscribers = subscribers.filter(subscriberFid => subscriberFid !== streamerFid);
       console.log("Sending programmatic DCs to subscribers:", subscribers);
       const streamer = await prisma.user.findUnique({ where: { fid: streamerFid } });
       
@@ -41,7 +42,7 @@ export async function sendProgrammaticDmToSubscribers(subscribers: string[], str
       };
   
       // Use Promise.all to send all Direct Casts concurrently
-      await Promise.all(subscribers.map(subscriberFid => sendDirectCast(subscriberFid)));
+      await Promise.all(filteredSubscribers.map(subscriberFid => sendDirectCast(subscriberFid)));
   
       console.log("All Direct Casts have been sent");
     } catch (error) {

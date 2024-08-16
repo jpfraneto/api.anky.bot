@@ -169,7 +169,7 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
     });
 
     await fs.unlink(videoPath);
-    console.log(`Clip creation completed for stream ${streamId}, clip ${clipIndex}`);
+    console.log(`Clip creation completed for stream ${streamId}, clip ${clipIndex}, and the cloudinary url is: ${cloudinaryResponse.secure_url}`);
 
   } catch (error) {
     console.error(`Error creating clip for stream ${streamId}:`, error);
@@ -286,6 +286,7 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
       }
   
       const latestClip = stream.clips[0];
+      console.log('in here, the latest clip is: ', latestClip)
       
       if (latestClip.status === 'PROCESSING') {
         return {
@@ -318,7 +319,7 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
     // Add initial job to the queue
     await clipQueue.add('create-clip', { streamId, playbackId: stream.playbackId }, {
       repeat: {
-        every: 300000, // Repeat every 300 seconds - 5 minutes
+        every: 480000, // Repeat every 480 seconds - 8 minutes
       },
       jobId: `clip-${streamId}`, // Unique job ID for this stream
     });
@@ -421,7 +422,7 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
       await fs.unlink(videoPath);
       await fs.unlink(gifPath);
   
-      console.log(`Clip creation completed for stream ${streamId}`);
+      console.log(`Clip creation completed for stream ${streamId}, and the cloudinary response is: ${cloudinaryResponse.secure_url}`);
   
     } catch (error) {
       console.error(`Error processing clip for stream ${streamId}:`, error);
