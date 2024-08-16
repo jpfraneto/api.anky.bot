@@ -235,6 +235,7 @@ app.frame("/:streamer", async (c) => {
       }
     }
   })
+  console.log("INNNN HERE, THE STREAMS ARE: ", streams)
   const thisStream = streams[0]
   console.log("this stream is: ", thisStream)
   const streamId = thisStream?.streamId
