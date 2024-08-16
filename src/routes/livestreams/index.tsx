@@ -236,6 +236,7 @@ app.frame("/:streamer", async (c) => {
     }
   })
   const thisStream = streams[0]
+  console.log("this stream is: ", thisStream)
   const streamId = thisStream?.streamId
 
   if (buttonIndex == 1 || root) {
