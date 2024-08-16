@@ -224,21 +224,22 @@ app.frame("/:streamer", async (c) => {
   const buttonIndex = c?.frameData?.buttonIndex;
   const userFid = c.frameData?.fid;
   console.log("THE FRAME DATA OS: ", c.frameData)
+  const streams = await prisma.stream.findMany({
+    where: {
+      castHash: c?.frameData?.castId.hash
+    },
+    include: {
+      clips: {
+        orderBy: { clipIndex: 'desc' },
+        take: 8
+      }
+    }
+  })
+  const thisStream = streams[0]
+  const streamId = thisStream?.streamId
 
   if (buttonIndex == 1 || root) {
-    const streams = await prisma.stream.findMany({
-      where: {
-        castHash: c?.frameData?.castId.hash
-      },
-      include: {
-        clips: {
-          orderBy: { clipIndex: 'desc' },
-          take: 8
-        }
-      }
-    })
-    const thisStream = streams[0]
-    const streamId = thisStream?.streamId
+
     const response = await axios.get(
       `${VIBRA_LIVESTREAMS_API}/livestreams/info?handle=${streamer}`,
       {
