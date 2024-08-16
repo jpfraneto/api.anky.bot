@@ -381,7 +381,7 @@ app.frame("/:streamer", async (c) => {
           <Button action={`/${streamer}/${isUserSubscribed ? "unsubscribe" : "subscribe"}`}>
             {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
           </Button>,
-          // <Button action={`/clips/${streamer}`}>View Clips</Button>,
+          <Button action={`/watch-clips/${streamer}/${streamId}/0`}>View Clips</Button>,
           <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
         ],
       });
@@ -735,6 +735,110 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
       ),
       intents: [
         <Button action={`/${streamer}`}>Back to Stream</Button>,
+      ],
+    });
+  }
+});
+
+app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
+  const { streamer, streamId, index } = c.req.param();
+  const clipIndex = parseInt(index);
+  console.log(`Fetching clip ${clipIndex} for streamer: ${streamer}, stream: ${streamId}`);
+
+  try {
+    const stream = await prisma.stream.findUnique({
+      where: { streamId: streamId },
+      include: {
+        clips: {
+          orderBy: { clipIndex: 'desc' },
+          take: 8
+        }
+      }
+    });
+
+    if (!stream) {
+      return c.res({
+        title: "Vibra - Stream Not Found",
+        image: (
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+            <div tw="mb-20 flex text-3xl text-purple-400">
+              Stream not found
+            </div>
+            <div tw="mt-3 flex text-3xl text-white">
+              This stream doesn't exist or has been deleted.
+            </div>
+          </div>
+        ),
+        intents: [
+          <Button action={`/${streamer}`}>Back to Streamer</Button>,
+        ],
+      });
+    }
+
+    const clips = stream.clips;
+    
+    if (clips.length === 0) {
+      return c.res({
+        title: "Vibra - No Clips Available",
+        image: (
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+            <div tw="mb-20 flex text-3xl text-purple-400">
+              No clips available
+            </div>
+            <div tw="mt-3 flex text-3xl text-white">
+              This stream doesn't have any clips yet.
+            </div>
+          </div>
+        ),
+        intents: [
+          <Button action={`/${streamer}`}>Back to Streamer</Button>,
+        ],
+      });
+    }
+
+    const currentClipIndex = clipIndex < clips.length ? clipIndex : 0;
+    const clip = clips[currentClipIndex];
+    const prevClip = clips[currentClipIndex + 1];
+    const nextClip = clips[currentClipIndex - 1];
+    
+    // Calculate the current position and total number of clips
+    const currentPosition = clips.length - currentClipIndex;
+    const totalClips = clips.length;
+
+    return c.res({
+      title: `Vibra - ${streamer}'s Clip`,
+      image: clip.cloudinaryUrl,
+      intents: [
+        prevClip 
+          ? <Button action={`/watch-clips/${streamer}/${streamId}/${currentClipIndex + 1}`}>
+              ◀️ ({(currentPosition - 1).toString()}/{totalClips.toString()})
+            </Button> 
+          : null,
+        nextClip 
+          ? <Button action={`/watch-clips/${streamer}/${streamId}/${currentClipIndex - 1}`}>
+              ({(currentPosition + 1).toString()}/{totalClips.toString()}) ▶️
+            </Button> 
+          : null,
+        <Button action={`/${streamer}`}>Back to Streamer</Button>,
+        <Button action={`/download-app/${streamer}`}>Mobile App</Button>
+      ],
+    });
+  } catch (error) {
+    console.error("Error fetching clip:", error);
+    return c.res({
+      title: "Vibra - Error",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mb-20 flex text-3xl text-purple-400">
+            Error fetching clip
+          </div>
+          <div tw="mt-3 flex text-3xl text-white">
+            An error occurred while fetching the clip. Please try again later.
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action={`/${streamer}`}>Back to Streamer</Button>,
       ],
     });
   }
