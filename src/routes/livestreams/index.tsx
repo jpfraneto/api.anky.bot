@@ -238,7 +238,7 @@ app.frame("/:streamer", async (c) => {
       }
     })
     const thisStream = streams[0]
-    const streamId = thisStream.streamId
+    const streamId = thisStream?.streamId
     const response = await axios.get(
       `${VIBRA_LIVESTREAMS_API}/livestreams/info?handle=${streamer}`,
       {
@@ -668,15 +668,29 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
     const currentClipIndex = clips.findIndex(c => c.clipIndex === clipIndex);
     const prevClip = clips[currentClipIndex + 1];
     const nextClip = clips[currentClipIndex - 1];
+    
+    // Calculate the current position and total number of clips
+    const currentPosition = clips.length - currentClipIndex;
+    const totalClips = clips.length;
 
     return c.res({
       title: `Vibra - ${streamer}'s Clip`,
       image: clip.cloudinaryUrl,
       intents: [
-        prevClip ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>◀️</Button> : null,
-        nextClip ? <Button action={`/clips/${streamer}/${streamId}/${nextClip.clipIndex}`}>▶️</Button> : null,
+        prevClip 
+          ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>
+              ◀️ `${(currentPosition - 1).toString()}/{totalClips.toString()}`
+            </Button> 
+          : null,
+        nextClip 
+          ? <Button action={`/clips/${streamer}/${streamId}/${nextClip.clipIndex}`}>
+              `${(currentPosition + 1).toString()}/{totalClips.toString()}` ▶️
+            </Button> 
+          : null,
         stream.status === 'LIVE' 
-          ? <Button.Link href={`https://www.vibra.so/stream/${streamer}?profilePicture=${streamerPfp}`}>Live 📺</Button.Link>
+          ? <Button.Link href={`https://www.vibra.so/stream/${streamer}?profilePicture=${streamerPfp}`}>
+              Live 📺
+            </Button.Link>
           : <Button action={`/${streamer}`}>View Stream</Button>,
         <Button action={`/download-app/${streamer}`}>Mobile App</Button>
       ],
