@@ -223,6 +223,7 @@ app.frame("/:streamer", async (c) => {
 
   const buttonIndex = c?.frameData?.buttonIndex;
   const userFid = c.frameData?.fid;
+  console.log("THE FRAME DATA OS: ", c.frameData)
 
   if (buttonIndex == 1 || root) {
     const response = await axios.get(
