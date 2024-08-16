@@ -274,6 +274,7 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
           }
         }
       });
+      console.log('the stream is', stream)
   
       if (!stream || stream.clips.length === 0) {
         console.log(`No clips found for the stream of ${streamer}. Starting clip creation process.`);
@@ -285,6 +286,7 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
         };
       }
   
+      console.log("the clips are: ", stream.clips)
       const latestClip = stream.clips[0];
       console.log('in here, the latest clip is: ', latestClip)
       
