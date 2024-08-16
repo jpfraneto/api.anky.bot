@@ -312,7 +312,7 @@ app.frame("/:streamer", async (c) => {
                 @{streamer} is live!
               </div>
               <div tw="mt-3 flex text-5xl text-white">
-                Clip #{latestProcessedClipInfo.index} is being created...
+                The first clip is being created...
               </div>
             </div>
           ),
@@ -321,6 +321,30 @@ app.frame("/:streamer", async (c) => {
               {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
             </Button>,
             <Button action={`/${streamer}?root=true&streamId=${streamId}`}>Refresh</Button>,
+            <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
+            <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
+          ],
+        });
+      }
+
+      if (latestProcessedClipInfo.hasClips && !latestProcessedClipInfo.isProcessing) {
+        const totalClips = thisStream.clips.length;
+        const currentPosition = totalClips; // Because this is the latest clip
+    
+        const navigationButton = totalClips > 1 
+          ? <Button action={`/clips/${streamer}/${streamId}/${latestProcessedClipInfo.index}`}>
+              ({(totalClips - 1).toString()})/{totalClips.toString()} ▶️
+            </Button>
+          : null;
+    
+        return c.res({
+          title: "vibra",
+          image: latestProcessedClipInfo.gifUrl,
+          intents: [
+            <Button action={`/${streamer}/${isUserSubscribed ? "unsubscribe" : "subscribe"}`}>
+              {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
+            </Button>,
+            navigationButton,
             <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
             <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
           ],
@@ -679,12 +703,12 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
       intents: [
         prevClip 
           ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>
-              ◀️ `${(currentPosition - 1).toString()}/{totalClips.toString()}`
+              ◀️ ({(currentPosition - 1).toString()}/{totalClips.toString()})
             </Button> 
           : null,
         nextClip 
           ? <Button action={`/clips/${streamer}/${streamId}/${nextClip.clipIndex}`}>
-              `${(currentPosition + 1).toString()}/{totalClips.toString()}` ▶️
+              ({(currentPosition + 1).toString()}/{totalClips.toString()}) ▶️
             </Button> 
           : null,
         stream.status === 'LIVE' 

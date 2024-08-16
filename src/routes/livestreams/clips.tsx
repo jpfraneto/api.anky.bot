@@ -297,7 +297,8 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
         isProcessing: latestClip.status === 'PROCESSING',
         gifUrl: latestProcessedClip.cloudinaryUrl,
         index: latestProcessedClip.clipIndex,
-        livepeerStreamId: streamId
+        livepeerStreamId: streamId,
+        totalClips: stream.clips.length 
       };
     } catch (error) {
       console.error("Error in getLatestClipFromStream:", error);
