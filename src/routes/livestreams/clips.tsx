@@ -181,23 +181,42 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
   }
 }
 
-  async function waitForAssetReady(assetId: string): Promise<any> {
-    console.log(`Waiting for asset ${assetId} to be ready...`);
-    let attempts = 0;
-    while (true) {
-      attempts++;
-      console.log(`Checking asset status. Attempt ${attempts}...`);
+async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Promise<any> {
+  console.log(`Waiting for asset ${assetId} to be ready...`);
+  let attempts = 0;
+  
+  while (attempts < maxAttempts) {
+    attempts++;
+    console.log(`Checking asset status. Attempt ${attempts}...`);
+    
+    try {
       const response = await livepeer.asset.get(assetId);
-      const asset = response.asset
-      console.log("IN HEREEEEEE, the asset is: ", asset)
+      const asset = response.asset;
+      console.log("Asset status:", asset?.status);
+
       if (asset?.status?.phase === "ready") {
         console.log(`Asset ${assetId} is ready after ${attempts} attempts.`);
         return asset;
       }
-      console.log(`Asset not ready. Current status: ${asset?.status?.phase}. Waiting 5 seconds before next check.`);
-      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 5 seconds before checking again
+
+      if (asset?.status?.phase === "failed") {
+        console.error(`Asset ${assetId} failed to process. Error: ${asset.status.errorMessage}`);
+        return null; // Return null instead of throwing an error
+      }
+
+      console.log(`Asset not ready. Current status: ${asset?.status?.phase}. Waiting 10 seconds before next check.`);
+      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds before checking again
+    } catch (error) {
+      console.error(`Error checking asset status: ${error.message}`);
+      if (attempts >= maxAttempts) {
+        return null; // Return null instead of throwing an error
+      }
     }
   }
+
+  console.error(`Asset ${assetId} not ready after ${maxAttempts} attempts.`);
+  return null; // Return null instead of throwing an error
+}
   
   async function downloadClip(url: string): Promise<string> {
     console.log(`Starting download of clip from URL: ${url}`);
