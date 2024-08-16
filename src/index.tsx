@@ -736,7 +736,7 @@ console.log(`Server is running on port ${port}`)
 //sendProgramaticDmToSubscribers([16098, 18350, 19696, 12785, 198258])
 // sendProgramaticDmToSubscribers([16098])
 
-// const usersAloja = ["wake", "0xen", "samuellhuber.eth", "downshift.eth"]
+// const usersAloja = ["nmercy"]
 // async function addUsersToDb(users: any){
 //   console.log("the users are: ", users)
 //   for (let user of users) {
