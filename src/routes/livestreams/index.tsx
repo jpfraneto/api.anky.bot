@@ -251,6 +251,7 @@ app.frame("/:streamer", async (c) => {
       }
     );
     const streamData = response.data;
+    console.log('THE STREAM DATA JHERE IS, AND THE', streamData, streamId)
     const isStreamLive = streamData?.status == "live";
     console.log("The stream is live:", isStreamLive);
 
