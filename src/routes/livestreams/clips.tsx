@@ -265,19 +265,17 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
 
   export async function getLatestClipFromStream(streamer: string, streamId: string) {
     try {
-      // Find or create the stream
-      const thisStream = await prisma.stream.upsert({
+      const stream = await prisma.stream.findUnique({
         where: { streamId: streamId },
-        update: {},
-        create: {
-          streamId: streamId,
-          user: { connect: { username: streamer } },
-          status: 'LIVE'
-        },
-        include: { clips: { orderBy: { clipIndex: 'desc' }, take: 1 } }
+        include: {
+          clips: {
+            orderBy: { clipIndex: 'desc' },
+            take: 8
+          }
+        }
       });
   
-      if (thisStream.clips.length === 0) {
+      if (!stream || stream.clips.length === 0) {
         console.log(`No clips found for the stream of ${streamer}. Starting clip creation process.`);
         startClipCreationProcess(streamId);
         return {
@@ -287,7 +285,7 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
         };
       }
   
-      const latestClip = thisStream.clips[0];
+      const latestClip = stream.clips[0];
       
       if (latestClip.status === 'PROCESSING') {
         return {
@@ -362,6 +360,23 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
       });
   
       const clipData = clipResult.data;
+
+      const clipCount = await prisma.clip.count({
+        where: { streamId: streamId }
+      });
+
+      if (clipCount >= 8) {
+        const oldestClip = await prisma.clip.findFirst({
+          where: { streamId: streamId },
+          orderBy: { clipIndex: 'asc' }
+        });
+        if (oldestClip) {
+          await prisma.clip.delete({ where: { id: oldestClip.id } });
+        }
+      }
+  
+      // Create the new clip with the next index
+      const newClipIndex = (clipCount % 8) + 1;
   
       // Store initial clip information in database
       const clip = await prisma.clip.create({
@@ -370,7 +385,8 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
           startTime: new Date(startTime),
           endTime: new Date(endTime),
           assetId: clipData?.asset.id,
-          status: 'PROCESSING'
+          status: 'PROCESSING',
+          clipIndex: newClipIndex
         }
       });
   

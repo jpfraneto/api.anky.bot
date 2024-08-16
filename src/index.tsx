@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { Frog } from "frog";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "frog/serve-static";
-import { SECRET, CLOUDINARY_CLOUD_NAME ,REDIS_URL,VIBRA_SO_WARPCAST_API_KEY, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, NEYNAR_API_KEY, CHISPITA_OXIDA_SIGNER_UUID, AIRSTACK_API_KEY, JPFRANETO_WARPCAST_API_KEY } from '../env/server-env';
+import { SECRET, CLOUDINARY_CLOUD_NAME ,REDIS_URL,VIBRA_SO_WARPCAST_API_KEY, CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY, NEYNAR_API_KEY, CHISPITA_OXIDA_SIGNER_UUID, AIRSTACK_API_KEY, JPFRANETO_WARPCAST_API_KEY, VIBRA_BOT_WARPCAST_API_KEY } from '../env/server-env';
 import { Logger } from '../utils/Logger';
 import { devtools } from "frog/dev";
 import { getPublicUrl } from '../utils/url';
@@ -718,7 +718,7 @@ console.log(`Server is running on port ${port}`)
 //       };
 //       const response = await axios.put('https://api.warpcast.com/v2/ext-send-direct-cast', directCastData, {
 //         headers: {
-//           'Authorization': `Bearer ${JPFRANETO_WARPCAST_API_KEY}`,
+//           'Authorization': `Bearer ${VIBRA_BOT_WARPCAST_API_KEY}`,
 //           'Content-Type': 'application/json'
 //         }
 //       })
@@ -734,7 +734,7 @@ console.log(`Server is running on port ${port}`)
 // }
 
 //sendProgramaticDmToSubscribers([16098, 18350, 19696, 12785, 198258])
-// sendProgramaticDmToSubscribers([803665])
+// sendProgramaticDmToSubscribers([16098])
 
 // const usersAloja = ["wake", "0xen", "samuellhuber.eth", "downshift.eth"]
 // async function addUsersToDb(users: any){

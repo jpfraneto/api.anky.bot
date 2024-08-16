@@ -150,7 +150,7 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
 
     const subscribers = await getSubscribersOfStreamer(validatedData.fid);
     console.log(`THe subscribers of the streamer ${validatedData.fid} are: `, subscribers)
-    await sendProgrammaticDmToSubscribers(subscribers, validatedData.fid, validatedData.nameOfLivestream, validatedData.castHash);
+    await sendProgrammaticDmToSubscribers(subscribers, validatedData.fid, sanitizedTitle, validatedData?.description!, validatedData.castHash);
     
     return c.json({ 
       message: `Clipping process started successfully for streamer ${validatedData.fid}, and all the DCs were sent to their subscribers`,
@@ -220,8 +220,7 @@ app.get("/frame-image/:streamer", async (c) => {
 app.frame("/:streamer", async (c) => {
   const { streamer } = c.req.param();
   const { streamId, root } = c.req.query()
-  console.log("inside the streamer route", streamer, streamId);
-  console.log('the frame data is: ', c.frameData)
+
   const buttonIndex = c?.frameData?.buttonIndex;
   const userFid = c.frameData?.fid;
 
@@ -235,6 +234,7 @@ app.frame("/:streamer", async (c) => {
         },
       }
     );
+    console.log('the streamData is: ', response.data)
     const streamData = response.data;
     const isStreamLive = streamData?.status == "live";
     console.log("The stream is live:", isStreamLive);
@@ -365,6 +365,7 @@ app.frame("/:streamer", async (c) => {
 
 app.frame("/create-first-clip/:streamer/:streamId", async (c) => {
   const { streamer, streamId } = c.req.param();
+  const streamerPfp = ""
   
   try {
     // Check if a clip is already being processed
@@ -415,7 +416,7 @@ app.frame("/create-first-clip/:streamer/:streamId", async (c) => {
       ),
       intents: [
         <Button action={`/create-first-clip/${streamer}/${streamId}`}>Refresh</Button>,
-        <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
+        <Button.Link href={`https://www.vibra.so/stream/${streamer}?profilePicture=${streamerPfp}`}>Live 📺</Button.Link>,
         <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
       ],
     });
@@ -595,13 +596,18 @@ app.frame("/download-app/:streamer", async (c) => {
 app.frame("/clips/:streamer/:streamId/:index", async (c) => {
   const { streamer, streamId, index } = c.req.param();
   const clipIndex = parseInt(index);
-
+  let streamerPfp = "";
   console.log(`Fetching clip ${clipIndex} for streamer: ${streamer}, stream: ${streamId}`);
 
   try {
     const stream = await prisma.stream.findUnique({
       where: { streamId: streamId },
-      include: { clips: { orderBy: { clipIndex: 'desc' }, take: 1 } }
+      include: {
+        clips: {
+          orderBy: { clipIndex: 'desc' },
+          take: 8
+        }
+      }
     });
 
     if (!stream) {
@@ -623,21 +629,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
       });
     }
 
-    // Check if it's been more than 5 minutes since the last clip was created
-    const lastClip = stream.clips[0];
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    if (stream.status === 'LIVE' && (!lastClip || lastClip.createdAt < fiveMinutesAgo)) {
-      // Start a new clip creation process without awaiting it
-      startClipCreationProcess(streamId);
-    }
-
-    const clip = await prisma.clip.findFirst({
-      where: { 
-        streamId: streamId,
-        clipIndex: clipIndex
-      },
-      include: { stream: true }
-    });
+    const clip = stream.clips.find(c => c.clipIndex === clipIndex);
 
     if (!clip) {
       return c.res({
@@ -659,26 +651,10 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
       });
     }
 
-    const prevClip = await prisma.clip.findFirst({
-      where: { 
-        streamId: streamId,
-        clipIndex: { lt: clip.clipIndex }
-      },
-      orderBy: { clipIndex: 'desc' }
-    });
-
-    const nextClip = await prisma.clip.findFirst({
-      where: { 
-        streamId: streamId,
-        clipIndex: { gt: clip.clipIndex }
-      },
-      orderBy: { clipIndex: 'asc' }
-    });
-
-    let message = "";
-    if (!nextClip && stream.status === 'LIVE') {
-      message = "This is the latest clip. New clips are created every 5 minutes.";
-    }
+    const clips = stream.clips;
+    const currentClipIndex = clips.findIndex(c => c.clipIndex === clipIndex);
+    const prevClip = clips[currentClipIndex + 1];
+    const nextClip = clips[currentClipIndex - 1];
 
     return c.res({
       title: `Vibra - ${streamer}'s Clip`,
@@ -687,7 +663,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
         prevClip ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>◀️</Button> : null,
         nextClip ? <Button action={`/clips/${streamer}/${streamId}/${nextClip.clipIndex}`}>▶️</Button> : null,
         stream.status === 'LIVE' 
-          ? <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>
+          ? <Button.Link href={`https://www.vibra.so/stream/${streamer}?profilePicture=${streamerPfp}`}>Live 📺</Button.Link>
           : <Button action={`/${streamer}`}>View Stream</Button>,
         <Button action={`/download-app/${streamer}`}>Mobile App</Button>
       ],
