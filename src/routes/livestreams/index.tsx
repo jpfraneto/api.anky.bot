@@ -241,8 +241,6 @@ app.frame("/:streamer", async (c) => {
   console.log("this stream is: ", thisStream)
   let streamId = thisStream?.streamId
 
-  if (buttonIndex == 1 || root) {
-
     const response = await axios.get(
       `${VIBRA_LIVESTREAMS_API}/livestreams/info?handle=${streamer}`,
       {
@@ -296,7 +294,7 @@ app.frame("/:streamer", async (c) => {
                 @{streamer} is live!
               </div>
               <div tw="mt-3 flex text-5xl text-white">
-                Be the first to create a clip!
+                We are processing the stream and creating the first clip...
               </div>
             </div>
           ),
@@ -304,7 +302,7 @@ app.frame("/:streamer", async (c) => {
             <Button action={`/${streamer}/${isUserSubscribed ? "unsubscribe" : "subscribe"}`}>
               {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
             </Button>,
-            <Button action={`/create-first-clip/${streamer}/${streamId}`}>🎬</Button>,
+            <Button action={`/${streamer}?root=true&streamId=${streamId}`}>Refresh</Button>,
             <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
             <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
           ],
@@ -394,96 +392,7 @@ app.frame("/:streamer", async (c) => {
         ],
       });
     }
-  } else {
-    console.log("inside the button index 2");
-    return c.res({
-      title: "anky",
-      image: "https://github.com/jpfraneto/images/blob/main/vibra-square.png?raw=true",
-      intents: [
-        // <Button action={`/${streamer}`}>Watch Stream</Button>,
-        <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
-        <Button.Link href="https://www.vibra.so/android">Android</Button.Link>,
-      ],
-    });
-  }
-});
-
-app.frame("/create-first-clip/:streamer/:streamId", async (c) => {
-  const { streamer, streamId } = c.req.param();
-  const streamerPfp = ""
   
-  try {
-    // Check if a clip is already being processed
-    const existingClip = await prisma.clip.findFirst({
-      where: {
-        streamId: streamId,
-        status: 'PROCESSING'
-      }
-    });
-
-    if (existingClip) {
-      // A clip is already being processed, show the waiting screen
-      return c.res({
-        title: "vibra - Clip in Progress",
-        image: (
-          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-            <div tw="mb-20 flex text-5xl text-purple-400">
-              Clip is being created...
-            </div>
-            <div tw="mt-3 flex text-4xl text-white">
-              This may take a few minutes.
-            </div>
-          </div>
-        ),
-        intents: [
-          <Button action={`/create-first-clip/${streamer}/${streamId}`}>Refresh</Button>,
-          <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
-          <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
-        ],
-      });
-    }
-
-    // Start the clip creation process
-    startClipCreationProcess(streamId);
-
-    // Show the initial creation message
-    return c.res({
-      title: "vibra - Creating Clip",
-      image: (
-        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-          <div tw="mb-20 flex text-5xl text-purple-400">
-            Creating first clip...
-          </div>
-          <div tw="mt-3 flex text-4xl text-white">
-            This may take a few minutes.
-          </div>
-        </div>
-      ),
-      intents: [
-        <Button action={`/create-first-clip/${streamer}/${streamId}`}>Refresh</Button>,
-        <Button.Link href={`https://www.vibra.so/stream/${streamer}?profilePicture=${streamerPfp}`}>Live 📺</Button.Link>,
-        <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
-      ],
-    });
-  } catch (error) {
-    console.error("Error creating first clip:", error);
-    return c.res({
-      title: "vibra - Error",
-      image: (
-        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
-          <div tw="mb-20 flex text-5xl text-purple-400">
-            Error creating clip
-          </div>
-          <div tw="mt-3 flex text-4xl text-white">
-            Please try again later.
-          </div>
-        </div>
-      ),
-      intents: [
-        <Button action={`/${streamer}`}>Back to Stream</Button>,
-      ],
-    });
-  }
 });
 
 
