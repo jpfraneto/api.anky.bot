@@ -263,19 +263,9 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
     }, 60000); // Run every 60 seconds
   }
 
-  export async function getLatestClipFromStream(streamer: string, streamId: string) {
+  export async function getLatestClipFromStream(stream: any, streamer: string) {
     try {
-      const stream = await prisma.stream.findUnique({
-        where: { streamId: streamId },
-        include: {
-          clips: {
-            orderBy: { clipIndex: 'desc' },
-            take: 8
-          }
-        }
-      });
-      console.log('the stream is', stream)
-  
+      const streamId = stream.streamId;
       if (!stream || stream.clips.length === 0) {
         console.log(`No clips found for the stream of ${streamer}. Starting clip creation process.`);
         startClipCreationProcess(streamId);
@@ -286,11 +276,14 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
         };
       }
   
-      console.log("the clips are: ", stream.clips)
-      const latestClip = stream.clips[0];
-      console.log('in here, the latest clip is: ', latestClip)
+      console.log("the clips are: ", stream.clips);
       
-      if (latestClip.status === 'PROCESSING') {
+      // Find the first non-processing clip
+      const latestProcessedClip = stream.clips.find(clip => clip.status !== 'PROCESSING');
+      const latestClip = stream.clips[0];
+  
+      if (!latestProcessedClip) {
+        // All clips are processing
         return {
           hasClips: true,
           isProcessing: true,
@@ -301,9 +294,9 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
   
       return {
         hasClips: true,
-        isProcessing: false,
-        gifUrl: latestClip.cloudinaryUrl,
-        index: latestClip.clipIndex,
+        isProcessing: latestClip.status === 'PROCESSING',
+        gifUrl: latestProcessedClip.cloudinaryUrl,
+        index: latestProcessedClip.clipIndex,
         livepeerStreamId: streamId
       };
     } catch (error) {

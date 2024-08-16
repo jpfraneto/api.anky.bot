@@ -19,7 +19,7 @@ export async function sendProgrammaticDmToSubscribers(subscribers: string[], str
         const uuid = uuidv4();
         const directCastData = {
           recipientFid: subscriberFid,
-          message: `🔴 Live Alert! 📺\n\n@${streamer.username} just went live on Vibra:\n"${streamTitle}"\n\n${streamDescription}\n\nDon't miss out! Watch now:\n\nEnjoy the stream! 🎉\n\nhttps://www.vibra.so/stream/${streamer.username}`,
+          message: `🔴 Live Alert! 📺\n\n@${streamer.username} just went live on Vibra:\n"${streamTitle}"\n\n${streamDescription}\n\nDon't miss out! Watch now:\n\nEnjoy the stream! 🎉\n\nhttps://www.warpcast.com/${streamer.username}/${streamCastHash.slice(0,10)}`,
           idempotencyKey: uuid
         };
   
