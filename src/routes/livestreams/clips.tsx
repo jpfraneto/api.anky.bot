@@ -312,12 +312,19 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
       throw new Error(`Stream ${streamId} not found`);
     }
   
-    // Add initial job to the queue
+    // Add an immediate one-time job
+    await clipQueue.add('create-clip', { streamId, playbackId: stream.playbackId }, {
+      jobId: `clip-${streamId}-immediate`,
+    });
+  
+    // Add a repeating job that starts after 8 minutes
     await clipQueue.add('create-clip', { streamId, playbackId: stream.playbackId }, {
       repeat: {
         every: 480000, // Repeat every 480 seconds - 8 minutes
+        immediately: false, // This ensures the repeat doesn't start immediately
       },
-      jobId: `clip-${streamId}`, // Unique job ID for this stream
+      jobId: `clip-${streamId}-repeat`, // Unique job ID for this stream's repeating job
+      delay: 480000, // Delay the start of the repeating job by 8 minutes
     });
   }
   

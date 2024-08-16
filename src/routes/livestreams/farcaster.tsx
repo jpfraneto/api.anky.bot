@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function sendProgrammaticDmToSubscribers(subscribers: string[], streamerFid: string, streamTitle: string, streamDescription: string, streamCastHash: string) {
     try {
-      const filteredSubscribers = subscribers.filter(subscriberFid => subscriberFid !== streamerFid);
+      const filteredSubscribers = subscribers.filter(subscriberFid => subscriberFid !== "803665");
       console.log("Sending programmatic DCs to subscribers:", subscribers);
       const streamer = await prisma.user.findUnique({ where: { fid: streamerFid } });
       
