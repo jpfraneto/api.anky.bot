@@ -151,7 +151,7 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
 
     const subscribers = await getSubscribersOfStreamer(validatedData.fid);
     console.log(`THe subscribers of the streamer ${validatedData.fid} are: `, subscribers)
-    await sendProgrammaticDmToSubscribers(subscribers, validatedData.fid, sanitizedTitle, validatedData?.description!, validatedData.castHash);
+    // await sendProgrammaticDmToSubscribers(subscribers, validatedData.fid, sanitizedTitle, validatedData?.description!, validatedData.castHash);
     
     return c.json({ 
       message: `Clipping process started successfully for streamer ${validatedData.fid}, and all the DCs were sent to their subscribers`,
