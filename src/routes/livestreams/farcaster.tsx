@@ -1,5 +1,5 @@
 import axios from "axios";
-import { JPFRANETO_WARPCAST_API_KEY, VIBRA_SO_WARPCAST_API_KEY } from "../../../env/server-env";
+import { JPFRANETO_WARPCAST_API_KEY, VIBRA_BOT_WARPCAST_API_KEY, VIBRA_SO_WARPCAST_API_KEY } from "../../../env/server-env";
 import prisma from "../../../utils/prismaClient";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -26,7 +26,7 @@ export async function sendProgrammaticDmToSubscribers(subscribers: string[], str
         try {
           const response = await axios.put('https://api.warpcast.com/v2/ext-send-direct-cast', directCastData, {
             headers: {
-              'Authorization': `Bearer ${JPFRANETO_WARPCAST_API_KEY}`,
+              'Authorization': `Bearer ${VIBRA_BOT_WARPCAST_API_KEY}`,
               'Content-Type': 'application/json'
             }
           });

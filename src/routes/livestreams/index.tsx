@@ -392,7 +392,6 @@ app.frame("/:streamer", async (c) => {
         ],
       });
     }
-  
 });
 
 
@@ -438,13 +437,13 @@ app.frame("/:streamer/subscribe", async (c) => {
             You subscribed to @{streamer}
           </div>
           <div tw="mt-3 flex text-3xl text-white">
-            You will receive a DM from @vibraso.eth when they go live.
+            You will receive a DM from @vibrabot.eth when they go live.
           </div>
         </div>
       ),
       intents: [
         <Button action={`/${streamer}/unsubscribe`}>Unsubscribe</Button>,
-        <Button.Link href={`https://www.warpcast.com/vibraso.eth`}>Follow Vibra</Button.Link>,
+        <Button.Link href={`https://www.warpcast.com/vibraso.eth`}>FollowVibraBot</Button.Link>,
         <Button.Link href={warpcastRedirectLink}>Share</Button.Link>,
       ],
     });
@@ -559,7 +558,6 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
       include: {
         clips: {
           orderBy: { clipIndex: 'desc' },
-          take: 8
         }
       }
     });
@@ -583,7 +581,8 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
       });
     }
 
-    const clip = stream.clips.find(c => c.clipIndex === clipIndex);
+    const clips = stream.clips;
+    const clip = clips.find(c => c.clipIndex === clipIndex);
 
     if (!clip) {
       return c.res({
@@ -599,19 +598,17 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
           </div>
         ),
         intents: [
-          <Button action={`/clips/${streamer}/${streamId}/${clipIndex - 1}`}>Previous Clip</Button>,
           <Button action={`/${streamer}`}>Back to Stream</Button>,
         ],
       });
     }
 
-    const clips = stream.clips;
     const currentClipIndex = clips.findIndex(c => c.clipIndex === clipIndex);
     const prevClip = clips[currentClipIndex + 1];
     const nextClip = clips[currentClipIndex - 1];
     
     // Calculate the current position and total number of clips
-    const currentPosition = clips.length - currentClipIndex;
+    const currentPosition = currentClipIndex + 1;
     const totalClips = clips.length;
 
     return c.res({
@@ -620,12 +617,12 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
       intents: [
         prevClip 
           ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>
-              ◀️ {(currentPosition - 1).toString()}/{totalClips.toString()}
+              ◀️ {currentPosition + 1}/{totalClips}
             </Button> 
           : null,
         nextClip 
           ? <Button action={`/clips/${streamer}/${streamId}/${nextClip.clipIndex}`}>
-              {(currentPosition + 1).toString()}/{totalClips.toString()} ▶️
+              {currentPosition - 1}/{totalClips} ▶️
             </Button> 
           : null,
         stream.status === 'LIVE' 

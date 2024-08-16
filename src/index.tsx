@@ -706,35 +706,37 @@ serve({
 
 console.log(`Server is running on port ${port}`)
 
-// async function sendProgramaticDmToSubscribers(subscribers: any) {
-//   try {
-//     console.log("sending programatic dcs to subscribers: ", subscribers)
-//     for (let subscriber of subscribers) {
-//       const uuid = uuidv4();
-//       const directCastData = {
-//         recipientFid: subscriber,
-//         message: `${uuid}\n\nwena wena, este DC fue creado programaticamente y basicamente estamos cachando el mote de si funciona o no. Si te llego, porfa mandame un mensaje diciendo que te llego. Gracias! \n\nhttps://www.vibra.so/stream/jpfraneto`,
-//         idempotencyKey: uuid
-//       };
-//       const response = await axios.put('https://api.warpcast.com/v2/ext-send-direct-cast', directCastData, {
-//         headers: {
-//           'Authorization': `Bearer ${VIBRA_BOT_WARPCAST_API_KEY}`,
-//           'Content-Type': 'application/json'
-//         }
-//       })
-//       console.log("the response is: ", response.data)
-//       if(response.data.result.success) {
-//         console.log("the message was sent successfully to", subscriber)
-//       }
-//     }
-//   } catch (error) {
-//     console.log("there was an error sending the cast to the user", error)
+async function sendProgramaticDmToSubscribers(subscribers: any) {
+  try {
+    console.log("sending programatic dcs to subscribers: ", subscribers)
+    for (let subscriber of subscribers) {
+      const uuid = uuidv4();
+      const directCastData = {
+        recipientFid: subscriber,
+        message: `${uuid}\n\nwena wena, este DC fue creado programaticamente y basicamente estamos cachando el mote de si funciona o no. Si te llego, porfa mandame un mensaje diciendo que te llego. Gracias! \n\nhttps://www.vibra.so/stream/jpfraneto`,
+        idempotencyKey: uuid
+      };
+      const response = await axios.put('https://api.warpcast.com/v2/ext-send-direct-cast', directCastData, {
+        headers: {
+          'Authorization': `Bearer ${VIBRA_BOT_WARPCAST_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      console.log("the response is: ", response.data)
+      if(response.data.result.success) {
+        console.log("the message was sent successfully to", subscriber)
+      }
+    }
+  } catch (error) {
+    console.log("there was an error sending the cast to the user", error)
     
-//   }
-// }
+  }
+}
+
+sendProgramaticDmToSubscribers([16098])
 
 //sendProgramaticDmToSubscribers([16098, 18350, 19696, 12785, 198258])
-// sendProgramaticDmToSubscribers([16098])
+
 
 // const usersAloja = ["nmercy"]
 // async function addUsersToDb(users: any){
