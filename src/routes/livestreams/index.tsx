@@ -82,7 +82,7 @@ app.frame("/stream-not-found", async (c) => {
     image: (
       <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
         <div tw="mb-20 flex text-3xl text-purple-400">
-          This stream doesn't exist
+          This stream doesn't exist... /yet/
         </div>
         <div tw="mt-3 flex text-3xl text-white">
          But you can still download and enjoy the app
