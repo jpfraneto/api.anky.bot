@@ -237,7 +237,7 @@ export async function createUserFromFidAndUploadGif(fid: string): Promise<string
     // Upload the GIF to Cloudinary
     const cloudinaryResponse = await uploadGifToTheCloud(
       gifPath,
-      `user_gif_${fid}`,
+      `user_gif_${userData.username}`,
       'user_gifs'
     );
 

@@ -25,102 +25,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const GIF_DIRECTORY = path.join(__dirname, 'generated_gifs');
 
-
-// async function createClipAndStoreLocally(playbackId: string, streamId: string) {
-//   console.log(`Starting clip creation process for stream ID: ${streamId}`);
-//   try {
-//     const startTime = Date.now();
-//     const endTime = startTime + 30000;
-//     console.log(`Clip time range: ${new Date(startTime).toISOString()} to ${new Date(endTime).toISOString()}`);
-
-//     // Get the current clip count for this stream
-//     const clipCount = await prisma.clip.count({
-//       where: { streamId: streamId }
-//     });
-//     const clipIndex = clipCount + 1;
-
-//     // Create clip request to Livepeer
-//     console.log('Calling Livepeer API to create clip...');
-//     const clipResult = await livepeer.stream.createClip({
-//       playbackId,
-//       startTime,
-//       endTime,
-//       name: `Clip_${endTime}`,
-//     });
-//     console.log("Clip creation initiated:", clipResult);
-//     const clipData = clipResult.data;
-
-//     // Store initial clip information in database
-//     const clip = await prisma.clip.create({
-//       data: {
-//         stream: { connect: { streamId: streamId } },
-//         startTime: new Date(startTime),
-//         endTime: new Date(endTime),
-//         assetId: clipData?.asset.id,
-//         clipIndex: clipIndex,
-//         status: 'PROCESSING'
-//       }
-//     });
-//     console.log('Initial clip record created in database:', clip);
-
-//     // Wait for asset to be ready
-//     console.log('Waiting for asset to be ready...');
-//     const asset = await waitForAssetReady(clipData?.asset.id!);
-//     console.log('Asset is ready for download.');
-
-//     // Download the clip
-//     console.log(`Downloading clip from URL: ${asset.downloadUrl}`);
-//     const videoPath = await downloadClip(asset.downloadUrl);
-//     console.log(`Clip downloaded and saved to: ${videoPath}`);
-
-//     // Create GIF
-//     console.log('Creating GIF from the downloaded clip...');
-//     const gifPath = await createGifFromVideo(videoPath);
-//     console.log(`GIF created and saved to: ${gifPath}`);
-
-//     // Upload GIF to Cloudinary
-//     console.log('Uploading GIF to Cloudinary...');
-//     const cloudinaryResponse = await uploadGifToTheCloud(
-//       gifPath,
-//       `${streamId}_${clipIndex}`,
-//       `clip_gifs/${streamId}`
-//     );
-//     console.log('GIF uploaded to Cloudinary:', cloudinaryResponse.secure_url);
-
-//     // Update clip record in the database
-//     const updatedClip = await prisma.clip.update({
-//       where: { id: clip.id },
-//       data: {
-//         downloadUrl: asset.downloadUrl,
-//         gifUrl: gifPath,
-//         cloudinaryUrl: cloudinaryResponse.secure_url,
-//         status: 'READY'
-//       }
-//     });
-//     console.log('Clip record updated in database:', updatedClip);
-
-//     // Clean up
-//     console.log(`Cleaning up temporary video file: ${videoPath}`);
-//     await fs.unlink(videoPath);
-//     console.log('Temporary video file deleted.');
-
-//     console.log(`GIF creation process completed for clip from ${new Date(startTime).toISOString()} to ${new Date(endTime).toISOString()}`);
-    
-//     return updatedClip;
-//   } catch (error) {
-//     console.error("Error in createClipAndStoreLocally:", error);
-//     // If an error occurs after the initial clip creation, update the status to FAILED
-//     if (clip) {
-//       await prisma.clip.update({
-//         where: { id: clip.id },
-//         data: { status: 'FAILED' }
-//       });
-//     }
-//     throw error;
-//   }
-// }
-
-async function createClipAndStoreLocally(playbackId: string, streamId: string) {
+async function createClipAndStoreLocally(playbackId: string, streamId: string, handle: string) {
   console.log(`Starting clip creation process for stream ID: ${streamId}`);
   const now = Date.now()
   const startTime = now - 30000;
@@ -156,6 +61,12 @@ async function createClipAndStoreLocally(playbackId: string, streamId: string) {
       gifPath,
       `${streamId}_${clipIndex}`,
       `clip_gifs/${streamId}`
+    );
+
+    await uploadGifToTheCloud(
+      gifPath,
+      `user_gif_${handle}`,
+      'user_gifs'
     );
 
     await prisma.clip.update({
@@ -270,12 +181,12 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
     return outputPath;
   }
 
-  export async function startClippingProcess(playbackId: string, streamId: string) {
+  export async function startClippingProcess(playbackId: string, streamId: string, handle: string) {
     console.log(`Setting up interval for clipping process. Playback ID: ${playbackId}`);
     setInterval(async () => {
       console.log('Interval triggered. Creating new clip...');
       try {
-        await createClipAndStoreLocally(playbackId, streamId);
+        await createClipAndStoreLocally(playbackId, streamId, handle);
       } catch (error) {
         console.error("Error in clipping process:", error);
       }
@@ -325,19 +236,19 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
     }
   }
 
-  export async function startClipCreationProcess(streamId: string) {
+  export async function startClipCreationProcess(streamId: string, handle: string) {
     const stream = await prisma.stream.findUnique({ where: { streamId } });
     if (!stream) {
       throw new Error(`Stream ${streamId} not found`);
     }
   
     // Add an immediate one-time job
-    await clipQueue.add('create-clip', { streamId, playbackId: stream.playbackId }, {
+    await clipQueue.add('create-clip', { streamId, playbackId: stream.playbackId, handle }, {
       jobId: `clip-${streamId}-immediate`,
     });
   
     // Add a repeating job that starts after 8 minutes
-    await clipQueue.add('create-clip', { streamId, playbackId: stream.playbackId }, {
+    await clipQueue.add('create-clip', { streamId, playbackId: stream.playbackId, handle }, {
       repeat: {
         every: 480000, // Repeat every 480 seconds - 8 minutes
         immediately: false, // This ensures the repeat doesn't start immediately
@@ -348,7 +259,7 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
   }
   
   export async function processClipJob(job: Job) {
-    const { streamId, playbackId } = job.data;
+    const { streamId, playbackId, handle } = job.data;
   
     try {
       // Check stream status with Livepeer
@@ -428,6 +339,12 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
         `${streamId}_${clip.id}`,
         `clip_gifs/${streamId}`
       );
+
+      await uploadGifToTheCloud(
+        gifPath,
+        `user_gif_${handle}`,
+        'user_gifs'
+      );
   
       // Update clip record in the database
       await prisma.clip.update({
@@ -436,7 +353,6 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
           downloadUrl: asset.downloadUrl,
           gifUrl: gifPath,
           cloudinaryUrl: cloudinaryResponse.secure_url,
-          firstClipGifUrl: cloudinaryResponse.secure_url,
           status: 'READY'
         }
       });
@@ -499,7 +415,7 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
     }
   }
 
-  export async function createFirstStreamGif(streamId: string, playbackId: string) {
+  export async function createFirstStreamGif(streamId: string, playbackId: string, handle: string) {
     try {
       const now = Date.now();
       const startTime = now - 16180; // 20 seconds ago
@@ -517,16 +433,11 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
       const videoPath = await downloadClip(asset.downloadUrl);
       const gifPath = await createGifFromVideo(videoPath);
   
-      const cloudinaryResponse = await uploadGifToTheCloud(
+      await uploadGifToTheCloud(
         gifPath,
-        `first_clip_${streamId}`,
-        `stream_first_clips`
+        `user_gif_${handle}`,
+        'user_gifs'
       );
-  
-      await prisma.stream.update({
-        where: { streamId },
-        data: { firstClipGifUrl: cloudinaryResponse.secure_url }
-      });
   
       // Clean up
       await fs.unlink(videoPath);
