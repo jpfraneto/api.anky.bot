@@ -1,5 +1,5 @@
 
-import { SECRET, CLOUDINARY_CLOUD_NAME ,CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET, FILEBASE_API_TOKEN, DUMMY_BOT_SIGNER, NEYNAR_DUMMY_BOT_API_KEY } from '../env/server-env';
+import {CLOUDINARY_CLOUD_NAME ,CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET } from '../env/server-env';
 import { v2 as cloudinary } from 'cloudinary';
 
 const cloudinaryConfig = { 
@@ -14,7 +14,7 @@ export async function uploadVideoToTheCloud(filePath: string, publicId: string):
     const cloudinaryResponse = await cloudinary.uploader.upload(filePath, {
       resource_type: "video",
       public_id: publicId,
-      folder: "zurf",
+      folder: "vibra",
       overwrite: true
     })
     return cloudinaryResponse
