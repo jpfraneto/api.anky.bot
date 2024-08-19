@@ -325,7 +325,6 @@ app.frame("/:streamer", async (c) => {
             </Button>,
             <Button action={`/${streamer}?root=true&streamId=${streamId}`}>Refresh</Button>,
             <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
-            <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
           ],
         });
       }
@@ -349,7 +348,6 @@ app.frame("/:streamer", async (c) => {
             </Button>,
             <Button action={`/${streamer}?root=true&streamId=${streamId}`}>Refresh</Button>,
             <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
-            <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
           ],
         });
       }
@@ -373,7 +371,6 @@ app.frame("/:streamer", async (c) => {
             </Button>,
             navigationButton,
             <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
-            <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
           ],
         });
       }
@@ -387,7 +384,6 @@ app.frame("/:streamer", async (c) => {
           </Button>,
           <Button action={`/clips/${streamer}/${streamId}/${latestProcessedClipInfo.index}`}>▶️</Button>,
           <Button.Link href={`https://www.vibra.so/stream/${streamer}`}>Live 📺</Button.Link>,
-          <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
         ],
       });
     } else {
@@ -409,7 +405,6 @@ app.frame("/:streamer", async (c) => {
             {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
           </Button>,
           <Button action={`/watch-clips/${streamer}/${streamId}/0`}>View Clips</Button>,
-          <Button action={`/download-app/${streamer}`}>Mobile App</Button>,
         ],
       });
     }
