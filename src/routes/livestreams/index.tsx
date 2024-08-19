@@ -34,7 +34,6 @@ const StreamStartedSchema = z.object({
 const StreamEndedSchema = z.object({
   streamId: z.string().uuid(),
   fid: z.string(),
-  endedAt: z.string().datetime(),
 });
 
 const livepeer = new Livepeer({
@@ -218,7 +217,7 @@ app.post("/stream-ended", apiKeyAuth, async (c) => {
       where: { streamId: validatedData.streamId },
       data: {
         status: StreamStatus.ENDED,
-        endedAt: new Date(validatedData.endedAt),
+        endedAt: new Date(),
       },
       include: { user: true },
     });
@@ -234,10 +233,6 @@ app.post("/stream-ended", apiKeyAuth, async (c) => {
 
     // Create a final stream GIF (optional)
     await createFinalStreamGif(validatedData.streamId, updatedStream.playbackId!, updatedStream.user.username!);
-
-    // Notify subscribers that the stream has ended (optional)
-    const subscribers = await getSubscribersOfStreamer(validatedData.fid);
-    // await sendStreamEndedNotification(subscribers, updatedStream);
 
     return c.json({ 
       message: `Stream ${validatedData.streamId} has been marked as ended`,
