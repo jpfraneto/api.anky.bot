@@ -763,7 +763,7 @@ app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
         }
       }
     });
-    console.log('inside the watch clips route', stream)
+    console.log('inside the watch clips route', stream);
 
     if (!stream) {
       return c.res({
@@ -807,6 +807,26 @@ app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
 
     const currentClipIndex = clipIndex < clips.length ? clipIndex : 0;
     const clip = clips[currentClipIndex];
+
+    if (!clip) {
+      return c.res({
+        title: "Vibra - Clip Not Found",
+        image: (
+          <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+            <div tw="mb-20 flex text-3xl text-purple-400">
+              Clip not found
+            </div>
+            <div tw="mt-3 flex text-3xl text-white">
+              This clip doesn't exist or has been deleted.
+            </div>
+          </div>
+        ),
+        intents: [
+          <Button action={`/${streamer}`}>Back to Streamer</Button>,
+        ],
+      });
+    }
+
     const prevClip = clips[currentClipIndex + 1];
     const nextClip = clips[currentClipIndex - 1];
     
@@ -814,9 +834,25 @@ app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
     const currentPosition = clips.length - currentClipIndex;
     const totalClips = clips.length;
 
+    let imageContent;
+    if (clip.cloudinaryUrl) {
+      imageContent = clip.cloudinaryUrl;
+    } else {
+      imageContent = (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mb-20 flex text-3xl text-purple-400">
+            Clip Processing
+          </div>
+          <div tw="mt-3 flex text-3xl text-white">
+            This clip is still being processed. Please check back later.
+          </div>
+        </div>
+      );
+    }
+
     return c.res({
-      title: `Vibra`,
-      image: clip.cloudinaryUrl,
+      title: `Vibra - ${streamer}'s Clip`,
+      image: imageContent,
       intents: [
         prevClip 
           ? <Button action={`/watch-clips/${streamer}/${streamId}/${currentClipIndex + 1}`}>
