@@ -7,7 +7,7 @@ import path from 'path';
 import { exec } from 'child_process';
 import { z } from 'zod';
 import { promisify } from 'util';
-import { createUserFromFidAndUploadGif, processAndSaveGif } from '../../../utils/gif';
+import { createUserAndUploadGif, createUserFromFidAndUploadGif, processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
 import { createCanvas } from 'canvas';
 import { fileURLToPath } from 'url';
@@ -243,31 +243,53 @@ app.get("/generate-gif/:streamer", apiKeyAuth, async (c) => {
   }
 });
 
+async function checkImageExists(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { method: "HEAD" });
+    return response.ok;
+  } catch (error) {
+    console.error("Error checking image existence:", error);
+    return false;
+  }
+}
+
 app.get("/frame-image/:handle", async (c) => {
   const { handle } = c.req.param();
 
   try {
-    const user = await prisma.user.findUnique({
+    let imageUrl = 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/fallback.gif';
+    let user = await prisma.user.findUnique({
       where: { username: handle },
       include: { streams: { orderBy: { startedAt: 'desc' }, take: 1 } }
     });
 
     if (!user) {
-      throw new Error('User not found');
+      // Try to create the user and GIF
+      const createdGifUrl = await createUserAndUploadGif(handle);
+      if (createdGifUrl) {
+        imageUrl = createdGifUrl;
+        // Fetch the user again as it should now exist
+        user = await prisma.user.findUnique({
+          where: { username: handle },
+          include: { streams: { orderBy: { startedAt: 'desc' }, take: 1 } }
+        });
+      }
+      // If creation failed, we'll use the fallback image
     }
 
-    const latestStream = user.streams[0];
-    let imageUrl;
+    if (user) {
+      const latestStream = user.streams[0];
 
-    if (!latestStream || latestStream.status !== 'LIVE') {
-      // Stream is not live
-      imageUrl = 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_default.gif';
-    } else if (latestStream.firstClipGifUrl) {
-      // First clip GIF is ready
-      imageUrl = latestStream.firstClipGifUrl;
-    } else {
-      // Stream is live but first clip GIF is not ready yet
-      imageUrl = 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_default.gif';
+      if (!latestStream || latestStream.status !== 'LIVE') {
+        // Stream is not live
+        imageUrl = user.gifUrl || 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_default.gif';
+      } else if (latestStream.firstClipGifUrl) {
+        // First clip GIF is ready
+        imageUrl = latestStream.firstClipGifUrl;
+      } else {
+        // Stream is live but first clip GIF is not ready yet
+        imageUrl = user.gifUrl || 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_default.gif';
+      }
     }
 
     // Fetch the GIF

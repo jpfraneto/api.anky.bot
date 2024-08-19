@@ -258,58 +258,79 @@ export async function createUserFromFidAndUploadGif(fid: string): Promise<string
   }
 }
 
-export async function createUserAndUploadGif(streamer: string): Promise<string | null> {
-  try {
-    console.log("Creating user and generating/uploading GIF for streamer:", streamer);
+const TIMEOUT = 60000; // 60 seconds
 
-    // Fetch user data from Farcaster
-    const userData = await getUserFromUsername(streamer);
-    if (!userData) {
-      console.error("User not found on Farcaster:", streamer);
-      return null;
-    }
+const gifCreationInProgress = new Map<string, Promise<string | undefined>>();
 
-    // Create or update user in the database
-    const user = await prisma.user.upsert({
-      where: { fid: userData.fid.toString() },
-      update: {
-        username: userData.username,
-        displayName: userData.displayName,
-        pfpUrl: userData.pfp.url
-      },
-      create: {
-        fid: userData.fid.toString(),
-        username: userData.username,
-        displayName: userData.displayName,
-        pfpUrl: userData.pfp.url
-      }
-    });
-
-    // Generate and save the GIF locally
-    const gifPath = path.join(GIF_DIRECTORY, `${streamer}.gif`);
-    await fs.mkdir(GIF_DIRECTORY, { recursive: true });
-    await processAndSaveGif(userData.pfp.url, streamer, gifPath);
-
-    // Upload the GIF to Cloudinary
-    const cloudinaryResponse = await uploadGifToTheCloud(
-      gifPath,
-      `user_gif_${streamer}`,
-      'user_gifs'
-    );
-
-    // Update user with Cloudinary GIF URL
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { gifUrl: cloudinaryResponse.secure_url }
-    });
-
-    // Clean up the local GIF file
-    await fs.unlink(gifPath);
-
-    console.log("User created/updated and GIF uploaded for:", streamer);
-    return cloudinaryResponse.secure_url;
-  } catch (error) {
-    console.error("Error in createUserAndUploadGif:", error);
-    return null;
+export async function createUserAndUploadGif(streamer: string): Promise<string | undefined> {
+  if (gifCreationInProgress.has(streamer)) {
+    console.log(`GIF creation already in progress for ${streamer}, waiting for result...`);
+    return gifCreationInProgress.get(streamer);
   }
+
+  const creationPromise = Promise.race([
+    (async () => {
+      try {
+        console.log("Creating user and generating/uploading GIF for streamer:", streamer);
+        const userData = await getUserFromUsername(streamer);
+        if (!userData) {
+          console.error("User not found on Farcaster:", streamer);
+          return null;
+        }
+    
+        // Create or update user in the database
+        const user = await prisma.user.upsert({
+          where: { fid: userData.fid.toString() },
+          update: {
+            username: userData.username,
+            displayName: userData.displayName,
+            pfpUrl: userData.pfp.url
+          },
+          create: {
+            fid: userData.fid.toString(),
+            username: userData.username,
+            displayName: userData.displayName,
+            pfpUrl: userData.pfp.url
+          }
+        });
+    
+        // Generate and save the GIF locally
+        const gifPath = path.join(GIF_DIRECTORY, `${streamer}.gif`);
+        await fs.mkdir(GIF_DIRECTORY, { recursive: true });
+        await processAndSaveGif(userData.pfp.url, streamer, gifPath);
+    
+        // Upload the GIF to Cloudinary
+        const cloudinaryResponse = await uploadGifToTheCloud(
+          gifPath,
+          `user_gif_${streamer}`,
+          'user_gifs'
+        );
+    
+        // Update user with Cloudinary GIF URL
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { gifUrl: cloudinaryResponse.secure_url }
+        });
+    
+        // Clean up the local GIF file
+        await fs.unlink(gifPath);
+    
+        console.log("User created/updated and GIF uploaded for:", streamer);
+        return cloudinaryResponse.secure_url;
+      } catch (error) {
+        console.error("Error in createUserAndUploadGif:", error);
+        return null;
+      } finally {
+        // Remove the promise from the map once it's done
+        gifCreationInProgress.delete(streamer);
+      }
+    })(),
+    new Promise<null>((_, reject) => 
+      setTimeout(() => reject(new Error('GIF creation timed out')), TIMEOUT)
+    )
+  ]);
+
+  gifCreationInProgress.set(streamer, creationPromise);
+
+  return creationPromise;
 }
