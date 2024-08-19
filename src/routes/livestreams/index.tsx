@@ -12,7 +12,7 @@ import axios from 'axios';
 import { createCanvas } from 'canvas';
 import { fileURLToPath } from 'url';
 import queryString from 'query-string';
-import { createFirstStreamGif, getLatestClipFromStream, startClipCreationProcess, startClippingProcess } from './clips';
+import { createFinalStreamGif, createFirstStreamGif, getLatestClipFromStream, startClipCreationProcess, startClippingProcess, stopClipCreationProcess } from './clips';
 import prisma from '../../../utils/prismaClient';
 import { checkIfUserSubscribed, getSubscribersOfStreamer, subscribeUserToStreamer, unsubscribeUserFromStreamer } from './subscriptions';
 import { apiKeyAuth } from '../../middleware/auth';
@@ -31,6 +31,11 @@ const StreamStartedSchema = z.object({
   playbackId: z.string(),
 });
 
+const StreamEndedSchema = z.object({
+  streamId: z.string().uuid(),
+  fid: z.string(),
+  endedAt: z.string().datetime(),
+});
 
 const livepeer = new Livepeer({
   apiKey: process.env.LIVEPEER_API_KEY,
@@ -198,6 +203,58 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
   }
 });
 
+app.post("/stream-ended", apiKeyAuth, async (c) => {
+  console.log("Received request for stream ended");
+
+  try {
+    const body = await c.req.json();
+    console.log("Request body:", body);
+
+    // Validate input
+    const validatedData = StreamEndedSchema.parse(body);
+
+    // Update stream in database
+    const updatedStream = await prisma.stream.update({
+      where: { streamId: validatedData.streamId },
+      data: {
+        status: StreamStatus.ENDED,
+        endedAt: new Date(validatedData.endedAt),
+      },
+      include: { user: true },
+    });
+
+    if (!updatedStream) {
+      return c.json({ error: "Stream not found" }, 404);
+    }
+
+    console.log("Stream updated:", updatedStream);
+
+    // Stop the clip creation process
+    await stopClipCreationProcess(validatedData.streamId);
+
+    // Create a final stream GIF (optional)
+    await createFinalStreamGif(validatedData.streamId, updatedStream.playbackId!, updatedStream.user.username!);
+
+    // Notify subscribers that the stream has ended (optional)
+    const subscribers = await getSubscribersOfStreamer(validatedData.fid);
+    // await sendStreamEndedNotification(subscribers, updatedStream);
+
+    return c.json({ 
+      message: `Stream ${validatedData.streamId} has been marked as ended`,
+      data: updatedStream
+    }, 200);
+
+  } catch (error) {
+    console.error("Error handling stream end:", error);
+
+    if (error instanceof z.ZodError) {
+      return c.json({ error: "Invalid input", details: error.errors }, 400);
+    }
+
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
 app.get("/generate-gif/:streamer", apiKeyAuth, async (c) => {
   console.log("IIIIIN HERE")
   const { streamer } = c.req.param();
@@ -245,46 +302,74 @@ app.frame("/:streamer", async (c) => {
 
   const buttonIndex = c?.frameData?.buttonIndex;
   const userFid = c.frameData?.fid;
-  console.log("THE FRAME DATA OS: ", c.frameData)
-  const streams = await prisma.stream.findMany({
-    where: {
-      castHash: c?.frameData?.castId.hash
-    },
+  console.log("THE FRAME DATA IS: ", c.frameData)
+
+  // Find the user first
+  const user = await prisma.user.findUnique({
+    where: { username: streamer },
     include: {
-      clips: {
-        orderBy: { clipIndex: 'desc' },
-        take: 8
+      streams: {
+        orderBy: { startedAt: 'desc' },
+        take: 1,
+        include: {
+          clips: {
+            orderBy: { clipIndex: 'desc' },
+            take: 8
+          }
+        }
       }
     }
-  })
-  console.log("INNNN HERE, THE STREAMS ARE: ", streams)
-  const thisStream = streams[0]
-  console.log("this stream is: ", thisStream)
-  let streamId = thisStream?.streamId
+  });
 
-    const response = await axios.get(
-      `${VIBRA_LIVESTREAMS_API}/livestreams/info?handle=${streamer}`,
-      {
-        headers: {
-          "api-key": VIBRA_LIVESTREAMS_API_KEY!,
-          "User-Agent": `vibra-web-development`,
-        },
-      }
-    );
-    const streamData = response.data;
-    if(!streamId) {
-      streamId = streamData.livepeerInfo.streamId
+  if (!user) {
+    return c.res({
+      title: "vibra",
+      image: (
+        <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
+          <div tw="mb-20 flex text-3xl text-purple-400">
+            User not found
+          </div>
+          <div tw="mt-3 flex text-3xl text-white">
+            Please check the username and try again
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action="/">Back to Home</Button>,
+      ],
+    });
+  }
+
+  const latestStream = user.streams[0];
+  console.log("Latest stream is: ", latestStream);
+
+  let streamId = latestStream?.streamId;
+
+  const response = await axios.get(
+    `${VIBRA_LIVESTREAMS_API}/livestreams/info?handle=${streamer}`,
+    {
+      headers: {
+        "api-key": VIBRA_LIVESTREAMS_API_KEY!,
+        "User-Agent": `vibra-web-development`,
+      },
     }
-    console.log('THE STREAM DATA JHERE IS, AND THE', streamData, streamId)
-    const isStreamLive = streamData?.status == "live";
-    console.log("The stream is live:", isStreamLive);
+  );
+  const streamData = response.data;
+  if(!streamId) {
+    streamId = streamData.livepeerInfo.streamId
+  }
+  console.log('THE STREAM DATA HERE IS:', streamData, 'AND THE STREAM ID:', streamId)
+  const isStreamLive = streamData?.status == "live";
+  console.log("The stream is live:", isStreamLive);
 
-    const isUserSubscribed = await checkIfUserSubscribed(streamer, userFid!);
-    console.log("Is user subscribed:", isUserSubscribed);
+  const isUserSubscribed = await checkIfUserSubscribed(streamer, userFid!);
+  console.log("Is user subscribed:", isUserSubscribed);
 
-    if (isStreamLive) {
-      console.log('THE STREAM IS LIVE');
-      const latestProcessedClipInfo = await getLatestClipFromStream(thisStream, streamer);
+  // Rest of your code remains the same, but use latestStream instead of thisStream
+  if (isStreamLive) {
+    console.log('THE STREAM IS LIVE');
+    const latestProcessedClipInfo = await getLatestClipFromStream(latestStream, streamer);
+  
       console.log("The latest clip info is: ", latestProcessedClipInfo)
       
       if (!latestProcessedClipInfo) {
@@ -387,7 +472,6 @@ app.frame("/:streamer", async (c) => {
         ],
       });
     } else {
-      console.log("THE STREAMER IS NOT LIVE ANYMORE");
       return c.res({
         title: "vibra",
         image: (

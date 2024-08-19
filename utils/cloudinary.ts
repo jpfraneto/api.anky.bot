@@ -30,3 +30,16 @@ export async function uploadGifToTheCloud(filePath: string, publicId: string, fo
       })
     return cloudinaryResponse
   }
+
+
+export async function uploadInitialGifOfFrame(filePath: string, publicId: string): Promise<any> {
+    cloudinary.config(cloudinaryConfig)
+    const cloudinaryResponse = await cloudinary.uploader.upload(filePath, {
+        resource_type: "image",
+        public_id: publicId,
+        upload_preset: "frame_gifs",
+        overwrite: true,
+        invalidate: true
+    })
+    return cloudinaryResponse
+}

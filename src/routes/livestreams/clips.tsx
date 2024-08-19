@@ -1,4 +1,4 @@
-import { uploadGifToTheCloud } from '../../../utils/cloudinary'
+import { uploadGifToTheCloud, uploadInitialGifOfFrame } from '../../../utils/cloudinary'
 import { clipQueue } from '../../../utils/queue/queueConfig';
 import {  LIVEPEER_API_KEY } from '../../../env/server-env';
 import { Livepeer } from "livepeer";
@@ -181,60 +181,62 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
     return outputPath;
   }
 
-  export async function startClippingProcess(playbackId: string, streamId: string, handle: string) {
-    console.log(`Setting up interval for clipping process. Playback ID: ${playbackId}`);
-    setInterval(async () => {
-      console.log('Interval triggered. Creating new clip...');
-      try {
-        await createClipAndStoreLocally(playbackId, streamId, handle);
-      } catch (error) {
-        console.error("Error in clipping process:", error);
-      }
-    }, 60000); // Run every 60 seconds
-  }
+  
 
-  export async function getLatestClipFromStream(stream: any, streamer: string) {
-    try {
-      const streamId = stream.streamId;
-      if (!stream || stream.clips.length === 0) {
-        console.log(`No clips found for the stream of ${streamer}. Starting clip creation process.`);
-        startClipCreationProcess(streamId);
-        return {
-          hasClips: false,
-          streamId: streamId,
-          isProcessing: false
-        };
-      }
+  // export async function startClippingProcess(playbackId: string, streamId: string, handle: string) {
+  //   console.log(`Setting up interval for clipping process. Playback ID: ${playbackId}`);
+  //   setInterval(async () => {
+  //     console.log('Interval triggered. Creating new clip...');
+  //     try {
+  //       await createClipAndStoreLocally(playbackId, streamId, handle);
+  //     } catch (error) {
+  //       console.error("Error in clipping process:", error);
+  //     }
+  //   }, 60000); // Run every 60 seconds
+  // }
+
+  // export async function getLatestClipFromStream(stream: any, streamer: string) {
+  //   try {
+  //     const streamId = stream.streamId;
+  //     if (!stream || stream.clips.length === 0) {
+  //       console.log(`No clips found for the stream of ${streamer}. Starting clip creation process.`);
+  //       startClipCreationProcess(streamId);
+  //       return {
+  //         hasClips: false,
+  //         streamId: streamId,
+  //         isProcessing: false
+  //       };
+  //     }
   
-      console.log("the clips are: ", stream.clips);
+  //     console.log("the clips are: ", stream.clips);
       
-      // Find the first non-processing clip
-      const latestProcessedClip = stream.clips.find(clip => clip.status !== 'PROCESSING');
-      const latestClip = stream.clips[0];
+  //     // Find the first non-processing clip
+  //     const latestProcessedClip = stream.clips.find(clip => clip.status !== 'PROCESSING');
+  //     const latestClip = stream.clips[0];
   
-      if (!latestProcessedClip) {
-        // All clips are processing
-        return {
-          hasClips: true,
-          isProcessing: true,
-          streamId: streamId,
-          index: latestClip.clipIndex
-        };
-      }
+  //     if (!latestProcessedClip) {
+  //       // All clips are processing
+  //       return {
+  //         hasClips: true,
+  //         isProcessing: true,
+  //         streamId: streamId,
+  //         index: latestClip.clipIndex
+  //       };
+  //     }
   
-      return {
-        hasClips: true,
-        isProcessing: latestClip.status === 'PROCESSING',
-        gifUrl: latestProcessedClip.cloudinaryUrl,
-        index: latestProcessedClip.clipIndex,
-        livepeerStreamId: streamId,
-        totalClips: stream.clips.length 
-      };
-    } catch (error) {
-      console.error("Error in getLatestClipFromStream:", error);
-      return null;
-    }
-  }
+  //     return {
+  //       hasClips: true,
+  //       isProcessing: latestClip.status === 'PROCESSING',
+  //       gifUrl: latestProcessedClip.cloudinaryUrl,
+  //       index: latestProcessedClip.clipIndex,
+  //       livepeerStreamId: streamId,
+  //       totalClips: stream.clips.length 
+  //     };
+  //   } catch (error) {
+  //     console.error("Error in getLatestClipFromStream:", error);
+  //     return null;
+  //   }
+  // }
 
   export async function startClipCreationProcess(streamId: string, handle: string) {
     console.log(`Starting clip creation process for stream ${streamId}`);
@@ -252,6 +254,42 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
       jobId: `clip-${streamId}-repeat`, // Unique job ID for this stream's repeating job
       delay: 480000, // Delay the start of the repeating job by 8 minutes
     });
+  }
+
+  export async function stopClipCreationProcess(streamId: string) {
+    console.log(`Stopping clip creation process for stream ${streamId}`);
+  
+    try {
+      // Remove the repeating job for this stream
+      const jobId = `clip-${streamId}-repeat`;
+      const removed = await clipQueue.removeRepeatableByKey(jobId);
+  
+      if (removed) {
+        console.log(`Successfully removed repeating job for stream ${streamId}`);
+      } else {
+        console.log(`No repeating job found for stream ${streamId}`);
+      }
+  
+      // Optionally, you can also remove any pending jobs for this stream
+      const pendingJobs = await clipQueue.getJobs(['delayed', 'waiting']);
+      for (const job of pendingJobs) {
+        if (job.data.streamId === streamId) {
+          await job.remove();
+          console.log(`Removed pending job ${job.id} for stream ${streamId}`);
+        }
+      }
+  
+      // Update the stream status in the database if needed
+      await prisma.stream.update({
+        where: { streamId },
+        data: { status: 'ENDED' }
+      });
+  
+      console.log(`Clip creation process stopped for stream ${streamId}`);
+    } catch (error) {
+      console.error(`Error stopping clip creation process for stream ${streamId}:`, error);
+      throw error;
+    }
   }
   
   export async function processClipJob(job: Job) {
@@ -397,21 +435,6 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
       console.error(`Error updating stream status for ${streamId}:`, error);
     }
   }
-  
-  export async function stopClipCreationProcess(streamId: string) {
-    const stream = await prisma.stream.findUnique({
-      where: { streamId: streamId }
-    });
-  
-    if (stream && stream.clipCreationIntervalId) {
-      clearInterval(parseInt(stream.clipCreationIntervalId));
-      await prisma.stream.update({
-        where: { streamId: streamId },
-        data: { clipCreationIntervalId: null }
-      });
-      console.log(`Stopped clip creation process for stream ${streamId}`);
-    }
-  }
 
   export async function createFirstStreamGif(streamId: string, playbackId: string, handle: string) {
     console.log(`Starting createFirstStreamGif for streamId: ${streamId}, playbackId: ${playbackId}, handle: ${handle}`);
@@ -445,10 +468,9 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
       console.log(`GIF created at: ${gifPath}`);
   
       console.log(`Uploading GIF to Cloudinary...`);
-      const cloudinaryResponse = await uploadGifToTheCloud(
+      const cloudinaryResponse = await uploadInitialGifOfFrame(
         gifPath,
-        `user_gif_${handle}`,
-        'user_gifs'
+        `user_gif_${handle}`
       );
       console.log(`GIF uploaded to Cloudinary. URL: ${cloudinaryResponse.secure_url}`);
   
@@ -465,4 +487,95 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
         console.error(`Error stack: ${error.stack}`);
       }
     }
+  }
+
+  export async function createFinalStreamGif(streamId: string, playbackId: string, handle: string) {
+    console.log(`Starting createFinalStreamGif for streamId: ${streamId}, playbackId: ${playbackId}, handle: ${handle}`);
+    try {
+      const now = Date.now();
+      const startTime = now - 16180; // 16.18 seconds ago
+      const endTime = now;
+      console.log(`Clip time range: start=${new Date(startTime).toISOString()}, end=${new Date(endTime).toISOString()}`);
+  
+      console.log(`Creating clip with Livepeer for playbackId: ${playbackId}`);
+      const clipResult = await livepeer.stream.createClip({
+        playbackId,
+        startTime,
+        endTime,
+        name: `First_Clip_${streamId}`,
+      });
+  
+      const clipData = clipResult.data;
+      console.log(`Clip created successfully. Asset ID: ${clipData?.asset.id}`);
+  
+      console.log(`Waiting for asset to be ready...`);
+      const asset = await waitForAssetReady(clipData?.asset.id!);
+      console.log(`Asset is ready. Download URL: ${asset.downloadUrl}`);
+  
+      console.log(`Downloading clip...`);
+      const videoPath = await downloadClip(asset.downloadUrl);
+      console.log(`Clip downloaded to: ${videoPath}`);
+  
+      console.log(`Creating GIF from video...`);
+      const gifPath = await createLastGifFromVideo(videoPath);
+      console.log(`GIF created at: ${gifPath}`);
+  
+      console.log(`Uploading GIF to Cloudinary...`);
+      const cloudinaryResponse = await uploadInitialGifOfFrame(
+        gifPath,
+        `user_gif_${handle}`,
+      );
+      console.log(`GIF uploaded to Cloudinary. URL: ${cloudinaryResponse.secure_url}`);
+  
+      console.log(`Cleaning up temporary files...`);
+      await fs.unlink(videoPath);
+      await fs.unlink(gifPath);
+      console.log(`Temporary files deleted.`);
+  
+      console.log(`First stream GIF creation completed successfully for ${handle}`);
+    } catch (error) {
+      console.error(`Error creating first stream GIF for streamId: ${streamId}, handle: ${handle}:`, error);
+      if (error instanceof Error) {
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+    }
+  }
+
+  async function createLastGifFromVideo(videoPath: string): Promise<string> {
+    console.log(`Starting square GIF creation process for video: ${videoPath}`);
+    const outputDir = path.join(process.cwd(), 'clip-gifs');
+    console.log(`Ensuring output directory exists: ${outputDir}`);
+    await fs.mkdir(outputDir, { recursive: true });
+  
+    const outputPath = path.join(outputDir, `square_gif_${Date.now()}.gif`);
+    console.log(`Output square GIF will be saved to: ${outputPath}`);
+  
+    console.log('Executing ffmpeg command to create square GIF with end text...');
+    const ffmpegCommand = `
+      ffmpeg -i ${videoPath} -filter_complex "
+        [0:v] fps=10,
+               scale=iw*min(320/iw\\,320/ih):ih*min(320/iw\\,320/ih),
+               pad=320:320:(320-iw*min(320/iw\\,320/ih))/2:(320-ih*min(320/iw\\,320/ih))/2:black,
+               setsar=1:1 [v0];
+        [v0] split [v1][v2];
+        [v1] trim=duration=2.8,setpts=PTS-STARTPTS [trimmed];
+        [v2] drawtext=fontfile=/path/to/font.ttf:fontsize=24:fontcolor=white:x=(w-tw)/2:y=(h-th)/2:text='This stream is now offline':enable='gte(t,2.8)' [text];
+        [trimmed][text] concat=n=2:v=1 [out]
+      " -map "[out]" -c:v gif ${outputPath}
+    `.replace(/\s+/g, ' ').trim();
+    
+    console.log(`FFmpeg command: ${ffmpegCommand}`);
+    
+    try {
+      const { stdout, stderr } = await execAsync(ffmpegCommand);
+      console.log('FFmpeg stdout:', stdout);
+      console.log('FFmpeg stderr:', stderr);
+    } catch (error) {
+      console.error('Error executing ffmpeg command:', error);
+      throw error;
+    }
+  
+    console.log(`Square GIF with end text created successfully: ${outputPath}`);
+    return outputPath;
   }
