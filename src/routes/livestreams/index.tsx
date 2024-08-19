@@ -77,59 +77,59 @@ async function getFarcasterUserData(username) {
   }
 }
 
-// app.get("/frame-image/:handle", async (c) => {
-//   const { handle } = c.req.param();
-//   const { now } = c.req.query();
-//   try {
-//     const imageResponse = await fetch(`https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_${handle}.gif`);
-//     const imageArrayBuffer = await imageResponse.arrayBuffer()
-
-//     c.header('Content-Type', 'image/gif');
-//     c.header('Cache-Control', 'max-age=0');
-//     return c.body(Buffer.from(imageArrayBuffer));
-//   } catch (error) {
-//     console.error('Error serving frame image:', error);
-//     return c.json({ error: 'Error serving frame image' }, 500);
-//   }
-// });
-
-
 app.get("/frame-image/:handle", async (c) => {
   const { handle } = c.req.param();
-  const now = new Date().toISOString();
-  const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp
-
+  const { now } = c.req.query();
   try {
-    // Create a canvas
-    const width = 600;
-    const height = 600;
-    const canvas = createCanvas(width, height);
-    const ctx = canvas.getContext('2d');
+    const imageResponse = await fetch(`https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_${handle}.gif`);
+    const imageArrayBuffer = await imageResponse.arrayBuffer()
 
-    // Set background
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, width, height);
-
-    // Set text style
-    ctx.font = '16px Arial';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = 'center';
-
-    // Draw handle and timestamp
-    ctx.fillText(`le=${handle}&t=${timestamp}`, 20, height / 2 - 20);
-    ctx.fillText(`p: ${now}`, 20, height / 2 + 20);
-
-    // Convert canvas to buffer
-    const buffer = canvas.toBuffer('image/png');
-
-    c.header('Content-Type', 'image/png');
+    c.header('Content-Type', 'image/gif');
     c.header('Cache-Control', 'max-age=0');
-    return c.body(buffer);
+    return c.body(Buffer.from(imageArrayBuffer));
   } catch (error) {
-    console.error('Error generating frame image:', error);
-    return c.json({ error: 'Error generating frame image' }, 500);
+    console.error('Error serving frame image:', error);
+    return c.json({ error: 'Error serving frame image' }, 500);
   }
 });
+
+
+// app.get("/frame-image/:handle", async (c) => {
+//   const { handle } = c.req.param();
+//   const now = new Date().toISOString();
+//   const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp
+
+//   try {
+//     // Create a canvas
+//     const width = 600;
+//     const height = 600;
+//     const canvas = createCanvas(width, height);
+//     const ctx = canvas.getContext('2d');
+
+//     // Set background
+//     ctx.fillStyle = '#000000';
+//     ctx.fillRect(0, 0, width, height);
+
+//     // Set text style
+//     ctx.font = '16px Arial';
+//     ctx.fillStyle = '#FFFFFF';
+//     ctx.textAlign = 'left';
+
+//     // Draw handle and timestamp
+//     ctx.fillText(`le=${handle}&t=${timestamp}`, 20, height / 2 - 20);
+//     ctx.fillText(`p: ${now}`, 20, height / 2 + 20);
+
+//     // Convert canvas to buffer
+//     const buffer = canvas.toBuffer('image/png');
+
+//     c.header('Content-Type', 'image/png');
+//     c.header('Cache-Control', 'max-age=0');
+//     return c.body(buffer);
+//   } catch (error) {
+//     console.error('Error generating frame image:', error);
+//     return c.json({ error: 'Error generating frame image' }, 500);
+//   }
+// });
 
 app.frame("/stream-not-found", async (c) => {
   return c.res({
@@ -202,6 +202,11 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
     });
     console.log("THE STREAM WAS JUST CREATED: ", stream)
 
+    // Schedule the creation of the first GIF after 20 seconds
+    setTimeout(async () => {
+      await createFirstStreamGif(validatedData.streamId, sanitizedPlaybackId);
+    }, 20000);
+
     await startClipCreationProcess(validatedData.streamId);
 
     const subscribers = await getSubscribersOfStreamer(validatedData.fid);
@@ -238,39 +243,55 @@ app.get("/generate-gif/:streamer", apiKeyAuth, async (c) => {
   }
 });
 
-app.get("/frame-image/:streamer", async (c) => {
-  const { streamer } = c.req.param();
-  try {
-    console.log("Generating/retrieving GIF for streamer:", streamer);
-  
-    const gifPath = path.join(GIF_DIRECTORY, `${streamer}.gif`);
-  
-    try {
-      // Check if the GIF already exists
-      await fs.access(gifPath);
-      console.log("GIF already exists for", streamer);
-      return c.json({ imageUrl: `/generated_gifs/${streamer}.gif` });
-    } catch (error) {
-      // GIF doesn't exist, need to generate it
-      console.log("Generating new GIF for", streamer);
-  
-      // Fetch user data from Farcaster
-      const userData = await getFarcasterUserData(streamer);
-      if (!userData) {
-        return c.json({ error: "User not found on Farcaster" }, 404);
-      }
-  
-      // Generate the GIF
-      const staticImageUrl = userData.pfp.url; // Use the user's profile picture from Farcaster
-      console.log("the static image url is: ", staticImageUrl)
-      const outputPath = await processAndSaveGif(staticImageUrl, streamer, gifPath);
-  
-      return c.json({ imageUrl: `/generated_gifs/${streamer}.gif` });
-    }
-  } catch (error) {
-    return c.json({ imageUrl: `/generated_gifs/${streamer}.gif` });
-  }
+app.get("/frame-image/:handle", async (c) => {
+  const { handle } = c.req.param();
 
+  try {
+    const user = await prisma.user.findUnique({
+      where: { username: handle },
+      include: { streams: { orderBy: { startedAt: 'desc' }, take: 1 } }
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const latestStream = user.streams[0];
+    let imageUrl;
+
+    if (!latestStream || latestStream.status !== 'LIVE') {
+      // Stream is not live
+      imageUrl = 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_default.gif';
+    } else if (latestStream.firstClipGifUrl) {
+      // First clip GIF is ready
+      imageUrl = latestStream.firstClipGifUrl;
+    } else {
+      // Stream is live but first clip GIF is not ready yet
+      imageUrl = 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_default.gif';
+    }
+
+    // Fetch the GIF
+    const response = await fetch(imageUrl);
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    c.header('Content-Type', 'image/gif');
+    c.header('Cache-Control', 'max-age=0');
+    return c.body(buffer);
+
+  } catch (error) {
+    console.error('Error serving frame image:', error);
+    
+    // Serve a default error GIF
+    const errorGifUrl = 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/error_default.gif';
+    const response = await fetch(errorGifUrl);
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    c.header('Content-Type', 'image/gif');
+    c.header('Cache-Control', 'max-age=0');
+    return c.body(buffer);
+  }
 });
 
 app.frame("/:streamer", async (c) => {

@@ -38,6 +38,7 @@ model Stream {
   status        StreamStatus @default(LIVE)
   playbackId    String?    // Livepeer playback ID
   clipCreationIntervalId String?
+  firstClipGifUrl   String?
 
   // Relationships
   user          User     @relation(fields: [fid], references: [fid])

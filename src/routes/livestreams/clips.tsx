@@ -436,6 +436,7 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
           downloadUrl: asset.downloadUrl,
           gifUrl: gifPath,
           cloudinaryUrl: cloudinaryResponse.secure_url,
+          firstClipGifUrl: cloudinaryResponse.secure_url,
           status: 'READY'
         }
       });
@@ -495,5 +496,43 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
         data: { clipCreationIntervalId: null }
       });
       console.log(`Stopped clip creation process for stream ${streamId}`);
+    }
+  }
+
+  export async function createFirstStreamGif(streamId: string, playbackId: string) {
+    try {
+      const now = Date.now();
+      const startTime = now - 16180; // 20 seconds ago
+      const endTime = now;
+  
+      const clipResult = await livepeer.stream.createClip({
+        playbackId,
+        startTime,
+        endTime,
+        name: `First_Clip_${streamId}`,
+      });
+  
+      const clipData = clipResult.data;
+      const asset = await waitForAssetReady(clipData?.asset.id!);
+      const videoPath = await downloadClip(asset.downloadUrl);
+      const gifPath = await createGifFromVideo(videoPath);
+  
+      const cloudinaryResponse = await uploadGifToTheCloud(
+        gifPath,
+        `first_clip_${streamId}`,
+        `stream_first_clips`
+      );
+  
+      await prisma.stream.update({
+        where: { streamId },
+        data: { firstClipGifUrl: cloudinaryResponse.secure_url }
+      });
+  
+      // Clean up
+      await fs.unlink(videoPath);
+      await fs.unlink(gifPath);
+  
+    } catch (error) {
+      console.error(`Error creating first stream GIF for ${streamId}:`, error);
     }
   }
