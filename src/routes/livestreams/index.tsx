@@ -302,7 +302,6 @@ app.frame("/:streamer", async (c) => {
 
   const buttonIndex = c?.frameData?.buttonIndex;
   const userFid = c.frameData?.fid;
-  console.log("THE FRAME DATA IS: ", c.frameData)
 
   // Find the user first
   const user = await prisma.user.findUnique({
@@ -359,6 +358,7 @@ app.frame("/:streamer", async (c) => {
     streamId = streamData.livepeerInfo.streamId
   }
   console.log('THE STREAM DATA HERE IS:', streamData, 'AND THE STREAM ID:', streamId)
+  console.log('THE USERSSS ARE', streamer, userFid)
   const isStreamLive = streamData?.status == "live";
   console.log("The stream is live:", isStreamLive);
 
@@ -768,6 +768,7 @@ app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
         }
       }
     });
+    console.log('inside the watch clips route', stream)
 
     if (!stream) {
       return c.res({
@@ -792,7 +793,7 @@ app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
     
     if (clips.length === 0) {
       return c.res({
-        title: "Vibra - No Clips Available",
+        title: "Vibra",
         image: (
           <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-black text-white">
             <div tw="mb-20 flex text-3xl text-purple-400">
@@ -819,7 +820,7 @@ app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
     const totalClips = clips.length;
 
     return c.res({
-      title: `Vibra - ${streamer}'s Clip`,
+      title: `Vibra`,
       image: clip.cloudinaryUrl,
       intents: [
         prevClip 
