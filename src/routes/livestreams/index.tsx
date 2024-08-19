@@ -93,14 +93,16 @@ async function getFarcasterUserData(username) {
 //   }
 // });
 
+
 app.get("/frame-image/:handle", async (c) => {
   const { handle } = c.req.param();
   const now = new Date().toISOString();
+  const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp
 
   try {
     // Create a canvas
-    const width = 400;
-    const height = 200;
+    const width = 600;
+    const height = 600;
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
 
@@ -109,15 +111,13 @@ app.get("/frame-image/:handle", async (c) => {
     ctx.fillRect(0, 0, width, height);
 
     // Set text style
-    ctx.font = '20px Arial';
+    ctx.font = '16px Arial';
     ctx.fillStyle = '#FFFFFF';
     ctx.textAlign = 'center';
 
-    // Draw handle
-    ctx.fillText(`Handle: ${handle}`, width / 2, height / 2 - 20);
-
-    // Draw timestamp
-    ctx.fillText(`Timestamp: ${now}`, width / 2, height / 2 + 20);
+    // Draw handle and timestamp
+    ctx.fillText(`le=${handle}&t=${timestamp}`, 20, height / 2 - 20);
+    ctx.fillText(`p: ${now}`, 20, height / 2 + 20);
 
     // Convert canvas to buffer
     const buffer = canvas.toBuffer('image/png');
