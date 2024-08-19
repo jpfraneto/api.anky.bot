@@ -183,24 +183,24 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
 
   
 
-  // export async function startClippingProcess(playbackId: string, streamId: string, handle: string) {
-  //   console.log(`Setting up interval for clipping process. Playback ID: ${playbackId}`);
-  //   setInterval(async () => {
-  //     console.log('Interval triggered. Creating new clip...');
-  //     try {
-  //       await createClipAndStoreLocally(playbackId, streamId, handle);
-  //     } catch (error) {
-  //       console.error("Error in clipping process:", error);
-  //     }
-  //   }, 60000); // Run every 60 seconds
-  // }
+  export async function startClippingProcess(playbackId: string, streamId: string, handle: string) {
+    console.log(`Setting up interval for clipping process. Playback ID: ${playbackId}`);
+    setInterval(async () => {
+      console.log('Interval triggered. Creating new clip...');
+      try {
+        await createClipAndStoreLocally(playbackId, streamId, handle);
+      } catch (error) {
+        console.error("Error in clipping process:", error);
+      }
+    }, 60000); // Run every 60 seconds
+  }
 
   export async function getLatestClipFromStream(stream: any, streamer: string) {
     try {
       const streamId = stream.streamId;
       if (!stream || stream.clips.length === 0) {
         console.log(`No clips found for the stream of ${streamer}. Starting clip creation process.`);
-        startClipCreationProcess(streamId);
+        startClipCreationProcess(streamId, streamer);
         return {
           hasClips: false,
           streamId: streamId,
