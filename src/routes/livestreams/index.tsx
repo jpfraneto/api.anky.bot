@@ -433,7 +433,7 @@ app.frame("/:streamer", async (c) => {
       }
 
       if (latestProcessedClipInfo.hasClips && !latestProcessedClipInfo.isProcessing) {
-        const totalClips = thisStream.clips.length;
+        const totalClips = latestStream.clips.length;
         const currentPosition = totalClips; // Because this is the latest clip
     
         const navigationButton = totalClips > 1 
