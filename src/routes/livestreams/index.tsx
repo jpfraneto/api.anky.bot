@@ -255,57 +255,77 @@ async function checkImageExists(url: string): Promise<boolean> {
 
 app.get("/frame-image/:handle", async (c) => {
   const { handle } = c.req.param();
+  console.log(`Received request for handle: ${handle}`);
 
   try {
     let imageUrl = 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/fallback.gif';
+    console.log(`Initial fallback imageUrl: ${imageUrl}`);
+
     let user = await prisma.user.findUnique({
       where: { username: handle },
       include: { streams: { orderBy: { startedAt: 'desc' }, take: 1 } }
     });
 
     if (!user) {
+      console.log(`User not found for handle: ${handle}. Attempting to create user and GIF.`);
       // Try to create the user and GIF
       const createdGifUrl = await createUserAndUploadGif(handle);
       if (createdGifUrl) {
+        console.log(`Successfully created GIF for ${handle}. URL: ${createdGifUrl}`);
         imageUrl = createdGifUrl;
         // Fetch the user again as it should now exist
         user = await prisma.user.findUnique({
           where: { username: handle },
           include: { streams: { orderBy: { startedAt: 'desc' }, take: 1 } }
         });
+        console.log(`Refetched user after creation: ${user ? 'Found' : 'Not found'}`);
+      } else {
+        console.log(`Failed to create GIF for ${handle}. Using fallback image.`);
       }
-      // If creation failed, we'll use the fallback image
+    } else {
+      console.log(`User found for handle: ${handle}`);
     }
 
     if (user) {
       const latestStream = user.streams[0];
+      console.log(`Latest stream for ${handle}: ${latestStream ? `ID: ${latestStream.id}, Status: ${latestStream.status}` : 'No stream'}`);
 
       if (!latestStream || latestStream.status !== 'LIVE') {
+        console.log(`Stream is not live for ${handle}`);
         // Stream is not live
         imageUrl = user.gifUrl || 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_default.gif';
+        console.log(`Using ${user.gifUrl ? 'user GIF' : 'default GIF'} for non-live stream. URL: ${imageUrl}`);
       } else if (latestStream.firstClipGifUrl) {
+        console.log(`First clip GIF is ready for ${handle}`);
         // First clip GIF is ready
         imageUrl = latestStream.firstClipGifUrl;
+        console.log(`Using first clip GIF. URL: ${imageUrl}`);
       } else {
+        console.log(`Stream is live but first clip GIF is not ready for ${handle}`);
         // Stream is live but first clip GIF is not ready yet
         imageUrl = user.gifUrl || 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_default.gif';
+        console.log(`Using ${user.gifUrl ? 'user GIF' : 'default GIF'} while waiting for first clip. URL: ${imageUrl}`);
       }
     }
 
+    console.log(`Final imageUrl for ${handle}: ${imageUrl}`);
     // Fetch the GIF
+    console.log(`Fetching GIF from URL: ${imageUrl}`);
     const response = await fetch(imageUrl);
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    console.log(`Successfully fetched and processed GIF for ${handle}`);
     c.header('Content-Type', 'image/gif');
     c.header('Cache-Control', 'max-age=0');
     return c.body(buffer);
 
   } catch (error) {
-    console.error('Error serving frame image:', error);
+    console.error(`Error serving frame image for ${handle}:`, error);
     
     // Serve a default error GIF
     const errorGifUrl = 'https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/error_default.gif';
+    console.log(`Using error GIF. URL: ${errorGifUrl}`);
     const response = await fetch(errorGifUrl);
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
