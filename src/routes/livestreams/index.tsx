@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { promisify } from 'util';
 import { createUserFromFidAndUploadGif, processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
+import { createCanvas } from 'canvas';
 import { fileURLToPath } from 'url';
 import queryString from 'query-string';
 import { getLatestClipFromStream, startClipCreationProcess, startClippingProcess } from './clips';
@@ -76,19 +77,57 @@ async function getFarcasterUserData(username) {
   }
 }
 
+// app.get("/frame-image/:handle", async (c) => {
+//   const { handle } = c.req.param();
+//   const { now } = c.req.query();
+//   try {
+//     const imageResponse = await fetch(`https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_${handle}.gif`);
+//     const imageArrayBuffer = await imageResponse.arrayBuffer()
+
+//     c.header('Content-Type', 'image/gif');
+//     c.header('Cache-Control', 'max-age=0');
+//     return c.body(Buffer.from(imageArrayBuffer));
+//   } catch (error) {
+//     console.error('Error serving frame image:', error);
+//     return c.json({ error: 'Error serving frame image' }, 500);
+//   }
+// });
+
 app.get("/frame-image/:handle", async (c) => {
   const { handle } = c.req.param();
-  const { now } = c.req.query();
-  try {
-    const imageResponse = await fetch(`https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_${handle}.gif`);
-    const imageArrayBuffer = await imageResponse.arrayBuffer()
+  const now = new Date().toISOString();
 
-    c.header('Content-Type', 'image/gif');
+  try {
+    // Create a canvas
+    const width = 400;
+    const height = 200;
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+
+    // Set background
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, width, height);
+
+    // Set text style
+    ctx.font = '20px Arial';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = 'center';
+
+    // Draw handle
+    ctx.fillText(`Handle: ${handle}`, width / 2, height / 2 - 20);
+
+    // Draw timestamp
+    ctx.fillText(`Timestamp: ${now}`, width / 2, height / 2 + 20);
+
+    // Convert canvas to buffer
+    const buffer = canvas.toBuffer('image/png');
+
+    c.header('Content-Type', 'image/png');
     c.header('Cache-Control', 'max-age=0');
-    return c.body(Buffer.from(imageArrayBuffer));
+    return c.body(buffer);
   } catch (error) {
-    console.error('Error serving frame image:', error);
-    return c.json({ error: 'Error serving frame image' }, 500);
+    console.error('Error generating frame image:', error);
+    return c.json({ error: 'Error generating frame image' }, 500);
   }
 });
 
