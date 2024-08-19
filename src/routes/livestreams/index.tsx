@@ -645,9 +645,8 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
           ? <Button.Link href={`https://www.vibra.so/stream/${streamer}?profilePicture=${streamerPfp}`}>
               Live 📺
             </Button.Link>
-          : <Button action={`/${streamer}`}>View Stream</Button>,
-        <Button action={`/download-app/${streamer}`}>Mobile App</Button>
-      ],
+          : <Button action={`/${streamer}`}>View Stream</Button>
+        ],
     });
   } catch (error) {
     console.error("Error fetching clip:", error);
@@ -750,7 +749,6 @@ app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
             </Button> 
           : null,
         <Button action={`/${streamer}`}>Back to Streamer</Button>,
-        <Button action={`/download-app/${streamer}`}>Mobile App</Button>
       ],
     });
   } catch (error) {
