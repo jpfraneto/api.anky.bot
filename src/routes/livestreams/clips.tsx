@@ -374,10 +374,9 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
         `clip_gifs/${streamId}`
       );
       console.log("now this gif will also be added to as the first one of the frame")
-      await uploadGifToTheCloud(
+      await uploadInitialGifOfFrame(
         gifPath,
         `user_gif_${handle}`,
-        'user_gifs'
       );
       console.log("after adding this gif as the first one of the frame")
 
