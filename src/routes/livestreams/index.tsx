@@ -79,9 +79,8 @@ async function getFarcasterUserData(username) {
 
 app.get("/frame-image/:handle", async (c) => {
   const { handle } = c.req.param();
-  const { now } = c.req.query();
   try {
-    const imageResponse = await fetch(`https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_${handle}.gif`);
+    const imageResponse = await fetch(`https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_${handle}.gif`)
     const imageArrayBuffer = await imageResponse.arrayBuffer()
 
     c.header('Content-Type', 'image/gif');
