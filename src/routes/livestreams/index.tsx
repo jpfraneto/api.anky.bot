@@ -167,7 +167,9 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
 
     // Schedule the creation of the first GIF after 20 seconds
     setTimeout(async () => {
+      console.log("NOW THE CREATE FIRST STREAM GIF FUNCTION WILL BE CALLED")
       await createFirstStreamGif(validatedData.streamId, sanitizedPlaybackId, user?.username!);
+      console.log("THE CREATE FIRST STREAM GIF THING IS READY")
     }, 20000);
 
     await startClipCreationProcess(validatedData.streamId, user?.username!);

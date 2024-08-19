@@ -237,15 +237,11 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
   }
 
   export async function startClipCreationProcess(streamId: string, handle: string) {
+    console.log(`Starting clip creation process for stream ${streamId}`);
     const stream = await prisma.stream.findUnique({ where: { streamId } });
     if (!stream) {
       throw new Error(`Stream ${streamId} not found`);
     }
-  
-    // Add an immediate one-time job
-    await clipQueue.add('create-clip', { streamId, playbackId: stream.playbackId, handle }, {
-      jobId: `clip-${streamId}-immediate`,
-    });
   
     // Add a repeating job that starts after 8 minutes
     await clipQueue.add('create-clip', { streamId, playbackId: stream.playbackId, handle }, {
@@ -416,11 +412,14 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
   }
 
   export async function createFirstStreamGif(streamId: string, playbackId: string, handle: string) {
+    console.log(`Starting createFirstStreamGif for streamId: ${streamId}, playbackId: ${playbackId}, handle: ${handle}`);
     try {
       const now = Date.now();
-      const startTime = now - 16180; // 20 seconds ago
+      const startTime = now - 16180; // 16.18 seconds ago
       const endTime = now;
+      console.log(`Clip time range: start=${new Date(startTime).toISOString()}, end=${new Date(endTime).toISOString()}`);
   
+      console.log(`Creating clip with Livepeer for playbackId: ${playbackId}`);
       const clipResult = await livepeer.stream.createClip({
         playbackId,
         startTime,
@@ -429,21 +428,39 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
       });
   
       const clipData = clipResult.data;
-      const asset = await waitForAssetReady(clipData?.asset.id!);
-      const videoPath = await downloadClip(asset.downloadUrl);
-      const gifPath = await createGifFromVideo(videoPath);
+      console.log(`Clip created successfully. Asset ID: ${clipData?.asset.id}`);
   
-      await uploadGifToTheCloud(
+      console.log(`Waiting for asset to be ready...`);
+      const asset = await waitForAssetReady(clipData?.asset.id!);
+      console.log(`Asset is ready. Download URL: ${asset.downloadUrl}`);
+  
+      console.log(`Downloading clip...`);
+      const videoPath = await downloadClip(asset.downloadUrl);
+      console.log(`Clip downloaded to: ${videoPath}`);
+  
+      console.log(`Creating GIF from video...`);
+      const gifPath = await createGifFromVideo(videoPath);
+      console.log(`GIF created at: ${gifPath}`);
+  
+      console.log(`Uploading GIF to Cloudinary...`);
+      const cloudinaryResponse = await uploadGifToTheCloud(
         gifPath,
         `user_gif_${handle}`,
         'user_gifs'
       );
+      console.log(`GIF uploaded to Cloudinary. URL: ${cloudinaryResponse.secure_url}`);
   
-      // Clean up
+      console.log(`Cleaning up temporary files...`);
       await fs.unlink(videoPath);
       await fs.unlink(gifPath);
+      console.log(`Temporary files deleted.`);
   
+      console.log(`First stream GIF creation completed successfully for ${handle}`);
     } catch (error) {
-      console.error(`Error creating first stream GIF for ${streamId}:`, error);
+      console.error(`Error creating first stream GIF for streamId: ${streamId}, handle: ${handle}:`, error);
+      if (error instanceof Error) {
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
     }
   }
