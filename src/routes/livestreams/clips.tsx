@@ -195,48 +195,48 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
   //   }, 60000); // Run every 60 seconds
   // }
 
-  // export async function getLatestClipFromStream(stream: any, streamer: string) {
-  //   try {
-  //     const streamId = stream.streamId;
-  //     if (!stream || stream.clips.length === 0) {
-  //       console.log(`No clips found for the stream of ${streamer}. Starting clip creation process.`);
-  //       startClipCreationProcess(streamId);
-  //       return {
-  //         hasClips: false,
-  //         streamId: streamId,
-  //         isProcessing: false
-  //       };
-  //     }
+  export async function getLatestClipFromStream(stream: any, streamer: string) {
+    try {
+      const streamId = stream.streamId;
+      if (!stream || stream.clips.length === 0) {
+        console.log(`No clips found for the stream of ${streamer}. Starting clip creation process.`);
+        startClipCreationProcess(streamId);
+        return {
+          hasClips: false,
+          streamId: streamId,
+          isProcessing: false
+        };
+      }
   
-  //     console.log("the clips are: ", stream.clips);
+      console.log("the clips are: ", stream.clips);
       
-  //     // Find the first non-processing clip
-  //     const latestProcessedClip = stream.clips.find(clip => clip.status !== 'PROCESSING');
-  //     const latestClip = stream.clips[0];
+      // Find the first non-processing clip
+      const latestProcessedClip = stream.clips.find(clip => clip.status !== 'PROCESSING');
+      const latestClip = stream.clips[0];
   
-  //     if (!latestProcessedClip) {
-  //       // All clips are processing
-  //       return {
-  //         hasClips: true,
-  //         isProcessing: true,
-  //         streamId: streamId,
-  //         index: latestClip.clipIndex
-  //       };
-  //     }
+      if (!latestProcessedClip) {
+        // All clips are processing
+        return {
+          hasClips: true,
+          isProcessing: true,
+          streamId: streamId,
+          index: latestClip.clipIndex
+        };
+      }
   
-  //     return {
-  //       hasClips: true,
-  //       isProcessing: latestClip.status === 'PROCESSING',
-  //       gifUrl: latestProcessedClip.cloudinaryUrl,
-  //       index: latestProcessedClip.clipIndex,
-  //       livepeerStreamId: streamId,
-  //       totalClips: stream.clips.length 
-  //     };
-  //   } catch (error) {
-  //     console.error("Error in getLatestClipFromStream:", error);
-  //     return null;
-  //   }
-  // }
+      return {
+        hasClips: true,
+        isProcessing: latestClip.status === 'PROCESSING',
+        gifUrl: latestProcessedClip.cloudinaryUrl,
+        index: latestProcessedClip.clipIndex,
+        livepeerStreamId: streamId,
+        totalClips: stream.clips.length 
+      };
+    } catch (error) {
+      console.error("Error in getLatestClipFromStream:", error);
+      return null;
+    }
+  }
 
   export async function startClipCreationProcess(streamId: string, handle: string) {
     console.log(`Starting clip creation process for stream ${streamId}`);
