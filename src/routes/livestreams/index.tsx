@@ -740,7 +740,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
     const qs = {
       text: `check out this clip from @${streamer} on /vibra, part of their stream:\n\n"${stream.title}"\n\nwatch the stream LIVE here:`,
       'embeds[]': [
-        `https://frames.vibra.so/livestreams/${streamer}/${streamId}/${index}`,
+        `https://frames.vibra.so/livestreams/clips/${streamer}/${streamId}/${index}`,
       ],
     };
   

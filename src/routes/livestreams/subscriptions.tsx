@@ -11,6 +11,7 @@ export async function getSubscribersOfStreamer(streamerFid: string): Promise<str
 
 export async function checkIfUserSubscribed(streamer: string, userFid: string | number) {
     try {
+      if(!userFid) return false
       const streamerData = await getUserFromUsername(streamer)
       console.log("inside the checking if the user is subscribed", streamerData, userFid)
       const subscription = await prisma.subscription.findFirst({
@@ -28,6 +29,7 @@ export async function checkIfUserSubscribed(streamer: string, userFid: string | 
 
   export async function subscribeUserToStreamer(streamer: string, userFid: string | number) {
     try {
+      if(!userFid) return false
       let user = await prisma.user.findUnique({ where: { fid: userFid.toString() } });
       if (!user) {
         const userData = await getUserFromFid(+userFid);
@@ -76,6 +78,7 @@ export async function checkIfUserSubscribed(streamer: string, userFid: string | 
   
   export async function unsubscribeUserFromStreamer(streamer: string, userFid: string | number) {
     try {
+      if(!userFid) return false
       const user = await prisma.user.findUnique({ where: { fid: userFid.toString() } });
       if (!user) {
         throw new Error("User not found");
