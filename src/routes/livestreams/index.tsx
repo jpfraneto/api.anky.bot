@@ -463,7 +463,7 @@ app.frame("/:streamer", async (c) => {
     
         const navigationButton = totalClips > 1 
           ? <Button action={`/clips/${streamer}/${streamId}/${latestProcessedClipInfo.index}`}>
-              {(totalClips - 1).toString()}/{totalClips.toString()} ▶️
+              {(totalClips - 1).toString()}/{totalClips.toString()} ◀️
             </Button>
           : null;
     
