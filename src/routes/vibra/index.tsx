@@ -106,6 +106,30 @@ vibraFrame.use(async (c, next) => {
   await next();
 });
 
+vibraFrame.frame('/', async (c) => {
+  const actionLink = addActionLink({
+    name: 'Vibra',
+    postUrl: '/vibra/vibraction',
+  })
+  console.log('the action link is: ', actionLink)
+  return c.res({
+    title: 'vibra.so',
+    image: (
+      <div tw="flex h-full w-full flex-col px-8 items-left py-4 justify-center bg-black text-white">
+        <span tw="text-purple-500 text-2xl mb-2">QUE VENGA LA BUENA VIBRA</span>
+        <span tw="text-yellow-500 text-4xl mb-2">stream. be yourself.</span>
+    </div>
+   ),
+    intents: [
+      <Button.Link
+      href={actionLink}
+    >
+      Add Vibra Action 📺
+    </Button.Link>,
+   ],
+  });
+})
+
 vibraFrame.castAction(
   "/vibraction",
   (c) => {
@@ -134,6 +158,7 @@ vibraFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => 
   const cast = await fetchCastInformationFromHash(actionedCastHash)
   const castEmbeds = cast.embeds
   console.log('the cast embeds are' , castEmbeds)
+
   const doesCastHaveVideo = true
   if(doesCastHaveVideo){
     return c.res({
@@ -149,7 +174,7 @@ vibraFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => 
       </div>
       ),
       intents: [
-          <Button.Link href={`https://vibra.so/post/${actionedCastHash}`}>Download Video</Button.Link>
+          <Button.Link href={`https://vibra.so/post/${actionedCastHash}`}>On Vibra 📺</Button.Link>,
         ],
   })} else {
     return c.res({
@@ -161,13 +186,13 @@ vibraFrame.frame('/castAction/:actionedCastHash/:actionedCastFid', async (c) => 
           </div>
           <div tw="w-full p-4 flex flex-col rounded-xl border-white bg-purple-600">
             <div tw="mt-3 flex text-xl text-white">
-              but you can go and watch on vibra
+              but you can go and watch /vibra anyways
             </div>
           </div>
         </div>
       ),
       intents: [
-          <Button.Link href={`https://www.vibra.so`}>Vibra</Button.Link>,
+          <Button.Link href={`https://www.vibra.so/post/0x21d3e5ba35ba4b6836c2d2b96cd555203b7044c0`}>Vibra</Button.Link>,
         ],
   })
   }
