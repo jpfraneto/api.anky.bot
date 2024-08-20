@@ -706,7 +706,9 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
     }
 
     const clips = stream.clips;
+    console.log("THE CLIPS FOOOOOR THIS STREAM ARE: ", clips)
     const clip = clips.find(c => c.clipIndex === clipIndex);
+    console.log("THIS CLIP IS: ", clip)
 
     if (!clip) {
       return c.res({
@@ -747,7 +749,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
 
     return c.res({
       title: `Vibra - ${streamer}'s Clip`,
-      image: clip.cloudinaryUrl,
+      image: clip.cloudinaryUrl || "https://github.com/jpfraneto/images/blob/main/error-clip.png?raw=true",
       intents: [
         prevClip 
           ? <Button action={`/clips/${streamer}/${streamId}/${prevClip.clipIndex}`}>
@@ -763,7 +765,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
           ? <Button.Link href={`https://www.vibra.so/stream/${streamer}?profilePicture=${streamerPfp}`}>
               Live 📺
             </Button.Link>
-          : <Button action={`/${streamer}`}>WatchStream</Button>,
+          : <Button action={`/watch-clips/${streamer}/${streamId}/0`}>WatchClips</Button>,
         <Button.Link href={thisFrameClipUrl}>Share</Button.Link>,
         ],
     });
