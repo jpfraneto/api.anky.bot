@@ -510,7 +510,7 @@ app.frame("/:streamer/subscribe", async (c) => {
         </div>
       ),
       intents: [
-        <Button action={`/${streamer}`}>Back to Stream</Button>,
+        <Button action={`/${streamer}`}>Back</Button>,
       ],
     });
   }
@@ -646,9 +646,13 @@ app.frame("/download-app/:streamer", async (c) => {
 app.frame("/clips/:streamer/:streamId/:index", async (c) => {
   const { streamer, streamId, index } = c.req.param();
   const clipIndex = parseInt(index);
+  const userFid = c.frameData?.fid;
   let streamerPfp = "";
   console.log(`Fetching clip ${clipIndex} for streamer: ${streamer}, stream: ${streamId}`);
-
+  let isUserSubscribed = false
+  if(userFid) {
+    isUserSubscribed = await checkIfUserSubscribed(streamer, userFid!);
+  }
   try {
     const stream = await prisma.stream.findUnique({
       where: { streamId: streamId },
@@ -673,7 +677,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
           </div>
         ),
         intents: [
-          <Button action={`/${streamer}`}>Back to Streamer</Button>,
+          <Button action={`/${streamer}`}>Back</Button>,
         ],
       });
     }
@@ -708,6 +712,16 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
     const currentPosition = currentClipIndex + 1;
     const totalClips = clips.length;
 
+    const qs = {
+      text: `check out this clip from @${streamer} on /vibra, part of their stream:\n\n"${stream.title}"\n\nwatch the stream LIVE here:`,
+      'embeds[]': [
+        `https://frames.vibra.so/livestream/${streamer}/${streamId}/${index}`,
+      ],
+    };
+  
+    const shareQs = queryString.stringify(qs);
+    const thisFrameClipUrl = `https://warpcast.com/~/compose?${shareQs}`;
+
     return c.res({
       title: `Vibra - ${streamer}'s Clip`,
       image: clip.cloudinaryUrl,
@@ -726,7 +740,8 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
           ? <Button.Link href={`https://www.vibra.so/stream/${streamer}?profilePicture=${streamerPfp}`}>
               Live 📺
             </Button.Link>
-          : <Button action={`/${streamer}`}>View Stream</Button>
+          : <Button action={`/${streamer}`}>WatchStream</Button>,
+        <Button.Link href={thisFrameClipUrl}>Share</Button.Link>,
         ],
     });
   } catch (error) {
@@ -754,6 +769,11 @@ app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
   const { streamer, streamId, index } = c.req.param();
   const clipIndex = parseInt(index);
   console.log(`Fetching clip ${clipIndex} for streamer: ${streamer}, stream: ${streamId}`);
+  let isUserSubscribed = false
+  const userFid = c.frameData?.fid;
+  if(userFid) {
+    isUserSubscribed = await checkIfUserSubscribed(streamer, userFid!);
+  }
 
   try {
     const stream = await prisma.stream.findUnique({
@@ -851,7 +871,15 @@ app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
         </div>
       );
     }
-
+    const qs = {
+      text: `check out this clip from @${streamer} on /vibra, part of their stream:\n\n"${stream.title}"\n\nwatch more clips of the stream (or subscribe to be notified when they go live again) here:`,
+      'embeds[]': [
+        `https://frames.vibra.so/livestream/watch-clips/${streamer}/${streamId}/${index}`,
+      ],
+    };
+  
+    const shareQs = queryString.stringify(qs);
+    const thisFrameClipUrl = `https://warpcast.com/~/compose?${shareQs}`;
     return c.res({
       title: `Vibra - ${streamer}'s Clip`,
       image: imageContent,
@@ -866,7 +894,10 @@ app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
               ({(currentPosition + 1).toString()}/{totalClips.toString()}) ▶️
             </Button> 
           : null,
-        <Button action={`/${streamer}`}>Back to Streamer</Button>,
+         <Button action={`/${streamer}/${isUserSubscribed ? "unsubscribe" : "subscribe"}`}>
+          {isUserSubscribed ? "Unsubscribe" : "Subscribe"}
+        </Button>,,
+        <Button.Link href={thisFrameClipUrl}>Share 📎</Button.Link>,
       ],
     });
   } catch (error) {
