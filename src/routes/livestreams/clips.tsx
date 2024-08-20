@@ -196,6 +196,14 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
   }
 
   export async function getLatestClipFromStream(stream: any, streamer: string) {
+    if (!stream) {
+      console.log(`No stream found for ${streamer}`);
+      return {
+        hasClips: false,
+        isProcessing: false,
+        streamId: null
+      };
+    }
     try {
       const streamId = stream.streamId;
       if (!stream || stream.clips.length === 0) {
@@ -472,6 +480,20 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
         `user_gif_${handle}`
       );
       console.log(`GIF uploaded to Cloudinary. URL: ${cloudinaryResponse.secure_url}`);
+
+      await prisma.clip.create({
+        data: {
+          stream: { connect: { streamId: streamId } },
+          startTime: new Date(startTime),
+          endTime: new Date(endTime),
+          assetId: clipData?.asset.id!,
+          downloadUrl: asset.downloadUrl,
+          gifUrl: gifPath,
+          cloudinaryUrl: cloudinaryResponse.secure_url,
+          status: 'READY',
+          clipIndex: 0 // Use 0 to indicate it's the initial clip
+        }
+      });
   
       console.log(`Cleaning up temporary files...`);
       await fs.unlink(videoPath);
@@ -525,6 +547,27 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
         `user_gif_${handle}`,
       );
       console.log(`GIF uploaded to Cloudinary. URL: ${cloudinaryResponse.secure_url}`);
+
+      const highestIndexClip = await prisma.clip.findFirst({
+        where: { streamId: streamId },
+        orderBy: { clipIndex: 'desc' },
+      });
+  
+      const finalClipIndex = (highestIndexClip?.clipIndex ?? 0) + 1;
+
+      await prisma.clip.create({
+        data: {
+          stream: { connect: { streamId: streamId } },
+          startTime: new Date(startTime),
+          endTime: new Date(endTime),
+          assetId: clipData?.asset.id!,
+          downloadUrl: asset.downloadUrl,
+          gifUrl: gifPath,
+          cloudinaryUrl: cloudinaryResponse.secure_url,
+          status: 'READY',
+          clipIndex: finalClipIndex
+        }
+      });
   
       console.log(`Cleaning up temporary files...`);
       await fs.unlink(videoPath);

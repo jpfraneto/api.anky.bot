@@ -99,6 +99,16 @@ app.get("/frame-image/:handle", async (c) => {
   }
 });
 
+app.frame("/", async (c) => {
+  return c.res({
+    title: "vibra",
+    image: "https://github.com/jpfraneto/images/blob/main/start-streaming.png?raw=true",
+    intents: [<Button.Link href="https://www.vibra.so">
+      Download App
+    </Button.Link>],
+  });
+})
+
 
 app.frame("/stream-not-found", async (c) => {
   return c.res({
@@ -297,7 +307,6 @@ app.frame("/:streamer", async (c) => {
   const { streamer } = c.req.param();
   const { root } = c.req.query()
 
-  const buttonIndex = c?.frameData?.buttonIndex;
   const userFid = c.frameData?.fid;
 
   // Find the user first
@@ -305,8 +314,8 @@ app.frame("/:streamer", async (c) => {
     where: { username: streamer },
     include: {
       streams: {
-        orderBy: { startedAt: 'desc' },
-        take: 1,
+        orderBy: { createdAt: 'desc' },
+        take: 10,  // Fetch the last 10 streams to ensure we have recent data
         include: {
           clips: {
             orderBy: { clipIndex: 'desc' },
@@ -318,6 +327,15 @@ app.frame("/:streamer", async (c) => {
   });
 
   if (!user) {
+    const qs = {
+      text: `hey @${streamer}, i want to see you streaming on /vibra!`,
+      'embeds[]': [
+        `https://frames.vibra.so/livestreams`,
+      ],
+    };
+  
+    const shareQs = queryString.stringify(qs);
+    const warpcastRedirectLink = `https://warpcast.com/~/compose?${shareQs}`;
     return c.res({
       title: "vibra",
       image: (
@@ -326,20 +344,17 @@ app.frame("/:streamer", async (c) => {
             User not found
           </div>
           <div tw="mt-3 flex text-3xl text-white">
-            Please check the username and try again
+            Time to invite @{streamer} to start streaming on /vibra!
           </div>
         </div>
       ),
       intents: [
-        <Button action="/">Back to Home</Button>,
+        <Button.Link href={warpcastRedirectLink}>Invite @{streamer}</Button.Link>,
       ],
     });
   }
 
-  const latestStream = user.streams[0];
-  console.log("Latest stream is: ", latestStream);
-
-  let streamId = latestStream?.streamId;
+  let relevantStream = user.streams[0]; 
 
   const response = await axios.get(
     `${VIBRA_LIVESTREAMS_API}/livestreams/info?handle=${streamer}`,
@@ -351,9 +366,16 @@ app.frame("/:streamer", async (c) => {
     }
   );
   const streamData = response.data;
-  if(!streamId) {
-    streamId = streamData.livepeerInfo.streamId
+
+  if (streamData && streamData.livepeerInfo && streamData.livepeerInfo.streamId) {
+    const liveStream = user.streams.find(stream => stream.streamId === streamData.livepeerInfo.streamId);
+    if (liveStream) {
+      relevantStream = liveStream;
+    }
   }
+
+  let streamId = relevantStream?.streamId || streamData?.livepeerInfo?.streamId;
+
   console.log('THE STREAM DATA HERE IS:', streamData, 'AND THE STREAM ID:', streamId)
   console.log('THE USERSSS ARE', streamer, userFid)
   const isStreamLive = streamData?.status == "live";
@@ -365,7 +387,7 @@ app.frame("/:streamer", async (c) => {
   // Rest of your code remains the same, but use latestStream instead of thisStream
   if (isStreamLive) {
     console.log('THE STREAM IS LIVE');
-    const latestProcessedClipInfo = await getLatestClipFromStream(latestStream, streamer);
+    const latestProcessedClipInfo = await getLatestClipFromStream(relevantStream, streamer);
   
       console.log("The latest clip info is: ", latestProcessedClipInfo)
       
@@ -435,7 +457,7 @@ app.frame("/:streamer", async (c) => {
       }
 
       if (latestProcessedClipInfo.hasClips && !latestProcessedClipInfo.isProcessing) {
-        const totalClips = latestStream.clips.length;
+        const totalClips = relevantStream.clips.length;
         const currentPosition = totalClips; // Because this is the latest clip
     
         const navigationButton = totalClips > 1 
