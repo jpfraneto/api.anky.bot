@@ -85,7 +85,8 @@ app.get("/frame-image/:handle", async (c) => {
   const { handle } = c.req.param();
   try {
     const imageExists = await checkImageExists(`https://res.cloudinary.com/doj6mciwo/image/upload/v1724101804/user_gif_${handle}.gif`)
-    let imageUrl = imageExists ? `https://res.cloudinary.com/doj6mciwo/image/upload/v1724101804/user_gif_${handle}.gif` : "https://res.cloudinary.com/doj6mciwo/image/upload/v1724101804/user_gif_fallback.gif"
+    let imageUrl = imageExists ? `https://res.cloudinary.com/doj6mciwo/image/upload/v1724101804/user_gif_${handle}.gif` : "https://res.cloudinary.com/doj6mciwo/image/upload/v1723585291/user_gifs/fallback.gif"
+    c
     const imageResponse = await fetch(imageUrl)
     const imageArrayBuffer = await imageResponse.arrayBuffer()
 
