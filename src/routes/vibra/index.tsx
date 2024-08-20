@@ -898,3 +898,25 @@ vibraFrame.frame('/disable-notification/:handle', async (c) => {
   });
 });
 
+
+vibraFrame.frame('/install-app', async (c) => {
+  return c.res({
+    title: "vibra",
+    image: "https://github.com/jpfraneto/images/blob/main/be-onchain.png?raw=true",
+    intents: [
+      <Button.Link href={`https://testflight.apple.com/join/CtXWk0rg`}>iOS</Button.Link>,
+      <Button action={`/install-app-android`}>android</Button>,
+    ],
+  });
+});
+
+vibraFrame.frame('/install-app-android', async (c) => {
+  return c.res({
+    title: "vibra",
+    image: "https://github.com/jpfraneto/images/blob/main/android.png?raw=true",
+    intents: [
+      <Button.Link href={`https://warpcast.com/~/inbox/create/16098?text=hey%20jp%2C%20here%27s%20my%20email.%20i%20want%20to%20download%20%2Fvibra%20on%20android`}>send direct cast</Button.Link>,
+    ],
+  });
+});
+
