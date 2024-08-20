@@ -915,7 +915,8 @@ vibraFrame.frame('/install-app-android', async (c) => {
     title: "vibra",
     image: "https://github.com/jpfraneto/images/blob/main/android.png?raw=true",
     intents: [
-      <Button.Link href={`https://warpcast.com/~/inbox/create/16098?text=hey%20jp%2C%20here%27s%20my%20email.%20i%20want%20to%20download%20%2Fvibra%20on%20android`}>send direct cast</Button.Link>,
+      // <Button.Link href={`https://warpcast.com/~/inbox/create/16098?text=hey%20jp%2C%20here%27s%20my%20email.%20i%20want%20to%20download%20%2Fvibra%20on%20android`}>send direct cast</Button.Link>,
+      <Button.Link href={`https://warpcast.com/jpfraneto`}>send direct cast</Button.Link>,
     ],
   });
 });
