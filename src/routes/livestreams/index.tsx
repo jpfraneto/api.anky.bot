@@ -738,7 +738,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
     const totalClips = clips.length;
 
     const qs = {
-      text: `check out this clip from @${streamer} on /vibra, part of their stream:\n\n"${stream.title}"\n\nwatch the stream LIVE here:`,
+      text: ``,
       'embeds[]': [
         `https://frames.vibra.so/livestreams/clips/${streamer}/${streamId}/${index}`,
       ],
@@ -897,7 +897,7 @@ app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
       );
     }
     const qs = {
-      text: `check out this clip from @${streamer} on /vibra, part of their stream:\n\n"${stream.title}"\n\nwatch more clips of the stream (or subscribe to be notified when they go live again) here:`,
+      text: ``,
       'embeds[]': [
         `https://frames.vibra.so/livestreams/watch-clips/${streamer}/${streamId}/${index}`,
       ],
