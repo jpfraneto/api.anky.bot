@@ -2,11 +2,7 @@ import queryString from 'query-string';
 import { PORT, NODE_ENV } from '../env/server-env';
 
 export function getPublicUrl() {
-    console.log("inside the get public url function")
-    const returnable = NODE_ENV !== 'production'
-    ? `http://localhost:${PORT}`
-    : 'https://frames.vibra.so';
-    console.log("the returnable is", returnable)
+    const returnable = "https://frames.vibra.so"
   return returnable
 }
 
