@@ -492,6 +492,7 @@ app.frame("/:streamer", async (c) => {
         ],
       });
     } else {
+      console.log('the streamer is not live anymore', streamer, streamId)
       return c.res({
         title: "vibra",
         image: (
@@ -791,6 +792,7 @@ app.frame("/clips/:streamer/:streamId/:index", async (c) => {
 });
 
 app.frame("/watch-clips/:streamer/:streamId/:index", async (c) => {
+  console.log("inside the watch clips route")
   const { streamer, streamId, index } = c.req.param();
   const clipIndex = parseInt(index);
   console.log(`Fetching clip ${clipIndex} for streamer: ${streamer}, stream: ${streamId}`);
