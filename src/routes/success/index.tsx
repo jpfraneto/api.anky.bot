@@ -2,6 +2,7 @@ import { Button, FrameContext, Frog } from 'frog';
 import { neynar } from 'frog/middlewares';
 import fs from 'fs/promises';
 import path from 'path';
+import queryString from 'query-string';
 
 type StreamerInfo = {
   fid: number;
@@ -27,6 +28,7 @@ console.log('Initializing successFrame...');
 export const successFrame = new Frog<{
   State: SuccessState;
 }>({
+  imageAspectRatio: "1:1",
   imageOptions: {
     width: 600,
     height: 600,
@@ -96,6 +98,16 @@ successFrame.frame('/get-mine', async (c) => {
   if (streamerInfo) {
     console.log('Rendering stream info for found streamer');
     const { streamSeries } = streamerInfo;
+    const qs = {
+      text: `/vibra just proposed me to this livestream based on my most popular casts. \n\nthoughts? would you watch?`,
+      'embeds[]': [
+        `https://frames.vibra.so/success/${fid}`,
+      ],
+    };
+    
+    const shareQs = queryString.stringify(qs);
+    const warpcastRedirectLink = `https://warpcast.com/~/compose?${shareQs}`;
+
     return c.res({
       image: (
         <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white p-4">
@@ -106,8 +118,7 @@ successFrame.frame('/get-mine', async (c) => {
         </div>
       ),
       intents: [
-        <Button.Link href={`https://warpcast.com/~/compose?text=Check%20out%20my%20upcoming%20stream%20on%20%2Fsuccess!%0A%0ATitle%3A%20${encodeURIComponent(streamSeries.title)}%0ADescription%3A%20${encodeURIComponent(streamSeries.description)}`}>Share</Button.Link>,
-        <Button action="/">Back to Start</Button>
+        <Button.Link href={warpcastRedirectLink}>Share</Button.Link>,
       ],
     });
   } else {
