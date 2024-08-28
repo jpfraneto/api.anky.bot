@@ -95,8 +95,12 @@ app.get("/frame-image/:handle", async (c) => {
     c.header('Cache-Control', 'max-age=0');
     return c.body(Buffer.from(imageArrayBuffer));
   } catch (error) {
-    console.error('Error serving frame image:', error);
-    return c.json({ error: 'Error serving frame image' }, 500);
+    console.error(`Error serving frame image for user ${handle}`, error);
+    const imageResponse = await fetch("https://res.cloudinary.com/doj6mciwo/image/upload/v1724101804/user_gif_${handle}.gif")
+    const imageArrayBuffer = await imageResponse.arrayBuffer()
+    c.header('Content-Type', 'image/gif');
+    c.header('Cache-Control', 'max-age=0');
+    return c.body(Buffer.from(imageArrayBuffer));
   }
 });
 
@@ -143,9 +147,7 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
     // Check if user exists, if not create user and generate GIF
     let user = await prisma.user.findUnique({ where: { fid: validatedData.fid } });
     const farcasterUser = await getUserFromFid(Number(validatedData.fid));
-    console.log("THE FARCASTER USER IS: ", farcasterUser)
-    const streamImageUrl = await createInitialStreamImage(farcasterUser);
-    console.log("IN HERE, THE USER IS: ", user)
+    createInitialStreamImage(farcasterUser);
     if (!user) {
  
       const gifUrl = await createUserFromFidAndUploadGif(validatedData.fid);

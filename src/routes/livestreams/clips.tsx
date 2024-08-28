@@ -722,10 +722,9 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
   
       // Upload the GIF to Cloudinary
       logWithTimestamp(`Uploading the image to Cloudinary as a GIF`);
-      const cloudinaryResponse = await uploadGifToTheCloud(
+      const cloudinaryResponse = await uploadInitialGifOfFrame(
         gifPath,
         `user_gif_${farcasterUser.username}`,
-        'user_gifs'
       );
       logWithTimestamp(`Image uploaded to Cloudinary successfully: ${cloudinaryResponse.secure_url}`);
   

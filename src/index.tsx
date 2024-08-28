@@ -35,6 +35,7 @@ import { vibraFrame } from './routes/vibra'
 import { moxiefolioFrame } from './routes/moxiefolio';
 import { vibraTvFrame } from './routes/vibratv';
 import { app as livestreamsRoute } from './routes/livestreams';
+import { successFrame } from './routes/success';
 import { Redis } from 'ioredis';
 import { processData } from '../utils/moxie';
 import { checkIfCastHasVideo, getUserFromFid, getUserFromUsername } from '../utils/farcaster';
@@ -103,7 +104,7 @@ app.route('/vibra', vibraFrame)
 app.route('/stream', stream)
 app.route('/moxiefolio', moxiefolioFrame)
 app.route('/vibratv', vibraTvFrame)
-
+app.route('/success', successFrame)
 
 /// LIVESTREAMS ROUTE
 app.route('/livestreams', livestreamsRoute)
@@ -458,3 +459,4 @@ console.log(`Server is running on port ${port}`)
 // }
 
 // addUsersToDb(usersAloja)
+
