@@ -62,7 +62,7 @@ successFrame.frame('/', (c) => {
         <span tw="text-6xl font-bold mb-4 text-purple-600">/success</span>
         <span tw="text-2xl mb-8">What would your perfect livestream be about?</span>
         <span tw="text-2xl mb-8">(based on your most popular casts)</span>
-        <span tw="text-lg mt-16 mb-8 text-orange-600">a frame by /vibra</span>
+        <span tw="text-lg bottom-8 text-orange-600">a frame by /vibra</span>
       </div>
     ),
     intents: [
@@ -114,11 +114,11 @@ successFrame.frame('/get-mine', async (c) => {
       image: (
         <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white p-4">
           <span tw="text-xl mb-2 text-purple-600">@{streamerInfo.username}'s proposed livestream:</span>
-          <span tw="text-4xl mb-2 text-green-600">{streamSeries.title}</span>
+          <span tw="text-4xl my-4 text-green-600">{streamSeries.title}</span>
           <span tw="text-2xl mb-4 text-center text-green-400">{streamSeries.description}</span>
-          <span tw="text-xl">Category: {streamSeries.category}</span>
-          <span tw="text-md mt-16 mb-8 text-orange-600">a frame by /vibra</span>
-        </div>
+          <span tw="text-xl text-blue-400">Category: {streamSeries.category}</span>
+          <span tw="text-lg bottom-8 text-orange-600">a frame by /vibra</span>
+          </div>
       ),
       intents: [
         <Button.Link href={warpcastRedirectLink}>Share</Button.Link>,
@@ -167,10 +167,10 @@ successFrame.frame('/:fid', async (c) => {
       image: (
         <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white p-4">
           <span tw="text-xl mb-2 text-purple-600">@{username}'s proposed livestream:</span>
-          <span tw="text-4xl mb-2 text-green-600">{streamSeries.title}</span>
+          <span tw="text-4xl my-4 text-green-600">{streamSeries.title}</span>
           <span tw="text-2xl mb-4 text-center text-green-400">{streamSeries.description}</span>
-          <span tw="text-xl">Category: {streamSeries.category}</span>
-          <span tw="text-md mt-16 mb-8 text-orange-600">a frame by /vibra</span>
+          <span tw="text-xl text-blue-400">Category: {streamSeries.category}</span>
+          <span tw="text-lg bottom-8 text-orange-600">a frame by /vibra</span>
         </div>
       ),
       intents: [
