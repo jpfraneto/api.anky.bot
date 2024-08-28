@@ -114,10 +114,10 @@ successFrame.frame('/get-mine', async (c) => {
       image: (
         <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white p-4">
           <span tw="text-xl mb-2 text-purple-600">@{streamerInfo.username}'s proposed livestream:</span>
-          <span tw="text-4xl my-4 text-green-600">{streamSeries.title}</span>
-          <span tw="text-2xl mb-4 text-center text-green-400">{streamSeries.description}</span>
+          <span tw="text-4xl my-2 text-green-600">{streamSeries.title}</span>
+          <span tw="text-2xl mb-2 text-center text-green-400">{streamSeries.description}</span>
           <span tw="text-xl text-blue-400">Category: {streamSeries.category}</span>
-          <span tw="text-lg bottom-8 text-orange-600">a frame by /vibra</span>
+          <span tw="text-lg bottom-1 text-orange-600">a frame by /vibra</span>
           </div>
       ),
       intents: [
@@ -166,11 +166,11 @@ successFrame.frame('/:fid', async (c) => {
     return c.res({
       image: (
         <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white p-4">
-          <span tw="text-xl mb-2 text-purple-600">@{username}'s proposed livestream:</span>
-          <span tw="text-4xl my-4 text-green-600">{streamSeries.title}</span>
-          <span tw="text-2xl mb-4 text-center text-green-400">{streamSeries.description}</span>
+          <span tw="text-xl  text-purple-600">@{username}'s proposed livestream:</span>
+          <span tw="text-4xl my-2 text-green-600">{streamSeries.title}</span>
+          <span tw="text-2xl mb-2 text-center text-green-400">{streamSeries.description}</span>
           <span tw="text-xl text-blue-400">Category: {streamSeries.category}</span>
-          <span tw="text-lg bottom-8 text-orange-600">a frame by /vibra</span>
+          <span tw="text-lg bottom-1 text-orange-600">a frame by /vibra</span>
         </div>
       ),
       intents: [
