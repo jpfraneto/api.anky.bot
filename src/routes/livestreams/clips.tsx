@@ -629,7 +629,7 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
   
       // Load the frame image
       logWithTimestamp('Loading the frame image');
-      const frameImage = await Jimp.read('/mnt/data/frame.jpeg');
+      const frameImage = await Jimp.read('./utils/frame.jpeg');
   
       // Make the white part of the frame image transparent
       logWithTimestamp('Making the white part of the frame image transparent');
