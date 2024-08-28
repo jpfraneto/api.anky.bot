@@ -24,7 +24,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { uploadVideoToTheCloud, uploadGifToTheCloud } from '../utils/cloudinary';
 import { fetchCastInformationFromHash, publishCastToTheProtocol } from '../utils/cast';
 import { setupWorkers, clipQueue } from '../utils/queue/queueConfig';
-import { processClipJob } from './routes/livestreams/clips';
+import { createAndSaveStreamImageLocally, processClipJob } from './routes/livestreams/clips';
 
 //maiiinn("https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_gif,w_112,h_112/https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/11e5479f-e479-4ba0-2221-97a086f65b00/original", "jpfraneto", "output_gif.gif")
 
@@ -37,7 +37,7 @@ import { vibraTvFrame } from './routes/vibratv';
 import { app as livestreamsRoute } from './routes/livestreams';
 import { Redis } from 'ioredis';
 import { processData } from '../utils/moxie';
-import { checkIfCastHasVideo, getUserFromUsername } from '../utils/farcaster';
+import { checkIfCastHasVideo, getUserFromFid, getUserFromUsername } from '../utils/farcaster';
 import { isOptedOut } from '../utils/local-storage';
 import { createUserAndUploadGif, maiiinn } from '../utils/gif';
 
@@ -107,6 +107,27 @@ app.route('/vibratv', vibraTvFrame)
 
 /// LIVESTREAMS ROUTE
 app.route('/livestreams', livestreamsRoute)
+
+app.get("/:fid", async (c) => {
+  try {
+    const fid = parseInt(c.req.param("fid"));
+    if (isNaN(fid)) {
+      return c.json({ error: "Invalid FID" }, 400);
+    }
+
+    const farcasterUser = await getUserFromFid(fid);
+    console.log("the farcaster user is: ", farcasterUser)
+    if (!farcasterUser) {
+      return c.json({ error: "User not found" }, 404);
+    }
+
+    const imagePath = await createAndSaveStreamImageLocally(farcasterUser);
+    return c.json({ message: `Image created and saved locally at ${imagePath}` }, 200);
+  } catch (error) {
+    console.error("Error handling /:fid request:", error);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
 
 app.get("/aloja", (c) => {
   return c.json({

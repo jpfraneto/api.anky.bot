@@ -9,6 +9,7 @@ import { promisify } from 'util';
 import { Job } from 'bullmq';
 import { processAndSaveGif } from '../../../utils/gif';
 import axios from 'axios';
+import Jimp from 'jimp';
 import { fileURLToPath } from 'url';
 import queryString from 'query-string';
 
@@ -620,4 +621,122 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
   
     console.log(`Square GIF with end text created successfully: ${outputPath}`);
     return outputPath;
+  }
+
+  export async function createAndSaveStreamImageLocally(farcasterUser: any) {
+    try {
+      logWithTimestamp('Starting image creation process');
+  
+      // Load the frame image
+      logWithTimestamp('Loading the frame image');
+      const frameImage = await Jimp.read('/mnt/data/frame.jpeg');
+  
+      // Make the white part of the frame image transparent
+      logWithTimestamp('Making the white part of the frame image transparent');
+      frameImage.scan(0, 0, frameImage.bitmap.width, frameImage.bitmap.height, function (x, y, idx) {
+        const red = this.bitmap.data[idx + 0];
+        const green = this.bitmap.data[idx + 1];
+        const blue = this.bitmap.data[idx + 2];
+  
+        // If the pixel is white, make it transparent
+        if (red > 200 && green > 200 && blue > 200) {
+          this.bitmap.data[idx + 3] = 0; // Alpha channel set to 0 (transparent)
+        }
+      });
+      logWithTimestamp('White part of the frame made transparent successfully');
+  
+      // Check if the user's profile picture URL is available
+      if (!farcasterUser.pfp_url) {
+        throw new Error(`Profile picture URL is missing for user ${farcasterUser.username}`);
+      }
+  
+      // Load the user's profile picture
+      logWithTimestamp(`Loading profile picture from ${farcasterUser.pfp_url}`);
+      const userPfp = await Jimp.read(farcasterUser.pfp_url);
+  
+      // Resize the profile picture to cover the entire background
+      logWithTimestamp('Resizing the profile picture to cover the background');
+      userPfp.cover(frameImage.bitmap.width, frameImage.bitmap.height);
+  
+      // Composite the frame image onto the profile picture
+      logWithTimestamp('Compositing the frame image onto the profile picture');
+      userPfp.composite(frameImage, 0, 0);
+  
+      // Load the font for the text
+      logWithTimestamp('Loading font for text');
+      const font = await Jimp.loadFont(Jimp.FONT_SANS_64_BLACK); // Increased font size
+      logWithTimestamp('Font loaded successfully');
+  
+      // Calculate text width and height to apply padding
+      const text = `@${farcasterUser.username} just went live on /vibra!`;
+      const paddingX = 16; // 8px padding on each side of the text
+      const paddingY = 10; // 5px padding on top and bottom of the text
+      const textWidth = Jimp.measureText(font, text) + paddingX * 2;
+      const textHeight = Jimp.measureTextHeight(font, text, textWidth) + paddingY * 2;
+  
+      // Create a background rectangle for the text with padding and rounded corners
+      logWithTimestamp('Creating background for the text');
+      const textBackground = new Jimp(textWidth, textHeight, '#ffffff'); // White background
+  
+      // Draw the black border
+      textBackground.scan(0, 0, textBackground.bitmap.width, textBackground.bitmap.height, function (x, y, idx) {
+        const isBorder = x < 2 || y < 2 || x >= textBackground.bitmap.width - 2 || y >= textBackground.bitmap.height - 2;
+        if (isBorder) {
+          this.bitmap.data[idx + 0] = 0; // Red
+          this.bitmap.data[idx + 1] = 0; // Green
+          this.bitmap.data[idx + 2] = 0; // Blue
+        }
+      });
+  
+      // Round the corners manually
+      const cornerRadius = 10; // 10px rounded corners
+      textBackground.mask(new Jimp(textWidth, textHeight, function (x, y, idx) {
+        const distanceFromEdge = Math.min(8,8);
+        this.bitmap.data[0] = distanceFromEdge < cornerRadius ? 255 : 0; // Alpha channel
+      }), 8,8);
+  
+      // Position the text background at the top of the image
+      logWithTimestamp('Positioning the text background on the image');
+      userPfp.composite(textBackground, 20, 20); // Adjust x, y based on desired position
+  
+      // Add the text on top of the background
+      logWithTimestamp('Adding text to the image');
+      userPfp.print(
+        font,
+        20 + paddingX, // x position (after padding)
+        20 + paddingY, // y position (after padding)
+        text
+      );
+      logWithTimestamp('Text added successfully');
+  
+      // Save the image locally to a specific directory with a .gif extension
+      const outputDirectory = './output_images';
+      logWithTimestamp(`Creating output directory at ${outputDirectory}`);
+      await fs.mkdir(outputDirectory, { recursive: true });
+      logWithTimestamp('Output directory created successfully');
+  
+      const gifPath = path.join(outputDirectory, `stream_image_${farcasterUser.username}.gif`);
+      logWithTimestamp(`Saving the image to ${gifPath}`);
+      await userPfp.writeAsync(gifPath);
+      logWithTimestamp('Image saved successfully as GIF');
+  
+      // Upload the GIF to Cloudinary
+      logWithTimestamp(`Uploading the image to Cloudinary as a GIF`);
+      const cloudinaryResponse = await uploadGifToTheCloud(
+        gifPath,
+        `user_gif_${farcasterUser.username}`,
+        'user_gifs'
+      );
+      logWithTimestamp(`Image uploaded to Cloudinary successfully: ${cloudinaryResponse.secure_url}`);
+  
+      return cloudinaryResponse.secure_url;
+    } catch (error) {
+      logWithTimestamp(`Error occurred during the image creation process: ${error.message}`);
+      throw new Error(`Failed to create and save image: ${error.message}`);
+    }
+  }
+
+  function logWithTimestamp(message: string) {
+    const timestamp = new Date().toLocaleString(); // Formats the timestamp to your local time
+    console.log(`[${timestamp}] ${message}`);
   }

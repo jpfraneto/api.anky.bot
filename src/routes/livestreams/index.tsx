@@ -12,12 +12,13 @@ import axios from 'axios';
 import { createCanvas } from 'canvas';
 import { fileURLToPath } from 'url';
 import queryString from 'query-string';
-import { createFinalStreamGif, createFirstStreamGif, getLatestClipFromStream, startClipCreationProcess, startClippingProcess, stopClipCreationProcess } from './clips';
+import { createFinalStreamGif, createFirstStreamGif, createStreamImageAndUpload, getLatestClipFromStream, startClipCreationProcess, startClippingProcess, stopClipCreationProcess } from './clips';
 import prisma from '../../../utils/prismaClient';
 import { checkIfUserSubscribed, getSubscribersOfStreamer, subscribeUserToStreamer, unsubscribeUserFromStreamer } from './subscriptions';
 import { apiKeyAuth } from '../../middleware/auth';
 import { sendProgrammaticDmToSubscribers } from './farcaster';
 import { StreamStatus } from '@prisma/client';
+import { getUserFromFid } from '../../../utils/farcaster';
 
 
 const execAsync = promisify(exec);
@@ -141,8 +142,12 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
 
     // Check if user exists, if not create user and generate GIF
     let user = await prisma.user.findUnique({ where: { fid: validatedData.fid } });
+    const farcasterUser = await getUserFromFid(Number(validatedData.fid));
+    console.log("THE FARCASTER USER IS: ", farcasterUser)
+    const streamImageUrl = await createStreamImageAndUpload(farcasterUser);
     console.log("IN HERE, THE USER IS: ", user)
     if (!user) {
+ 
       const gifUrl = await createUserFromFidAndUploadGif(validatedData.fid);
       if (!gifUrl) {
         throw new Error("Failed to create user and generate GIF");
