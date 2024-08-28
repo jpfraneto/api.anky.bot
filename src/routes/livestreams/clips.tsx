@@ -623,7 +623,7 @@ async function waitForAssetReady(assetId: string, maxAttempts: number = 30): Pro
     return outputPath;
   }
 
-  export async function createAndSaveStreamImageLocally(farcasterUser: any) {
+  export async function createInitialStreamImage(farcasterUser: any) {
     try {
       logWithTimestamp('Starting image creation process');
   

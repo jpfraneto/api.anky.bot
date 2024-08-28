@@ -12,7 +12,7 @@ import axios from 'axios';
 import { createCanvas } from 'canvas';
 import { fileURLToPath } from 'url';
 import queryString from 'query-string';
-import { createFinalStreamGif, createFirstStreamGif, createStreamImageAndUpload, getLatestClipFromStream, startClipCreationProcess, startClippingProcess, stopClipCreationProcess } from './clips';
+import { createFinalStreamGif, createFirstStreamGif,createInitialStreamImage, getLatestClipFromStream, startClipCreationProcess, startClippingProcess, stopClipCreationProcess } from './clips';
 import prisma from '../../../utils/prismaClient';
 import { checkIfUserSubscribed, getSubscribersOfStreamer, subscribeUserToStreamer, unsubscribeUserFromStreamer } from './subscriptions';
 import { apiKeyAuth } from '../../middleware/auth';
@@ -144,7 +144,7 @@ app.post("/stream-started", apiKeyAuth, async (c) => {
     let user = await prisma.user.findUnique({ where: { fid: validatedData.fid } });
     const farcasterUser = await getUserFromFid(Number(validatedData.fid));
     console.log("THE FARCASTER USER IS: ", farcasterUser)
-    const streamImageUrl = await createStreamImageAndUpload(farcasterUser);
+    const streamImageUrl = await createInitialStreamImage(farcasterUser);
     console.log("IN HERE, THE USER IS: ", user)
     if (!user) {
  
