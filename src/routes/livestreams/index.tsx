@@ -25,7 +25,7 @@ const execAsync = promisify(exec);
 const StreamStartedSchema = z.object({
   fid: z.string(),
   nameOfLivestream: z.string().min(1).max(100),
-  description: z.string().max(500).optional(),
+  description: z.string().max(1000).optional(),
   streamId: z.string().uuid(),
   castHash: z.string(),
   playbackId: z.string(),
