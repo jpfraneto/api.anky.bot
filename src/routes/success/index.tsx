@@ -134,7 +134,7 @@ successFrame.frame('/get-mine', async (c) => {
         <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
           <span tw="text-3xl font-bold mb-4">Oh, oh.</span>
           <span tw="text-xl mb-4">You're not part of /success.</span>
-          <span tw="text-xl mb-4">On what world do you live?</span>
+          <span tw="text-xl mb-4">This frame is only available for subscribers of this community.</span>
         </div>
       ),
       title: 'YOU are enough',
