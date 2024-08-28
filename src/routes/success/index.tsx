@@ -65,6 +65,7 @@ successFrame.frame('/', (c) => {
         <span tw="text-lg bottom-8 text-orange-600">a frame by /vibra</span>
       </div>
     ),
+    title: 'YOU are enough',
     intents: [
       <Button action="/get-mine">Satisfy My Curiosity</Button>
     ],
@@ -87,6 +88,7 @@ successFrame.frame('/get-mine', async (c) => {
           <span tw="text-xl">Please try again.</span>
         </div>
       ),
+      title: 'YOU are enough',
       intents: [
         <Button action="/">Back to Start</Button>
       ],
@@ -120,6 +122,7 @@ successFrame.frame('/get-mine', async (c) => {
           <span tw="text-lg bottom-1 absolute text-orange-600">a frame by /vibra</span>
           </div>
       ),
+      title: 'YOU are enough',
       intents: [
         <Button.Link href={warpcastRedirectLink}>Share</Button.Link>,
       ],
@@ -134,6 +137,7 @@ successFrame.frame('/get-mine', async (c) => {
           <span tw="text-xl mb-4">On what world do you live?</span>
         </div>
       ),
+      title: 'YOU are enough',
       intents: [
         <Button.Link href="https://www.hypersub.xyz/s/success">Join /success</Button.Link>,
       ],
@@ -153,6 +157,7 @@ successFrame.frame('/:fid', async (c) => {
           <span tw="text-xl">Please provide a valid FID.</span>
         </div>
       ),
+      title: 'YOU are enough',
       intents: [
         <Button action="/">Back to Start</Button>
       ],
@@ -173,6 +178,7 @@ successFrame.frame('/:fid', async (c) => {
           <span tw="text-lg bottom-1 absolute text-orange-600">a frame by /vibra</span>
         </div>
       ),
+      title: 'YOU are enough',
       intents: [
         <Button action="/get-mine">Satisfy MY Curiosity</Button>
       ],
@@ -185,6 +191,7 @@ successFrame.frame('/:fid', async (c) => {
           <span tw="text-xl">This FID is not associated with a /success streamer.</span>
         </div>
       ),
+      title: 'YOU are enough',
       intents: [
         <Button action="/">Back to Start</Button>
       ],
