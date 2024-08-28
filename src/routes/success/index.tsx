@@ -59,12 +59,14 @@ successFrame.frame('/', (c) => {
   return c.res({
     image: (
       <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
-        <span tw="text-4xl font-bold mb-4">/success</span>
-        <span tw="text-2xl mb-8">Are you ready to level up?</span>
+        <span tw="text-6xl font-bold mb-4 text-purple-600">/success</span>
+        <span tw="text-2xl mb-8">What would your perfect livestream be about?</span>
+        <span tw="text-2xl mb-8">(based on your most popular casts)</span>
+        <span tw="text-lg mt-16 mb-8 text-orange-600">a frame by /vibra</span>
       </div>
     ),
     intents: [
-      <Button action="/get-mine">Get Mine</Button>
+      <Button action="/get-mine">Satisfy My Curiosity</Button>
     ],
   });
 });
@@ -126,14 +128,13 @@ successFrame.frame('/get-mine', async (c) => {
     return c.res({
       image: (
         <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
-          <span tw="text-3xl font-bold mb-4">You're Missing Out!</span>
+          <span tw="text-3xl font-bold mb-4">Oh, oh.</span>
           <span tw="text-xl mb-4">You're not part of /success.</span>
           <span tw="text-xl mb-4">On what world do you live?</span>
         </div>
       ),
       intents: [
         <Button.Link href="https://www.hypersub.xyz/s/success">Join /success</Button.Link>,
-        <Button action="/">Back to Start</Button>
       ],
     });
   }
@@ -171,7 +172,7 @@ successFrame.frame('/:fid', async (c) => {
         </div>
       ),
       intents: [
-        <Button action="/get-mine">Check Mine</Button>
+        <Button action="/get-mine">Satisfy MY Curiosity</Button>
       ],
     });
   } else {
