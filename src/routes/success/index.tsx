@@ -128,5 +128,55 @@ successFrame.frame('/get-mine', async (c) => {
   }
 });
 
+successFrame.frame('/:fid', async (c) => {
+  const { fid } = c.req.param();
+  const numericFid = parseInt(fid, 10);
+
+  if (isNaN(numericFid)) {
+    return c.res({
+      image: (
+        <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
+          <span tw="text-3xl font-bold mb-4">Invalid FID</span>
+          <span tw="text-xl">Please provide a valid FID.</span>
+        </div>
+      ),
+      intents: [
+        <Button action="/">Back to Start</Button>
+      ],
+    });
+  }
+
+  const streamerInfo = await getStreamerInfo(numericFid);
+
+  if (streamerInfo) {
+    const { streamSeries, username } = streamerInfo;
+    return c.res({
+      image: (
+        <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white p-4">
+          <span tw="text-xl mb-2">@{username}'s proposed livestream:</span>
+          <span tw="text-2xl mb-2">{streamSeries.title}</span>
+          <span tw="text-xl mb-4 text-center">{streamSeries.description}</span>
+          <span tw="text-lg">Category: {streamSeries.category}</span>
+        </div>
+      ),
+      intents: [
+        <Button action="/get-mine">Check Mine</Button>
+      ],
+    });
+  } else {
+    return c.res({
+      image: (
+        <div tw="flex h-full w-full flex-col items-center justify-center bg-black text-white">
+          <span tw="text-3xl font-bold mb-4">Streamer Not Found</span>
+          <span tw="text-xl">This FID is not associated with a /success streamer.</span>
+        </div>
+      ),
+      intents: [
+        <Button action="/">Back to Start</Button>
+      ],
+    });
+  }
+});
+
 console.log('Frame setup complete');
 export default successFrame;
