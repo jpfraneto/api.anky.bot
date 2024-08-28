@@ -112,8 +112,8 @@ successFrame.frame('/get-mine', async (c) => {
 
     return c.res({
       image: (
-        <div tw="flex h-full w-full flex-col items-center justify-center relative bg-black text-white p-4">
-          <span tw="text-xl mb-2 text-purple-600">@{streamerInfo.username}'s proposed livestream:</span>
+        <div tw="flex h-full w-full flex-col items-center justify-center relative bg-black text-white px-4 py-2">
+          <span tw="text-xl text-center mb-2 text-purple-600">@{streamerInfo.username}'s proposed livestream:</span>
           <span tw="text-4xl my-2 text-green-600">{streamSeries.title}</span>
           <span tw="text-2xl mb-2 text-center text-green-400">{streamSeries.description}</span>
           <span tw="text-xl text-blue-400">Category: {streamSeries.category}</span>
@@ -165,8 +165,8 @@ successFrame.frame('/:fid', async (c) => {
     const { streamSeries, username } = streamerInfo;
     return c.res({
       image: (
-        <div tw="flex h-full w-full flex-col relative items-center justify-center bg-black text-white p-4">
-          <span tw="text-xl  text-purple-600">@{username}'s proposed livestream:</span>
+        <div tw="flex h-full w-full flex-col relative items-center justify-center bg-black text-white py-2 px-4">
+          <span tw="text-xl text-center text-purple-600">@{username}'s proposed livestream:</span>
           <span tw="text-4xl my-2 text-green-600">{streamSeries.title}</span>
           <span tw="text-2xl mb-2 text-center text-green-400">{streamSeries.description}</span>
           <span tw="text-xl text-blue-400">Category: {streamSeries.category}</span>
