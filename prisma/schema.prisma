@@ -24,6 +24,7 @@ model User {
   streams       Stream[]
   subscriptions Subscription[] @relation("Subscriber")
   subscribers   Subscription[] @relation("Streamer")
+  ownedSlots    CalendarSlot[]
 }
 
 model Stream {
@@ -89,4 +90,16 @@ enum ClipStatus {
   PROCESSING
   READY
   FAILED
+}
+
+model CalendarSlot {
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  dayOfWeek     Int
+  startHour     Int
+  startMinute   Int
+  index         Int      @unique
+  ownerId       String?
+  owner         User?    @relation(fields: [ownerId], references: [id])
 }

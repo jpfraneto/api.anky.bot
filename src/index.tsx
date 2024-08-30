@@ -400,7 +400,74 @@ app.get('/videos/:uuid', async (c) => {
   }
 })
 
+app.get('/init-calendar', async (c) => {
+  try {
+    const existingSlots = await prisma.calendarSlot.count();
+    if (existingSlots === 0) {
+      const slots = [];
+      for (let day = 0; day < 7; day++) {
+        for (let hour = 0; hour < 24; hour++) {
+          for (let minute of [0, 30]) {
+            const index = day * 48 + hour * 2 + (minute === 30 ? 1 : 0);
+            slots.push({
+              dayOfWeek: day,
+              startHour: hour,
+              startMinute: minute,
+              index,
+            });
+          }
+        }
+      }
+      await prisma.calendarSlot.createMany({ data: slots });
+    }
+    return c.json({ message: 'Calendar initialized' });
+  } catch (error) {
+    console.error('Error initializing calendar:', error);
+    return c.json({ error: 'Failed to initialize calendar' }, 500);
+  }
+});
 
+// Get all calendar slots
+app.get('/calendar-slots', async (c) => {
+  try {
+    const slots = await prisma.calendarSlot.findMany({
+      include: { owner: true },
+      orderBy: { index: 'asc' },
+    });
+    return c.json(slots);
+  } catch (error) {
+    console.error('Error fetching calendar slots:', error);
+    return c.json({ error: 'Failed to fetch calendar slots' }, 500);
+  }
+});
+
+// Mint a calendar slot
+app.post('/mint-slot', async (c) => {
+  const { userId, slotIndex } = await c.req.json();
+  try {
+    const updatedSlot = await prisma.calendarSlot.update({
+      where: { index: slotIndex },
+      data: { ownerId: userId },
+    });
+    return c.json(updatedSlot);
+  } catch (error) {
+    console.error('Error minting slot:', error);
+    return c.json({ error: 'Failed to mint slot' }, 500);
+  }
+});
+
+// Get dummy users
+app.get('/dummy-users', async (c) => {
+  try {
+    const dummyUsersPath = path.join(process.cwd(), 'utils', 'dummy_users.json');
+    const dummyUsersData = await fs.readFile(dummyUsersPath, 'utf-8');
+    const dummyUsers = JSON.parse(dummyUsersData);
+    return c.json(dummyUsers);
+  } catch (error) {
+    console.error('Error fetching dummy users:', error);
+    return c.json({ error: 'Failed to fetch dummy users' }, 500);
+  }
+});
 
 app.use("/*", serveStatic({ root: "./public" }));
 devtools(app, { serveStatic });
