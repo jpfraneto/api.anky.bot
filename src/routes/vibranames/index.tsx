@@ -79,6 +79,7 @@ vibraNamesFrame.frame('/', async (c) => {
       <div tw="flex h-full w-full flex-col px-8 items-center justify-center bg-purple-600 text-white">
         <span tw="text-4xl font-bold mb-4">vibranames</span>
         <span tw="text-2xl mb-4">mint your unique *.vibra.so domain and get livestreaming onchain</span>
+        <span tw="text-2xl mb-4">only 88 available</span>
         <span tw="text-xl">roll the dice to get yours! (1/6 chance. chance every 20 minutes)</span>
       </div>
     ),
