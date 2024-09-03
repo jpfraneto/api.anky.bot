@@ -1,7 +1,6 @@
 import { Button, FrameContext, Frog, TextInput } from 'frog';
 import { Author } from '../../../utils/types/cast'
 import { addActionLink, getPublicUrl } from '../../../utils/url';
-import { replyToThisCastThroughChatGtp } from '../../../utils/anky';
 import { fetchCastInformationFromHash, fetchCastInformationFromUrl, saveCastTriadeOnDatabase } from '../../../utils/cast';
 import prisma from '../../../utils/prismaClient';
 import { neynar, NeynarVariables } from 'frog/middlewares';

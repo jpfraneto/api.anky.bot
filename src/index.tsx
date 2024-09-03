@@ -41,6 +41,7 @@ import { processData } from '../utils/moxie';
 import { checkIfCastHasVideo, getUserFromFid, getUserFromUsername } from '../utils/farcaster';
 import { isOptedOut } from '../utils/local-storage';
 import { createUserAndUploadGif, maiiinn } from '../utils/gif';
+import vibraNamesFrame from './routes/vibranames';
 
 dotenv.config();
 // **** ROUTE IMPORTS ****
@@ -105,6 +106,7 @@ app.route('/stream', stream)
 app.route('/moxiefolio', moxiefolioFrame)
 app.route('/vibratv', vibraTvFrame)
 app.route('/success', successFrame)
+app.route('/vibraname', vibraNamesFrame)
 
 /// LIVESTREAMS ROUTE
 app.route('/livestreams', livestreamsRoute)
@@ -466,6 +468,19 @@ app.get('/dummy-users', async (c) => {
   } catch (error) {
     console.error('Error fetching dummy users:', error);
     return c.json({ error: 'Failed to fetch dummy users' }, 500);
+  }
+});
+
+app.get('/fetch-past-livestreams', async (c) => {
+  try {
+    const livestreams = await prisma.livestream.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+    return c.json(livestreams);
+  } catch (error) {
+    console.error('Error fetching past livestreams:', error);
+    return c.json({ error: 'Failed to fetch past livestreams' }, 500);
   }
 });
 

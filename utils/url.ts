@@ -2,7 +2,7 @@ import queryString from 'query-string';
 import { PORT, NODE_ENV } from '../env/server-env';
 
 export function getPublicUrl() {
-     const returnable = "https://frames.vibra.so"
+    const returnable = "https://frames.vibra.so"
     //const returnable = "https://poiesis.anky.bot"
   return returnable
 }
