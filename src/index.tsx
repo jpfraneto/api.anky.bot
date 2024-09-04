@@ -292,7 +292,7 @@ app.get("popular-channels", async (c) => {
       image_url: "https://i.imgur.com/IN89yCh.png",
     },
   ];
-  return c.json({channels: allChannels});
+  return c.json({channels: allChannels.slice(0,8)});
   } catch (error) {
     console.log("there was an error getting the popular channels", error);
     return c.json({error: error}, 500);
