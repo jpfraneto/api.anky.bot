@@ -131,11 +131,11 @@ app.get("popular-channels", async (c) => {
       image_url: "https://i.imgur.com/u7bjhOG.jpg",
     },
     {
-      externalId: "replyguys",
-      name: "reply guys",
-      description: "a home for ct replyguy transplants",
-      follower_count: 41371,
-      image_url: "https://i.imgur.com/xDBupZD.jpg",
+      externalId: "anky",
+      name: "Anky",
+      description: "Anky is a gamified approach to the process of self inquiry, with a simple and core practice: Write, every day, 8 minutes of a stream of consciousness. We will do the rest. anky.bot",
+      follower_count: 716,
+      image_url: "https://i.imgur.com/rIZeLPf.jpg",
     },
 
     {
