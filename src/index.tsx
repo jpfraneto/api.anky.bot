@@ -34,7 +34,6 @@ import { tvFrame as stream } from './routes/stream'
 import { vibraFrame } from './routes/vibra'
 import { moxiefolioFrame } from './routes/moxiefolio';
 import { vibraTvFrame } from './routes/vibratv';
-import { app as livestreamsRoute } from './routes/livestreams';
 import { successFrame } from './routes/success';
 import { Redis } from 'ioredis';
 import { processData } from '../utils/moxie';
@@ -108,15 +107,69 @@ app.route('/vibratv', vibraTvFrame)
 app.route('/success', successFrame)
 app.route('/vibraname', vibraNamesFrame)
 
-/// LIVESTREAMS ROUTE
-app.route('/livestreams', livestreamsRoute)
+// API ROUTES 
 
+
+/// LIVESTREAMS ROUTE
 
 
 app.get("/aloja", (c) => {
   return c.json({
     134: 124,
   });
+});
+
+app.get("/recent-livestreams", async (c) => {
+  try {
+    const livestreams = await prisma.stream.findMany({
+      take: 50,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            fid: true,
+            username: true,
+            displayName: true,
+            pfpUrl: true,
+          }
+        },
+        clips: {
+          select: {
+            id: true,
+            startTime: true,
+            endTime: true,
+            gifUrl: true,
+            cloudinaryUrl: true,
+            clipIndex: true,
+            status: true,
+          }
+        }
+      }
+    });
+    console.log("LIVESTREAMS: ", livestreams);
+
+    const formattedLivestreams = livestreams.map(stream => ({
+      id: stream.streamId,
+      createdAt: stream.createdAt,
+      updatedAt: stream.updatedAt,
+      castHash: stream.castHash,
+      startedAt: stream.startedAt,
+      endedAt: stream.endedAt,
+      title: stream.title,
+      description: stream.description,
+      status: stream.status,
+      playbackId: stream.playbackId,
+      clipCreationIntervalId: stream.clipCreationIntervalId,
+      firstClipGifUrl: stream.firstClipGifUrl,
+      user: stream.user,
+      clips: stream.clips,
+    }));
+
+    return c.json(formattedLivestreams);
+  } catch (error) {
+    console.error('Error fetching recent livestreams:', error);
+    return c.json({ error: 'Failed to fetch recent livestreams' }, 500);
+  }
 });
 
 app.get("/queue-health", async (c) => {
@@ -497,48 +550,4 @@ serve({
 
 
 console.log(`Server is running on port ${port}`)
-
-// async function sendProgramaticDmToSubscribers(subscribers: any) {
-//   try {
-//     console.log("sending programatic dcs to subscribers: ", subscribers)
-//     for (let subscriber of subscribers) {
-//       const uuid = uuidv4();
-//       const directCastData = {
-//         recipientFid: subscriber,
-//         message: `${uuid}\n\nwena wena, este DC fue creado programaticamente y basicamente estamos cachando el mote de si funciona o no. Si te llego, porfa mandame un mensaje diciendo que te llego. Gracias! \n\nhttps://www.vibra.so/stream/jpfraneto`,
-//         idempotencyKey: uuid
-//       };
-//       const response = await axios.put('https://api.warpcast.com/v2/ext-send-direct-cast', directCastData, {
-//         headers: {
-//           'Authorization': `Bearer ${VIBRA_BOT_WARPCAST_API_KEY}`,
-//           'Content-Type': 'application/json'
-//         }
-//       })
-//       console.log("the response is: ", response.data)
-//       if(response.data.result.success) {
-//         console.log("the message was sent successfully to", subscriber)
-//       }
-//     }
-//   } catch (error) {
-//     console.log("there was an error sending the cast to the user", error)
-    
-//   }
-// }
-
-// sendProgramaticDmToSubscribers([16098])
-
-//sendProgramaticDmToSubscribers([16098, 18350, 19696, 12785, 198258])
-
-
-// const usersAloja = ["undefined"]
-// async function addUsersToDb(users: any){
-//   console.log("the users are: ", users)
-//   for (let user of users) {
-//     console.log("before with the user", user)
-//     const cloudinaryurl = await createUserAndUploadGif(user)
-//     console.log("the cloudinary url is: ", cloudinaryurl)
-//   }
-// }
-
-// addUsersToDb(usersAloja)
 
