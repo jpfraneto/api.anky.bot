@@ -124,19 +124,20 @@ app.get("popular-channels", async (c) => {
     console.log("getting the popular channels");
   const allChannels = [
     {
+      externalId: "thegenradio",
+      name: "The Gen Radio",
+      description: "The Gen Radio aims to be an open source platform that fosters curatory of content as a vehicle for finding meaning on a hyper content-ized world. Reach out and help shape this thing together.",
+      follower_count: 33,
+      image_url: "https://i.imgur.com/u7bjhOG.jpg",
+    },
+    {
       externalId: "replyguys",
       name: "reply guys",
       description: "a home for ct replyguy transplants",
       follower_count: 41371,
       image_url: "https://i.imgur.com/xDBupZD.jpg",
     },
-    {
-      externalId: "superrare",
-      name: "SuperRare",
-      description: "The art market, onchain",
-      follower_count: 24224,
-      image_url: "https://warpcast.com/~/channel-images/superrare.jpg",
-    },
+
     {
       externalId: "lp",
       name: "HAM 🍖",
