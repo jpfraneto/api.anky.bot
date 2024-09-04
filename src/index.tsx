@@ -119,6 +119,186 @@ app.get("/aloja", (c) => {
   });
 });
 
+app.get("popular-channels", async (c) => {
+  try {
+    console.log("getting the popular channels");
+  const allChannels = [
+    {
+      externalId: "replyguys",
+      name: "reply guys",
+      description: "a home for ct replyguy transplants",
+      follower_count: 41371,
+      image_url: "https://i.imgur.com/xDBupZD.jpg",
+    },
+    {
+      externalId: "superrare",
+      name: "SuperRare",
+      description: "The art market, onchain",
+      follower_count: 24224,
+      image_url: "https://warpcast.com/~/channel-images/superrare.jpg",
+    },
+    {
+      externalId: "lp",
+      name: "HAM 🍖",
+      description:
+        "The home of $TN100x, Based LP NFTs, and HAM. Snapshots of top casts taken daily. Quality content earns points toward $TN100x airdrop. Tip Ham 🍖 backed by $TN100x. https://ham.fun",
+      follower_count: 42951,
+      image_url: "https://i.imgur.com/vC00Vn0.png",
+    },
+    {
+      externalId: "memes",
+      name: "Memes",
+      description:
+        "Funny memes, wholesome memes, and everything in-between. subscribe to earn (~$1/mo) https://hypersub.withfabric.xyz/collection/memes-1x0fzjq6ytfy8",
+      follower_count: 346516,
+      image_url:
+        "https://i.seadn.io/gcs/files/1f4acfc1e6831eb38e9453ce34ac79f8.png?auto=format&dpr=1&w=512",
+    },
+    {
+      externalId: "farther",
+      name: "F A R T H E R ✨",
+      description:
+        "Spreading the good news of Farcaster.  farther.social | \n" +
+        "\n" +
+        "Must have 2,500 $farther to post in the channel",
+      follower_count: 9572,
+      image_url:
+        "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/48b29402-9a95-4463-cdb7-5b6f87e17000/original",
+    },
+    {
+      externalId: "masks",
+      name: "$MASKS",
+      description:
+        "Tokenize Your Engagement • The first social token on Optimism • masks.wtf",
+      follower_count: 39387,
+      image_url:
+        "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/6357ae40-9baf-4f8d-0569-86d783132e00/rectcrop3",
+    },
+    {
+      externalId: "degen",
+      name: "Degen",
+      description: "Not financial advice",
+      follower_count: 93673,
+      image_url:
+        "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/4728a50a-1669-4334-1f57-9473c04a2500/original",
+    },
+    {
+      externalId: "itookaphoto",
+      name: "I Took a Photo!",
+      description: `Photography is the world's most popular art form. ITAP is a place to share photos YOU took. Start casts with "ITAP” or “I took a photo” and a short description. Like, reply and recast your faves. Cast your shot!`,
+      follower_count: 10685,
+      image_url: "https://i.imgur.com/xFQSwGt.jpg",
+    },
+    {
+      externalId: "base",
+      name: "Base",
+      description: "Bringing the world onchain — a community of builders on Base",
+      follower_count: 380971,
+      image_url: "https://warpcast.com/~/channel-images/base.png",
+    },
+    {
+      externalId: "degentokenbase",
+      name: "$DEGEN",
+      description:
+        "Welcome to the official $DEGEN channel! Chat about all things $DEGEN. Meet our team:  (CEO) &  (COO) of Gentleman Labs.",
+      follower_count: 17027,
+      image_url:
+        "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/8c956aaf-d633-4544-42bd-9ab938854600/original",
+    },
+    {
+      externalId: "warpcast",
+      name: "Warpcast",
+      description:
+        "Announcements, questions, feedback and suggestions about Warpcast",
+      follower_count: 49868,
+      image_url:
+        "https://ipfs.decentralized-content.com/ipfs/bafkreifezhnp5wzgabkdbkb6d65oix4r5axibupv45r7ifxphl4d6qqnry",
+    },
+    {
+      externalId: "mfers",
+      name: "mfers",
+      description: "channel for crypto mfers",
+      follower_count: 21163,
+      image_url: "https://i.imgur.com/huKofm1.jpg",
+    },
+    {
+      externalId: "dev",
+      name: "dev",
+      description: "Cultivating curiosity for software developers",
+      follower_count: 140911,
+      image_url:
+        "https://ipfs.decentralized-content.com/ipfs/bafkreigbei45ni5zsliszzeivotgee5auj2ykkh6zrzjwvm4izviidusny",
+    },
+    {
+      externalId: "ai",
+      name: "AI",
+      description: "attention is all you need",
+      follower_count: 11751,
+      image_url: "https://i.imgur.com/z4yori9.jpg",
+    },
+    {
+      externalId: "video",
+      name: "video",
+      description: "",
+      follower_count: 2073,
+      image_url: "https://i.imgur.com/7OYFo3c.jpg",
+    },
+    {
+      externalId: "behindthescenes",
+      name: "Behind the Scenes",
+      description:
+        "Documenting the creative process! Making of videos, process gifs, and behind-the-scenes content. Please read the norms 🎬",
+      follower_count: 3814,
+      image_url: "https://i.imgur.com/w9imTFl.gif",
+    },
+    {
+      externalId: "success",
+      name: "The Success Syndicate",
+      description:
+        "Home to the Success Movement, a community for networking, building, and growing the Farcaster ecosystem. Subscribe here to cast in this channel: https://hypersub.withfabric.xyz/collection/success",
+      follower_count: 2790,
+      image_url:
+        "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/0b056af5-0144-409a-932d-e43c92f94800/original",
+    },
+    {
+      externalId: "crypto",
+      name: "crypto",
+      description:
+        "Discussions about crypto generally, from its use and tech to its culture and philosophy. Spammy talk about price, charts, gambling, etc. will be hidden or banned. See norms.",
+      follower_count: 9717,
+      image_url: "https://i.imgur.com/cXa9fjz.png",
+    },
+    {
+      externalId: "wildcardclub",
+      name: "wildcard",
+      description: "Wildcard is Farcaster gone WILD. \nGo $WILD @ wildcard.lol",
+      follower_count: 11782,
+      image_url:
+        "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/68657e2d-ded8-4bd2-bca2-03779668ac00/original",
+    },
+    {
+      externalId: "farcaster",
+      name: "Farcaster",
+      description: "Discussions about Farcaster on Farcaster (meta!)",
+      follower_count: 315348,
+      image_url:
+        "https://ipfs.decentralized-content.com/ipfs/bafkreialf5usxssf2eu3e5ct37zzdd553d7lg7oywvdszmrg5p2zpkta7u",
+    },
+    {
+      externalId: "cute-animals",
+      name: "Cute Animals",
+      description: "Exclusively the cutest animals on the internet.",
+      follower_count: 970,
+      image_url: "https://i.imgur.com/IN89yCh.png",
+    },
+  ];
+  return c.json({channels: allChannels});
+  } catch (error) {
+    console.log("there was an error getting the popular channels", error);
+    return c.json({error: error}, 500);
+  }
+})
+
 app.get("/recent-livestreams", async (c) => {
   try {
     const livestreams = await prisma.stream.findMany({
