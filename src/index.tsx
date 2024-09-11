@@ -81,7 +81,7 @@ export const app = new Frog({
 });
 
 app.use('*', cors({
-  origin: ['http://localhost:3000'],
+  origin: ['http://localhost:3000', 'https://vibra.so', 'https://www.vibra.so', ' https://development-farcaster-api-claucondor-fietbrotma-uc.a.run.app'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Origin', 'Content-Type', 'Accept', 'Authorization', "x-api-key"],
   exposeHeaders: ['Content-Length', 'X-Requested-With'],
@@ -123,6 +123,13 @@ app.get("popular-channels", async (c) => {
   try {
     console.log("getting the popular channels");
   const allChannels = [
+     {
+      externalId: "vibra",
+      name: "Vibra",
+      description: "Life Farcaster",
+      follower_count: 42951,
+      image_url: "https://i.imgur.com/vC00Vn0.png",
+    },
     {
       externalId: "thegenradio",
       name: "The Gen Radio",
@@ -456,39 +463,6 @@ app.post("/video-posted", async (c) => {
       error: error.message
     }, 500);
   }
-});
-
-app.get("/moxie-airdrop/:fid", (c) => {
-  let { fid } = c.req.param();
-
-  if (!fid || isNaN(Number(fid))) {
-    return c.json({ error: "Invalid or missing FID parameter" }, 400);
-  }
-
-  const numericFid = Number(fid);
-  
-  // Deterministic calculation
-  const base = 500000; // 500,000 as base
-  const prime1 = 31; // A prime number
-  const prime2 = 47; // Another prime number
-  const maxAirdrop = 2000000; // Cap at 2 million
-  
-  // Complex calculation to make it non-linear
-  let result = base;
-  result += (numericFid * prime1) % 10000; // Add some variability based on FID
-  result *= Math.floor(Math.sqrt(numericFid) * prime2); // Multiply by a factor based on square root of FID
-  result = result % 1999999 + 1; // Ensure result is between 1 and 2 million
-  
-  // Final adjustment to make it look more random
-  result = (result * 1337) % 2000000; // 1237 is another prime
-
-  // Ensure the result doesn't exceed the maximum airdrop amount
-  result = Math.min(result, maxAirdrop);
-
-  return c.json({
-    fid: numericFid,
-    moxieAirdropAmount: result
-  });
 });
 
 

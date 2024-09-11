@@ -292,12 +292,12 @@ async function checkImageExists(url: string): Promise<boolean> {
 app.get("/frame-image/:handle", async (c) => {
   const { handle } = c.req.param();
   console.log(`Received request for handle: ${handle}`);
-  let imageUrl = `https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/user_gif_${handle}.gif`
+  let imageUrl = `https://res.cloudinary.com/duxyakk1x/image/upload/v1723573307/user_gifs/user_gif_${handle}.gif`
   const imageExists = checkImageExists(imageUrl)
   
   if(!imageExists) {
      createUserAndUploadGif(handle)
-     imageUrl = "https://res.cloudinary.com/doj6mciwo/image/upload/v1723573307/user_gifs/fallback.gif"
+     imageUrl = "https://res.cloudinary.com/duxyakk1x/image/upload/v1723573307/user_gifs/fallback.gif"
   }
 
   const response = await fetch(imageUrl);
