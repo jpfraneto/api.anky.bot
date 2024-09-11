@@ -81,7 +81,7 @@ export const app = new Frog({
 });
 
 app.use('*', cors({
-  origin: ['http://localhost:3000', 'https://vibra.so', 'https://www.vibra.so', ' https://development-farcaster-api-claucondor-fietbrotma-uc.a.run.app'],
+  origin: ['http://localhost:3000', 'https://vibra.so', 'https://www.vibra.so', ' https://development-farcaster-api-claucondor-fietbrotma-uc.a.run.app', 'https://poiesis.anky.bot'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Origin', 'Content-Type', 'Accept', 'Authorization', "x-api-key"],
   exposeHeaders: ['Content-Length', 'X-Requested-With'],
